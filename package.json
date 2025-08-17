@@ -1,7 +1,7 @@
 {
   "name": "okusuri-support",
   "version": "0.1.0",
-  "description": "okusuri-support - AI-powered TypeScript project",
+  "description": "患者本人とサポートする保護者の二人三脚で服薬管理行うための支援アプリ。まずは記録することを目的として、患者のその意思を肯定的に尊重する。記録が継続的に行えるよう支援、また保護者は患者の服薬状況を把握し、必要に応じて適切なサポートを行えることを目指す。",
   "main": "dist/index.js",
   "keywords": [
     "typescript",
@@ -13,11 +13,11 @@
     "development-rules",
     "quality-assurance"
   ],
-  "author": "Shinsuke Kagawa",
+  "author": "trust.delta",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shinpr/ai-coding-project-boilerplate.git"
+    "url": "https://github.com/trust-delta/okusuri-support.git"
   },
   "scripts": {
     "build": "tsc && tsc-alias",
