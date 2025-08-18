@@ -22,6 +22,14 @@
       },
       "complexity": {
         "useLiteralKeys": "off"
+      },
+      "nursery": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {}
+          }
+        }
       }
     }
   },
@@ -35,6 +43,16 @@
           }
         }
       }
+    },
+    {
+      "include": ["**/layout.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useImportType": "off"
+          }
+        }
+      }
     }
   ],
   "javascript": {
@@ -45,7 +63,7 @@
     }
   },
   "files": {
-    "include": ["src/**/*.ts", "src/**/*.js"],
-    "ignore": ["node_modules/**", "dist/**"]
+    "include": ["src/**/*.ts", "src/**/*.js", "app/**/*.ts", "app/**/*.tsx"],
+    "ignore": ["node_modules/**", "dist/**", ".next/**"]
   }
 }

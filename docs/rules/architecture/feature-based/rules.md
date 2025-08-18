@@ -60,14 +60,14 @@ src
 import { z } from 'zod'
 import { database } from '../../lib/database'
 
-// 2. 型定義・スキーマ（優先順位：type > interface)
+// 2. 型定義・スキーマ
 const InputSchema = z.object({...})
 type Output = {...}
 
 // 3. 内部ヘルパー関数
 function validateBusinessRule(...) {...}
 
-// 4. メイン処理関数（優先順位：const > function)
+// 4. メイン処理関数
 export const mainFunction (input: unknown) {
   // 実装
 }

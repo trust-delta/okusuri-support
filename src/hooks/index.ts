@@ -1,0 +1,18 @@
+/**
+ * ライブラリに依存しないカスタムフックのエクスポート
+ *
+ * アプリ内で汎用的に使えるカスタムフックを一元管理:
+ * - use-local-storage.ts - ローカルストレージ操作
+ * - use-mobile.ts - 画面サイズ判定
+ * - use-debounce.ts - デバウンス処理
+ *
+ * 注意: 外部ライブラリに依存するカスタムフックはlib/に配置
+ */
+
+// 現在は空ですが、将来的にカスタムフックを配置予定
+// export { useLocalStorage } from './use-local-storage';
+// export { useMobile } from './use-mobile';
+// export { useDebounce } from './use-debounce';
+
+// TypeScriptエラー回避のための空のエクスポート
+export {}
