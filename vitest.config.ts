@@ -4,7 +4,9 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [
-    react(), // React component testing support
+    react({
+      jsxRuntime: 'automatic',
+    }), // React component testing support
   ],
   test: {
     // Test environment and globals
@@ -53,6 +55,10 @@ export default defineConfig({
         '**/__mocks__/**',
         '**/*.test.{js,ts,jsx,tsx}',
         '**/*.spec.{js,ts,jsx,tsx}',
+        '**/*.stories.{js,ts,jsx,tsx}',
+        '**/stories/**',
+        '**/index.ts',
+        '**/*.stories.tsx',
       ],
       thresholds: {
         // Target coverage thresholds as defined in docs/rules/typescript-testing.md
@@ -73,12 +79,18 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@/app': path.resolve(__dirname, './app'),
       src: path.resolve(__dirname, './src'),
+      // React module alias for stable resolution
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime'),
+      'react/jsx-dev-runtime': path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime'),
     },
   },
   
   // ESBuild configuration for TypeScript
   esbuild: {
     target: 'es2022',
+    jsx: 'automatic',
   },
   
   // Cache directory for Vite

@@ -62,3 +62,6 @@ docs/guides/en/
 # Next.js build output
 /.next/
 
+# storybook
+*storybook.log
+storybook-static
