@@ -10,10 +10,5 @@
  * 注意: 外部ライブラリに依存する場合はlib/に配置
  */
 
-// 現在は空ですが、将来的にユーティリティ関数を配置予定
-// export { formatDate, parseDate } from './date';
-// export { validateEmail, sanitizeInput } from './validation';
-// export { debounce, throttle } from './performance';
-
 // TypeScriptエラー回避のための空のエクスポート
 export {}

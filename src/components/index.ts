@@ -6,10 +6,29 @@
  * - Layout関連の共通コンポーネント
  */
 
-// 現在は空ですが、将来的にButton、Modal等を配置予定
-// export { Button } from './ui/Button';
-// export { Modal } from './ui/Modal';
-// export { Layout } from './layout/Layout';
+// App components (moved from app/components)
+export { default as ServerInfo } from './ServerInfo'
+export { default as InteractiveButton } from './InteractiveButton'
 
-// TypeScriptエラー回避のための空のエクスポート
-export {}
+// UI Components
+export { Button } from './ui/button'
+export {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './ui/card'
+export {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './ui/dialog'
+
+// Theme Toggle
+export { default as ThemeToggle } from './ui/theme-toggle/theme-toggle'

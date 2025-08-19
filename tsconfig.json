@@ -19,8 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/app/*": ["./app/*"]
+      "@/*": ["./src/*"]
     },
     // Strict type checking (maintaining from original)
     "noImplicitAny": true,

@@ -12,10 +12,5 @@
  * - types/api.ts
  */
 
-// 現在は空ですが、将来的に共通型定義を配置予定
-// export type { User, UserProfile } from './user';
-// export type { Post, PostStatus } from './post';
-// export type { ApiResponse, ApiError } from './api';
-
 // TypeScriptエラー回避のための空のエクスポート
 export {}

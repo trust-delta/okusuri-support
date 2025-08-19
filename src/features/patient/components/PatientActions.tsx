@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CheckIcon, ClockIcon } from '@/components/icons'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { CheckIcon, ClockIcon } from '@/components/ui/icons'
+import { Button } from '@/components/ui/button/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog/dialog'
 
 interface PatientActionsProps {
   patientId: string
@@ -11,7 +11,7 @@ interface PatientActionsProps {
 
 export default function PatientActions({ patientId }: PatientActionsProps) {
   const [isRecording, setIsRecording] = useState(false)
-  
+
   const handleMedicationRecord = () => {
     setIsRecording(true)
     setTimeout(() => {
@@ -19,10 +19,10 @@ export default function PatientActions({ patientId }: PatientActionsProps) {
       alert('服薬記録が保存されました')
     }, 1000)
   }
-  
+
   return (
     <div className="flex gap-2">
-      <Button 
+      <Button
         onClick={handleMedicationRecord}
         disabled={isRecording}
         className="flex items-center gap-2"
@@ -40,7 +40,7 @@ export default function PatientActions({ patientId }: PatientActionsProps) {
           </>
         )}
       </Button>
-      
+
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline" data-testid="add-medication">詳細表示</Button>

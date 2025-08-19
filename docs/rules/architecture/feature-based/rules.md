@@ -24,7 +24,8 @@
 src
 ├── __tests__
 |  ├── e2e              # E2Eテスト
-|  └── integration      # インテグレーションテスト
+|  ├── integration      # インテグレーションテスト
+|  └── utils            # テスト用ユーティリティ
 ├── app
 |  ├── api              # APIルート
 |  ├── layout.tsx
@@ -36,8 +37,8 @@ src
 |  └── ui               # 全体に共有されるUIコンポーネント
 ├── features            # 機能ごとのコンポーネント・ロジック
 |  ├── {feature-name}
-│  |   ├── actions      # ユーザーアクション、フォーム送信、CRUD
-│  |   ├── api          # 外部システムとの連携、コールバック
+│  |   ├── actions      # Server Actions、フォーム送信、CRUDなど
+│  |   ├── api          # API通信、外部システムとの連携、コールバックなど
 │  |   ├── components   # exportされる本体
 │  |   ├── hooks        # 機能内で共有されるフック
 │  |   ├── types        # 機能内で共有される型
@@ -100,10 +101,10 @@ export const mainFunction (input: unknown) {
 ### ユニットテストの配置
 
 ```
-todo
+create-todo
 ├── create-todo.ts
-├── create-todo.test.ts    # 同じディレクトリに配置
-└── ...
+├── create-todo.test.ts    # ユニットテストは同じディレクトリに配置
+└── index.ts
 ```
 
 ---

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Patient } from '../types'
 import PatientActions from './PatientActions'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card/card'
 
 interface PatientCardProps {
   patient: Patient
@@ -21,7 +21,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="mb-4">
           <h3 className="text-lg font-medium mb-2">処方薬</h3>
@@ -43,7 +43,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
             ))}
           </div>
         </div>
-        
+
         <PatientActions patientId={patient.id} />
       </CardContent>
     </Card>

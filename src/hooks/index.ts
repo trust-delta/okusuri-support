@@ -9,10 +9,5 @@
  * 注意: 外部ライブラリに依存するカスタムフックはlib/に配置
  */
 
-// 現在は空ですが、将来的にカスタムフックを配置予定
-// export { useLocalStorage } from './use-local-storage';
-// export { useMobile } from './use-mobile';
-// export { useDebounce } from './use-debounce';
-
 // TypeScriptエラー回避のための空のエクスポート
 export {}

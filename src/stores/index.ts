@@ -12,10 +12,5 @@
  * - stores/target-points.ts (合成状態の例)
  */
 
-// 現在は空ですが、将来的に状態管理ストアを配置予定
-// export { userStore } from './user';
-// export { postStore } from './post';
-// export { themeStore } from './theme';
-
 // TypeScriptエラー回避のための空のエクスポート
 export {}
