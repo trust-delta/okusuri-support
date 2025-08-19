@@ -83,7 +83,7 @@ export const mainFunction (input: unknown) {
 
 1. **機能の粒度を決定**
 
-   - 1 つのビジネスアクション = 1 ファイル
+   - 1 つの機能 = 1 つのファイル
    - 例: "Todo を作成する" = `create-todo.tsx`
 
 2. **ディレクトリを作成**
@@ -92,10 +92,10 @@ export const mainFunction (input: unknown) {
    mkdir -p src/features/[feature-name]/components
    ```
 
-   - 外部への export は必ず`{feature-name}/components`から行う
+   - 外部への export は必ず`{feature-name}/components/{file-name}.tsx`から行う
 
 3. **ファイルを作成**
-   - アクション名を明確にしたファイル名を使用
+   - 機能を明確にした表現したファイル名を使用
    - ケバブケース（kebab-case）を使用
 
 ### ユニットテストの配置
@@ -114,7 +114,7 @@ create-todo
 ### `app/`:Next.js App Router + API Routes に従った構造
 
 - `app/page.tsx`：`components/`や`features/`からエクスポートされたコンポーネントで構成され純粋にコンポーネント組み立てに集中する
-- `app/provider.tsx`：各プロバイダーはここで一元管理する
+- `app/provider.tsx`：各プロバイダーを一元管理する
 
 ### `components/`:アプリ全体で共有される UI コンポーネント
 
@@ -123,7 +123,7 @@ create-todo
 
 ### `features/`:特定のドメインに基づく機能
 
-- 外部へのエクスポートはコンポーネントのみを行う
+- 外部へのエクスポートは単独で完結したコンポーネントのみを行う
 - ロジックの外部エクスポートは禁止する
 - 他 features からなどからデータが必要な場合、直接インポートはせず`stores/`を経由する
 - ライブラリは直接インポートせず`lib/`で初期設定・ラッパー化されたもの使用する
