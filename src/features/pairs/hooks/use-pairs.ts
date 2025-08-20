@@ -5,6 +5,7 @@
 
 'use client'
 
+import { useAuth } from '@/features/auth'
 import { useCallback, useEffect, useState } from 'react'
 import {
   cancelInvitation,
@@ -20,23 +21,22 @@ import type {
   Invitation,
   InvitationResponseFormData,
   InvitationState,
-  PairState,
   PairManagementState,
+  PairState,
 } from '../types'
-import { useAuth } from '@/features/auth'
 
 /**
  * ペア管理状態管理カスタムフック
  */
 export function usePairs(): PairManagementState {
   const { isAuthenticated, user } = useAuth()
-  
+
   const [invitations, setInvitations] = useState<InvitationState>({
     sentInvitations: [],
     receivedInvitations: [],
     isLoading: false,
   })
-  
+
   const [pairs, setPairs] = useState<PairState>({
     isLoading: false,
   })
@@ -47,28 +47,28 @@ export function usePairs(): PairManagementState {
   const refreshSentInvitations = useCallback(async () => {
     if (!isAuthenticated) return
 
-    setInvitations(prev => {
-      const { error, ...rest } = prev
-      return { ...rest, isLoading: true }
-    })
+    setInvitations((prev) => ({
+      ...prev,
+      isLoading: true,
+    }))
 
     try {
       const result = await getSentInvitations()
       if (result.success && result.data) {
-        setInvitations(prev => ({
+        setInvitations((prev) => ({
           ...prev,
           sentInvitations: result.data || [],
           isLoading: false,
         }))
       } else {
-        setInvitations(prev => ({
+        setInvitations((prev) => ({
           ...prev,
           error: result.error,
           isLoading: false,
         }))
       }
     } catch {
-      setInvitations(prev => ({
+      setInvitations((prev) => ({
         ...prev,
         error: {
           code: 'FETCH_ERROR',
@@ -85,28 +85,28 @@ export function usePairs(): PairManagementState {
   const refreshReceivedInvitations = useCallback(async () => {
     if (!isAuthenticated) return
 
-    setInvitations(prev => {
-      const { error, ...rest } = prev
-      return { ...rest, isLoading: true }
-    })
+    setInvitations((prev) => ({
+      ...prev,
+      isLoading: true,
+    }))
 
     try {
       const result = await getReceivedInvitations()
       if (result.success && result.data) {
-        setInvitations(prev => ({
+        setInvitations((prev) => ({
           ...prev,
           receivedInvitations: result.data || [],
           isLoading: false,
         }))
       } else {
-        setInvitations(prev => ({
+        setInvitations((prev) => ({
           ...prev,
           error: result.error,
           isLoading: false,
         }))
       }
     } catch {
-      setInvitations(prev => ({
+      setInvitations((prev) => ({
         ...prev,
         error: {
           code: 'FETCH_ERROR',
@@ -121,10 +121,7 @@ export function usePairs(): PairManagementState {
    * 招待一覧を全て取得
    */
   const refreshInvitations = useCallback(async () => {
-    await Promise.all([
-      refreshSentInvitations(),
-      refreshReceivedInvitations(),
-    ])
+    await Promise.all([refreshSentInvitations(), refreshReceivedInvitations()])
   }, [refreshSentInvitations, refreshReceivedInvitations])
 
   /**
@@ -133,10 +130,10 @@ export function usePairs(): PairManagementState {
   const refreshPairs = useCallback(async () => {
     if (!isAuthenticated) return
 
-    setPairs(prev => {
-      const { error, ...rest } = prev
-      return { ...rest, isLoading: true }
-    })
+    setPairs((prev) => ({
+      ...prev,
+      isLoading: true,
+    }))
 
     try {
       const result = await getCurrentPair()
@@ -165,61 +162,70 @@ export function usePairs(): PairManagementState {
   /**
    * 招待作成
    */
-  const handleCreateInvitation = useCallback(async (data: CreateInvitationFormData) => {
-    const result = await createInvitation(data)
-    
-    if (result.success) {
-      // 送信した招待一覧を更新
-      await refreshSentInvitations()
-    }
-    
-    return result
-  }, [refreshSentInvitations])
+  const handleCreateInvitation = useCallback(
+    async (data: CreateInvitationFormData) => {
+      const result = await createInvitation(data)
+
+      if (result.success) {
+        // 送信した招待一覧を更新
+        await refreshSentInvitations()
+      }
+
+      return result
+    },
+    [refreshSentInvitations]
+  )
 
   /**
    * 招待への応答
    */
-  const handleRespondToInvitation = useCallback(async (data: InvitationResponseFormData) => {
-    const result = await respondToInvitation(data)
-    
-    if (result.success) {
-      // 受信した招待一覧とペア情報を更新
-      await Promise.all([
-        refreshReceivedInvitations(),
-        refreshPairs(),
-      ])
-    }
-    
-    return result
-  }, [refreshReceivedInvitations, refreshPairs])
+  const handleRespondToInvitation = useCallback(
+    async (data: InvitationResponseFormData) => {
+      const result = await respondToInvitation(data)
+
+      if (result.success) {
+        // 受信した招待一覧とペア情報を更新
+        await Promise.all([refreshReceivedInvitations(), refreshPairs()])
+      }
+
+      return result
+    },
+    [refreshReceivedInvitations, refreshPairs]
+  )
 
   /**
    * 招待キャンセル
    */
-  const handleCancelInvitation = useCallback(async (invitationId: string) => {
-    const result = await cancelInvitation(invitationId)
-    
-    if (result.success) {
-      // 送信した招待一覧を更新
-      await refreshSentInvitations()
-    }
-    
-    return result
-  }, [refreshSentInvitations])
+  const handleCancelInvitation = useCallback(
+    async (invitationId: string) => {
+      const result = await cancelInvitation(invitationId)
+
+      if (result.success) {
+        // 送信した招待一覧を更新
+        await refreshSentInvitations()
+      }
+
+      return result
+    },
+    [refreshSentInvitations]
+  )
 
   /**
    * ペア終了
    */
-  const handleTerminatePair = useCallback(async (pairId: string) => {
-    const result = await terminatePair(pairId)
-    
-    if (result.success) {
-      // ペア情報を更新
-      await refreshPairs()
-    }
-    
-    return result
-  }, [refreshPairs])
+  const handleTerminatePair = useCallback(
+    async (pairId: string) => {
+      const result = await terminatePair(pairId)
+
+      if (result.success) {
+        // ペア情報を更新
+        await refreshPairs()
+      }
+
+      return result
+    },
+    [refreshPairs]
+  )
 
   /**
    * 初期データ読み込み

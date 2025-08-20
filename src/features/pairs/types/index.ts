@@ -116,8 +116,12 @@ export interface PairManagementState {
   invitations: InvitationState
   pairs: PairState
   actions: {
-    createInvitation: (data: CreateInvitationFormData) => Promise<PairResponse<{ invitationId: string }>>
-    respondToInvitation: (data: InvitationResponseFormData) => Promise<PairResponse<{ pairId?: string }>>
+    createInvitation: (
+      data: CreateInvitationFormData
+    ) => Promise<PairResponse<{ invitationId: string }>>
+    respondToInvitation: (
+      data: InvitationResponseFormData
+    ) => Promise<PairResponse<{ pairId?: string }>>
     cancelInvitation: (invitationId: string) => Promise<PairResponse>
     terminatePair: (pairId: string) => Promise<PairResponse>
     refreshInvitations: () => Promise<void>

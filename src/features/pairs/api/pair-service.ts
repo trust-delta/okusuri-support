@@ -3,6 +3,7 @@
  * Supabaseペア管理機能のラッパー
  */
 
+import { getCurrentUser, getCurrentUserServer } from '@/features/auth/api/auth-service'
 import { createServerSupabaseClient, getSupabaseClient } from '@/lib/supabase'
 import type {
   CreateInvitationFormData,
@@ -13,7 +14,6 @@ import type {
   PairResponse,
   UserPair,
 } from '../types'
-import { getCurrentUser, getCurrentUserServer } from '@/features/auth/api/auth-service'
 
 /**
  * Supabaseエラーを統一エラー形式に変換
@@ -21,13 +21,15 @@ import { getCurrentUser, getCurrentUserServer } from '@/features/auth/api/auth-s
 function transformSupabaseError(error: unknown): PairError {
   if (typeof error === 'object' && error !== null && 'message' in error) {
     const supabaseError = error as { message: string; code?: string }
-    
+
     // よくあるエラーパターンの日本語化
     const errorMessages: Record<string, string> = {
       'duplicate key value violates unique constraint': 'この組み合わせは既に存在します',
       'violates check constraint "check_different_users"': '同じユーザーを招待することはできません',
-      'violates check constraint "check_single_patient_per_supporter"': 'この支援者は既にペアを組んでいます',
-      'violates check constraint "check_single_supporter_per_patient"': 'この患者は既にペアを組んでいます',
+      'violates check constraint "check_single_patient_per_supporter"':
+        'この支援者は既にペアを組んでいます',
+      'violates check constraint "check_single_supporter_per_patient"':
+        'この患者は既にペアを組んでいます',
       'invitation not found': '招待が見つかりません',
       'invitation expired': '招待の有効期限が切れています',
       'invitation already responded': 'この招待には既に応答済みです',
@@ -58,7 +60,9 @@ function generateInvitationToken(): string {
 /**
  * 招待作成
  */
-export async function createInvitation(formData: CreateInvitationFormData): Promise<PairResponse<{ invitationId: string }>> {
+export async function createInvitation(
+  formData: CreateInvitationFormData
+): Promise<PairResponse<{ invitationId: string }>> {
   try {
     const currentUser = await getCurrentUser()
     if (!currentUser) {
@@ -83,10 +87,10 @@ export async function createInvitation(formData: CreateInvitationFormData): Prom
     }
 
     // ロールの組み合わせチェック（患者-支援者の組み合わせのみ許可）
-    const isValidRoleCombination = 
+    const isValidRoleCombination =
       (currentUser.role === 'patient' && formData.targetRole === 'supporter') ||
       (currentUser.role === 'supporter' && formData.targetRole === 'patient')
-    
+
     if (!isValidRoleCombination) {
       return {
         success: false,
@@ -173,7 +177,7 @@ export async function getSentInvitations(): Promise<PairResponse<Invitation[]>> 
       }
     }
 
-    const transformedInvitations: Invitation[] = invitations.map(inv => ({
+    const transformedInvitations: Invitation[] = invitations.map((inv) => ({
       id: inv.id,
       inviterId: currentUser.id,
       inviterName: currentUser.displayName || currentUser.email,
@@ -244,11 +248,14 @@ export async function getReceivedInvitations(): Promise<PairResponse<Invitation[
       }
     }
 
-    const transformedInvitations: Invitation[] = invitations.map(inv => ({
+    const transformedInvitations: Invitation[] = invitations.map((inv) => ({
       id: inv.id,
       inviterId: inv.inviter_id,
-      inviterName: (inv.users as { display_name?: string; email?: string })?.display_name || (inv.users as { display_name?: string; email?: string })?.email || '不明',
-      inviterRole: (inv.users as { role?: string })?.role as 'patient' | 'supporter' || 'patient',
+      inviterName:
+        (inv.users as { display_name?: string; email?: string })?.display_name ||
+        (inv.users as { display_name?: string; email?: string })?.email ||
+        '不明',
+      inviterRole: ((inv.users as { role?: string })?.role as 'patient' | 'supporter') || 'patient',
       inviteeEmail: currentUser.email,
       targetRole: inv.role,
       token: inv.token,
@@ -273,7 +280,9 @@ export async function getReceivedInvitations(): Promise<PairResponse<Invitation[
 /**
  * 招待トークン検証と詳細取得
  */
-export async function getInvitationByToken(token: string): Promise<PairResponse<InvitationDetails>> {
+export async function getInvitationByToken(
+  token: string
+): Promise<PairResponse<InvitationDetails>> {
   try {
     const supabase = getSupabaseClient()
     const { data: invitation, error } = await supabase
@@ -314,8 +323,12 @@ export async function getInvitationByToken(token: string): Promise<PairResponse<
     const transformedInvitation: Invitation = {
       id: invitation.id,
       inviterId: invitation.inviter_id,
-      inviterName: (invitation.users as { display_name?: string; email?: string })?.display_name || (invitation.users as { display_name?: string; email?: string })?.email || '不明',
-      inviterRole: (invitation.users as { role?: string })?.role as 'patient' | 'supporter' || 'patient',
+      inviterName:
+        (invitation.users as { display_name?: string; email?: string })?.display_name ||
+        (invitation.users as { display_name?: string; email?: string })?.email ||
+        '不明',
+      inviterRole:
+        ((invitation.users as { role?: string })?.role as 'patient' | 'supporter') || 'patient',
       inviteeEmail: invitation.invitee_email,
       targetRole: invitation.role,
       token: invitation.token,
@@ -345,7 +358,9 @@ export async function getInvitationByToken(token: string): Promise<PairResponse<
 /**
  * 招待への応答（承認・拒否）
  */
-export async function respondToInvitation(formData: InvitationResponseFormData): Promise<PairResponse<{ pairId?: string }>> {
+export async function respondToInvitation(
+  formData: InvitationResponseFormData
+): Promise<PairResponse<{ pairId?: string }>> {
   try {
     const currentUser = await getCurrentUser()
     if (!currentUser) {
@@ -363,7 +378,10 @@ export async function respondToInvitation(formData: InvitationResponseFormData):
     if (!invitationResult.success || !invitationResult.data) {
       return {
         success: false,
-        error: invitationResult.error || { code: 'INVITATION_NOT_FOUND', message: '招待が見つかりません' },
+        error: invitationResult.error || {
+          code: 'INVITATION_NOT_FOUND',
+          message: '招待が見つかりません',
+        },
       }
     }
 
@@ -412,47 +430,47 @@ export async function respondToInvitation(formData: InvitationResponseFormData):
         success: true,
         data: {},
       }
-    } else {
-      // 承認の場合 - ペア作成
-      const patientId = invitation.targetRole === 'patient' ? currentUser.id : invitation.inviterId
-      const supporterId = invitation.targetRole === 'supporter' ? currentUser.id : invitation.inviterId
+    }
+    // 承認の場合 - ペア作成
+    const patientId = invitation.targetRole === 'patient' ? currentUser.id : invitation.inviterId
+    const supporterId =
+      invitation.targetRole === 'supporter' ? currentUser.id : invitation.inviterId
 
-      // トランザクションでペア作成と招待更新を実行
-      const { data: pair, error: pairError } = await supabase
-        .from('user_pairs')
-        .insert({
-          patient_id: patientId,
-          supporter_id: supporterId,
-          status: 'approved',
-        })
-        .select('id')
-        .single()
+    // トランザクションでペア作成と招待更新を実行
+    const { data: pair, error: pairError } = await supabase
+      .from('user_pairs')
+      .insert({
+        patient_id: patientId,
+        supporter_id: supporterId,
+        status: 'approved',
+      })
+      .select('id')
+      .single()
 
-      if (pairError) {
-        return {
-          success: false,
-          error: transformSupabaseError(pairError),
-        }
-      }
-
-      // 招待ステータス更新
-      const { error: invitationError } = await supabase
-        .from('invitations')
-        .update({
-          status: 'accepted',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('token', formData.token)
-
-      if (invitationError) {
-        // ペア作成は成功したが招待更新に失敗 (無視して続行)
-        console.warn('招待ステータス更新に失敗:', invitationError)
-      }
-
+    if (pairError) {
       return {
-        success: true,
-        data: { pairId: pair.id },
+        success: false,
+        error: transformSupabaseError(pairError),
       }
+    }
+
+    // 招待ステータス更新
+    const { error: invitationError } = await supabase
+      .from('invitations')
+      .update({
+        status: 'accepted',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('token', formData.token)
+
+    if (invitationError) {
+      // ペア作成は成功したが招待更新に失敗 (無視して続行)
+      console.warn('招待ステータス更新に失敗:', invitationError)
+    }
+
+    return {
+      success: true,
+      data: { pairId: pair.id },
     }
   } catch (error) {
     return {
@@ -552,8 +570,14 @@ export async function getCurrentPair(): Promise<PairResponse<UserPair>> {
       id: pair.id,
       patientId: pair.patient_id,
       supporterId: pair.supporter_id,
-      patientName: (pair.patient as { display_name?: string; email?: string })?.display_name || (pair.patient as { display_name?: string; email?: string })?.email || '不明',
-      supporterName: (pair.supporter as { display_name?: string; email?: string })?.display_name || (pair.supporter as { display_name?: string; email?: string })?.email || '不明',
+      patientName:
+        (pair.patient as { display_name?: string; email?: string })?.display_name ||
+        (pair.patient as { display_name?: string; email?: string })?.email ||
+        '不明',
+      supporterName:
+        (pair.supporter as { display_name?: string; email?: string })?.display_name ||
+        (pair.supporter as { display_name?: string; email?: string })?.email ||
+        '不明',
       status: pair.status,
       createdAt: pair.created_at,
       updatedAt: pair.updated_at,
@@ -664,8 +688,14 @@ export async function getCurrentPairServer(): Promise<PairResponse<UserPair>> {
       id: pair.id,
       patientId: pair.patient_id,
       supporterId: pair.supporter_id,
-      patientName: (pair.patient as { display_name?: string; email?: string })?.display_name || (pair.patient as { display_name?: string; email?: string })?.email || '不明',
-      supporterName: (pair.supporter as { display_name?: string; email?: string })?.display_name || (pair.supporter as { display_name?: string; email?: string })?.email || '不明',
+      patientName:
+        (pair.patient as { display_name?: string; email?: string })?.display_name ||
+        (pair.patient as { display_name?: string; email?: string })?.email ||
+        '不明',
+      supporterName:
+        (pair.supporter as { display_name?: string; email?: string })?.display_name ||
+        (pair.supporter as { display_name?: string; email?: string })?.email ||
+        '不明',
       status: pair.status,
       createdAt: pair.created_at,
       updatedAt: pair.updated_at,
