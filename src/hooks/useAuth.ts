@@ -152,7 +152,7 @@ export function useAuth(): UseAuthReturn {
         }
 
         return response
-      } catch (_error) {
+      } catch {
         const errorMessage = {
           type: 'UNKNOWN_ERROR' as const,
           message: 'サインアップ処理中にエラーが発生しました。',
@@ -187,7 +187,7 @@ export function useAuth(): UseAuthReturn {
         }
 
         return response
-      } catch (_error) {
+      } catch {
         const errorMessage = {
           type: 'UNKNOWN_ERROR' as const,
           message: 'サインイン処理中にエラーが発生しました。',
@@ -221,7 +221,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       return response
-    } catch (_error) {
+    } catch {
       const errorMessage = {
         type: 'UNKNOWN_ERROR' as const,
         message: 'サインアウト処理中にエラーが発生しました。',
@@ -252,7 +252,7 @@ export function useAuth(): UseAuthReturn {
         }
 
         return response
-      } catch (_error) {
+      } catch {
         const errorMessage = {
           type: 'UNKNOWN_ERROR' as const,
           message: 'パスワードリセット処理中にエラーが発生しました。',
@@ -285,7 +285,7 @@ export function useAuth(): UseAuthReturn {
         }
 
         return response
-      } catch (_error) {
+      } catch {
         const errorMessage = {
           type: 'UNKNOWN_ERROR' as const,
           message: 'パスワード更新処理中にエラーが発生しました。',
@@ -320,7 +320,7 @@ export function useAuth(): UseAuthReturn {
         }
 
         return response
-      } catch (_error) {
+      } catch {
         const errorMessage = {
           type: 'UNKNOWN_ERROR' as const,
           message: 'プロファイル更新処理中にエラーが発生しました。',
@@ -355,7 +355,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       return response
-    } catch (_error) {
+    } catch {
       const errorMessage = {
         type: 'UNKNOWN_ERROR' as const,
         message: 'セッション更新処理中にエラーが発生しました。',

@@ -44,12 +44,12 @@ export function useEmailConfirmation(
    * トークン検証実行
    */
   const verifyToken = useCallback(
-    async (token: string, email: string): Promise<boolean> => {
+    async (token: string): Promise<boolean> => {
       setIsVerifying(true)
       setError(null)
 
       try {
-        const result = await verifyEmailConfirmation(token, email)
+        const result = await verifyEmailConfirmation(token)
 
         if (result.success && result.userId) {
           setIsConfirmed(true)

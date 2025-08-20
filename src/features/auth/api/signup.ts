@@ -180,10 +180,7 @@ export async function resendConfirmationEmail(email: string): Promise<{
 /**
  * メール確認トークンの検証
  */
-export async function verifyEmailConfirmation(
-  token: string,
-  _email: string
-): Promise<{
+export async function verifyEmailConfirmation(token: string): Promise<{
   success: boolean
   userId?: string
   error?: string
