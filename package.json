@@ -36,7 +36,7 @@
     "check": "biome check src app",
     "check:fix": "biome check --write src app",
     "check:unused": "ts-prune --project tsconfig.json --ignore 'src/index.ts|__tests__|test|vitest'",
-    "check:deps": "madge --circular --extensions ts,tsx src app",
+    "check:deps": "madge --circular --extensions ts,tsx src",
     "check:deps:graph": "madge --extensions ts,tsx --image graph.svg src app",
     "check:all": "npm run check && npm run lint && npm run format:check && npm run check:unused && npm run check:deps && npm run build && npm run test",
     "cleanup:processes": "bash ./scripts/cleanup-test-processes.sh",
