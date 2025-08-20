@@ -10,6 +10,13 @@ export {
   getErrorField,
 } from './useSignUp'
 export {
+  useSignIn,
+  isSignInSuccess,
+  needsEmailConfirmation as needsEmailConfirmationSignIn,
+  getRedirectUrl,
+  getSignInErrorField,
+} from './useSignIn'
+export {
   useEmailConfirmation,
   useEmailConfirmationPage,
   extractTokenFromUrl,
