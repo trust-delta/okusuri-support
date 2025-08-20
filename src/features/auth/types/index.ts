@@ -78,3 +78,41 @@ export interface EmailConfirmationState {
   isConfirmed: boolean
   isLoading: boolean
 }
+
+/**
+ * プロファイル更新パラメータ
+ */
+export interface ProfileUpdateParams {
+  displayName?: string
+  phoneNumber?: string
+}
+
+/**
+ * プロファイル取得結果
+ */
+export interface ProfileResult {
+  id: string
+  email: string
+  role: UserRole
+  displayName?: string | null
+  phoneNumber?: string | null
+  emailConfirmed: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * プロファイル更新結果
+ */
+export type ProfileUpdateResult = ProfileResult
+
+/**
+ * useProfile hookの戻り値型
+ */
+export interface UseProfileReturn {
+  profile: ProfileResult | null
+  isLoading: boolean
+  error: AuthError | null
+  updateProfile: (params: ProfileUpdateParams) => Promise<AuthResponse<ProfileUpdateResult>>
+  refreshProfile: () => Promise<void>
+}

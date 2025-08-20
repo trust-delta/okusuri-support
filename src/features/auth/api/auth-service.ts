@@ -16,7 +16,7 @@ import type {
 /**
  * Supabaseエラーを統一エラー形式に変換
  */
-function transformSupabaseError(error: unknown): AuthError {
+export function transformSupabaseError(error: unknown): AuthError {
   if (typeof error === 'object' && error !== null && 'message' in error) {
     const supabaseError = error as { message: string; status?: number }
 

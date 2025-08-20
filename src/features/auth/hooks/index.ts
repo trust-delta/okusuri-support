@@ -21,3 +21,8 @@ export {
   useEmailConfirmationPage,
   extractTokenFromUrl,
 } from './useEmailConfirmation'
+export {
+  useProfile,
+  isProfileLoaded,
+  hasProfileError,
+} from './useProfile'
