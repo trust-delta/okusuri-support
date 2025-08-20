@@ -39,6 +39,8 @@
     "check:deps": "madge --circular --extensions ts,tsx src",
     "check:deps:graph": "madge --extensions ts,tsx --image graph.svg src app",
     "check:all": "npm run check && npm run lint && npm run format:check && npm run check:unused && npm run check:deps && npm run build && npm run test",
+    "db:types": "supabase gen types typescript --local > src/lib/supabase/database.generated.ts",
+    "db:types:remote": "supabase gen types typescript > src/lib/supabase/database.generated.ts",
     "cleanup:processes": "bash ./scripts/cleanup-test-processes.sh",
     "test:safe": "npm test && npm run cleanup:processes",
     "test:e2e": "playwright test",
