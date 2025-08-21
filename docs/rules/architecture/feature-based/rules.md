@@ -100,11 +100,23 @@ export const mainFunction (input: unknown) {
 
 ### ユニットテストの配置
 
+ディレクトリ内に**テストが 1 つの場合**
+
 ```
 create-todo
 ├── create-todo.ts
-├── create-todo.test.ts    # ユニットテストは同じディレクトリに配置
-└── index.ts
+└── create-todo.test.ts    # 同じディレクトリに配置
+
+```
+
+ディレクトリ内に**テストが 2 つ以上の場合**
+
+```
+create-todo
+├── __tests__                     # __test__ディレクトリに配置
+|  ├── create-todo-list.test.ts
+|  └── create-todo-.test.ts
+└── create-todo.ts
 ```
 
 ---

@@ -4,15 +4,22 @@
 
 import { getCurrentUser } from '@/features/auth/api/auth-service'
 import { getSupabaseClient } from '@/lib/supabase'
+import {
+  type InvitationCode,
+  generateInvitationCode,
+  validateInvitationCode,
+} from '@/lib/utils/code-generator'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createInvitation,
+  findInvitationByCode,
   getCurrentPair,
   getReceivedInvitations,
   getSentInvitations,
+  respondToInvitation,
   terminatePair,
 } from '../api/pair-service'
-import type { CreateInvitationFormData } from '../types'
+import type { CreateInvitationFormData, RespondToInvitationParams } from '../types'
 
 // 依存関係のモック
 vi.mock('@/features/auth/api/auth-service', () => ({
@@ -21,6 +28,11 @@ vi.mock('@/features/auth/api/auth-service', () => ({
 
 vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: vi.fn(),
+}))
+
+vi.mock('@/lib/utils/code-generator', () => ({
+  generateInvitationCode: vi.fn(),
+  validateInvitationCode: vi.fn(),
 }))
 
 // モックされたSupabaseクライアント
@@ -133,7 +145,7 @@ describe('Pair Service API', () => {
   })
 
   describe('createInvitation', () => {
-    it('有効な招待データで招待を作成できる', async () => {
+    it('有効な招待データで8桁コードの招待を作成できる', async () => {
       // Arrange
       const mockUser = {
         id: 'user-123',
@@ -146,8 +158,14 @@ describe('Pair Service API', () => {
         targetRole: 'supporter',
         message: 'よろしくお願いします',
       }
+      const mockCode = 'ABC12345' as InvitationCode
       const mockInvitation = { id: 'invitation-123' }
       ;(getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser)
+      ;(generateInvitationCode as ReturnType<typeof vi.fn>).mockResolvedValue({
+        code: mockCode,
+        attempts: 1,
+        generatedAt: new Date(),
+      })
       mockSupabase.from.mockReturnValue(mockInvitationsTable)
       mockInvitationsTable.single.mockResolvedValue({
         data: mockInvitation,
@@ -160,7 +178,17 @@ describe('Pair Service API', () => {
       // Assert
       expect(result.success).toBe(true)
       expect(result.data?.invitationId).toBe('invitation-123')
+      expect(result.data?.invitationCode).toBe(mockCode)
+      expect(generateInvitationCode).toHaveBeenCalledWith(expect.any(Function))
       expect(mockSupabase.from).toHaveBeenCalledWith('invitations')
+      expect(mockInvitationsTable.insert).toHaveBeenCalledWith({
+        inviter_id: 'user-123',
+        invitee_email: 'supporter@example.com',
+        target_role: 'supporter',
+        invitation_code: mockCode,
+        expires_at: expect.any(String),
+        message: 'よろしくお願いします',
+      })
     })
 
     it('自分自身を招待しようとした場合はエラーを返す', async () => {
@@ -205,6 +233,208 @@ describe('Pair Service API', () => {
       // Assert
       expect(result.success).toBe(false)
       expect(result.error?.code).toBe('INVALID_ROLE_COMBINATION')
+    })
+
+    it('8桁コード生成に失敗した場合はエラーを返す', async () => {
+      // Arrange
+      const mockUser = {
+        id: 'user-123',
+        email: 'patient@example.com',
+        role: 'patient' as const,
+        displayName: '患者テスト',
+      }
+      const formData: CreateInvitationFormData = {
+        inviteeEmail: 'supporter@example.com',
+        targetRole: 'supporter',
+      }
+      ;(getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser)
+      ;(generateInvitationCode as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('招待コード生成に失敗しました')
+      )
+
+      // Act
+      const result = await createInvitation(formData)
+
+      // Assert
+      expect(result.success).toBe(false)
+      expect(result.error?.code).toBe('GENERATION_FAILED')
+    })
+  })
+
+  describe('findInvitationByCode', () => {
+    it('有効な8桁コードで招待詳細を取得できる', async () => {
+      // Arrange
+      const mockCode = 'ABC12345' as InvitationCode
+      const mockInvitation = {
+        id: 'invitation-123',
+        inviter_id: 'patient-123',
+        invitee_email: 'supporter@example.com',
+        target_role: 'supporter',
+        invitation_code: mockCode,
+        status: 'pending',
+        expires_at: '2024-12-31T23:59:59Z',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        message: 'よろしくお願いします',
+        users: { display_name: '患者テスト', email: 'patient@example.com', role: 'patient' },
+      }
+      ;(validateInvitationCode as ReturnType<typeof vi.fn>).mockReturnValue(true)
+      mockSupabase.from.mockReturnValue(mockInvitationsTable)
+      mockInvitationsTable.single.mockResolvedValue({
+        data: mockInvitation,
+        error: null,
+      })
+
+      // Act
+      const result = await findInvitationByCode({ code: mockCode })
+
+      // Assert
+      expect(result.success).toBe(true)
+      expect(result.data?.invitation.invitationCode).toBe(mockCode)
+      expect(result.data?.isValid).toBeDefined()
+      expect(mockSupabase.from).toHaveBeenCalledWith('invitations')
+      expect(mockInvitationsTable.eq).toHaveBeenCalledWith('invitation_code', mockCode)
+    })
+
+    it('無効な形式のコードの場合はエラーを返す', async () => {
+      // Arrange
+      const invalidCode = 'invalid' as InvitationCode
+      ;(validateInvitationCode as ReturnType<typeof vi.fn>).mockReturnValue(false)
+
+      // Act
+      const result = await findInvitationByCode({ code: invalidCode })
+
+      // Assert
+      expect(result.success).toBe(false)
+      expect(result.error?.code).toBe('INVALID_CODE')
+    })
+
+    it('存在しないコードの場合はエラーを返す', async () => {
+      // Arrange
+      const mockCode = 'ABC12345' as InvitationCode
+      ;(validateInvitationCode as ReturnType<typeof vi.fn>).mockReturnValue(true)
+      mockSupabase.from.mockReturnValue(mockInvitationsTable)
+      mockInvitationsTable.single.mockResolvedValue({
+        data: null,
+        error: { code: 'PGRST116' },
+      })
+
+      // Act
+      const result = await findInvitationByCode({ code: mockCode })
+
+      // Assert
+      expect(result.success).toBe(false)
+      expect(result.error?.code).toBe('INVITATION_NOT_FOUND')
+    })
+  })
+
+  describe('respondToInvitation', () => {
+    it('有効な8桁コードで招待を承認できる', async () => {
+      // Arrange
+      const mockUser = {
+        id: 'supporter-456',
+        email: 'supporter@example.com',
+        role: 'supporter' as const,
+        displayName: '支援者テスト',
+      }
+      const mockCode = 'ABC12345' as InvitationCode
+      const params: RespondToInvitationParams = {
+        invitationCode: mockCode,
+        action: 'accept',
+        inviteeEmail: 'supporter@example.com',
+      }
+      const mockPair = { id: 'pair-123' }
+      ;(getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser)
+      ;(validateInvitationCode as ReturnType<typeof vi.fn>).mockReturnValue(true)
+
+      // モックを単純化 - invitationsテーブルとuser_pairsテーブル両方に対応
+      let callCount = 0
+      mockSupabase.from.mockImplementation((table) => {
+        if (table === 'invitations') {
+          callCount++
+          if (callCount === 1) {
+            // findInvitationByCode用のモック
+            return {
+              ...mockInvitationsTable,
+              single: vi.fn().mockResolvedValue({
+                data: {
+                  id: 'invitation-123',
+                  inviter_id: 'patient-123',
+                  invitee_email: 'supporter@example.com',
+                  target_role: 'supporter',
+                  invitation_code: mockCode,
+                  status: 'pending',
+                  expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24時間後
+                  created_at: '2024-01-01T00:00:00Z',
+                  updated_at: '2024-01-01T00:00:00Z',
+                  message: null,
+                  users: {
+                    display_name: '患者テスト',
+                    email: 'patient@example.com',
+                    role: 'patient',
+                  },
+                },
+                error: null,
+              }),
+            }
+          }
+          // ステータス更新用のモック
+          return {
+            ...mockInvitationsTable,
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            }),
+          }
+        }
+        if (table === 'user_pairs') {
+          return {
+            ...mockUserPairsTable,
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: mockPair, error: null }),
+              }),
+            }),
+          }
+        }
+        return mockInvitationsTable
+      })
+
+      // Act
+      const result = await respondToInvitation(params)
+
+      // Debug: エラーの場合はログ出力
+      if (!result.success) {
+        console.log('respondToInvitation error:', result.error)
+      }
+
+      // Assert
+      expect(result.success).toBe(true)
+      expect(result.data?.pairId).toBe('pair-123')
+    })
+
+    it('無効なコードで応答しようとした場合はエラーを返す', async () => {
+      // Arrange
+      const mockUser = {
+        id: 'supporter-456',
+        email: 'supporter@example.com',
+        role: 'supporter' as const,
+        displayName: '支援者テスト',
+      }
+      const invalidCode = 'invalid' as InvitationCode
+      const params: RespondToInvitationParams = {
+        invitationCode: invalidCode,
+        action: 'accept',
+        inviteeEmail: 'supporter@example.com',
+      }
+      ;(getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser)
+      ;(validateInvitationCode as ReturnType<typeof vi.fn>).mockReturnValue(false)
+
+      // Act
+      const result = await respondToInvitation(params)
+
+      // Assert
+      expect(result.success).toBe(false)
+      expect(result.error?.code).toBe('INVALID_CODE')
     })
   })
 

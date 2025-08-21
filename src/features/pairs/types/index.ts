@@ -3,6 +3,26 @@
  */
 
 import type { UserRole } from '@/lib/supabase/types'
+import type { InvitationCode } from '@/lib/utils/code-generator'
+
+// 新しい招待システムの型定義をエクスポート
+export type {
+  CreateInvitationParams,
+  InvitationRecord,
+  InvitationDetails as NewInvitationDetails,
+  FindInvitationParams,
+  RespondToInvitationParams,
+  CreateInvitationResult,
+  InvitationResponseResult,
+  InvitationError,
+  InvitationResponse,
+  InvitationStats,
+  InvitationFilter,
+  InvitationListResult,
+} from './invitation'
+
+// 8桁コード型もエクスポート
+export type { InvitationCode } from '@/lib/utils/code-generator'
 
 /**
  * 招待ステータス
@@ -29,6 +49,8 @@ export interface Invitation {
   expiresAt: string
   createdAt: string
   updatedAt: string
+  // 8桁コード対応
+  invitationCode?: InvitationCode
 }
 
 /**

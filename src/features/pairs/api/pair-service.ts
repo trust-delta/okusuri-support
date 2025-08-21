@@ -5,13 +5,20 @@
 
 import { getCurrentUser, getCurrentUserServer } from '@/features/auth/api/auth-service'
 import { createServerSupabaseClient, getSupabaseClient } from '@/lib/supabase'
+import {
+  type InvitationCode,
+  generateInvitationCode,
+  validateInvitationCode,
+} from '@/lib/utils/code-generator'
 import type {
   CreateInvitationFormData,
+  FindInvitationParams,
   Invitation,
   InvitationDetails,
   InvitationResponseFormData,
   PairError,
   PairResponse,
+  RespondToInvitationParams,
   UserPair,
 } from '../types'
 
@@ -51,18 +58,25 @@ function transformSupabaseError(error: unknown): PairError {
 }
 
 /**
- * ユニークな招待トークン生成
+ * 重複チェック関数（DB内でのコード重複確認）
  */
-function generateInvitationToken(): string {
-  return `invitation_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+async function checkCodeDuplicate(code: string): Promise<boolean> {
+  const supabase = getSupabaseClient()
+  const { data } = await supabase
+    .from('invitations')
+    .select('id')
+    .eq('invitation_code', code)
+    .single()
+
+  return data !== null
 }
 
 /**
- * 招待作成
+ * 招待作成（8桁コード対応）
  */
 export async function createInvitation(
   formData: CreateInvitationFormData
-): Promise<PairResponse<{ invitationId: string }>> {
+): Promise<PairResponse<{ invitationId: string; invitationCode: InvitationCode }>> {
   try {
     const currentUser = await getCurrentUser()
     if (!currentUser) {
@@ -101,8 +115,22 @@ export async function createInvitation(
       }
     }
 
+    // セキュアな8桁コード生成
+    let codeResult: { code: InvitationCode; attempts: number; generatedAt: Date }
+    try {
+      codeResult = await generateInvitationCode(checkCodeDuplicate)
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'GENERATION_FAILED',
+          message: '招待コードの生成に失敗しました',
+          details: error instanceof Error ? error.message : String(error),
+        },
+      }
+    }
+
     const supabase = getSupabaseClient()
-    const token = generateInvitationToken()
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7日後
 
     const { data: invitation, error } = await supabase
@@ -110,8 +138,8 @@ export async function createInvitation(
       .insert({
         inviter_id: currentUser.id,
         invitee_email: formData.inviteeEmail,
-        role: formData.targetRole,
-        token,
+        target_role: formData.targetRole,
+        invitation_code: codeResult.code,
         expires_at: expiresAt.toISOString(),
         message: formData.message || null,
       })
@@ -127,7 +155,10 @@ export async function createInvitation(
 
     return {
       success: true,
-      data: { invitationId: invitation.id },
+      data: {
+        invitationId: invitation.id,
+        invitationCode: codeResult.code,
+      },
     }
   } catch (error) {
     return {
@@ -356,9 +387,261 @@ export async function getInvitationByToken(
 }
 
 /**
- * 招待への応答（承認・拒否）
+ * 8桁コードで招待詳細取得
+ */
+export async function findInvitationByCode(
+  params: FindInvitationParams
+): Promise<PairResponse<InvitationDetails>> {
+  try {
+    // コード形式の検証
+    if (!validateInvitationCode(params.code)) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_CODE',
+          message: '無効な招待コード形式です',
+        },
+      }
+    }
+
+    const supabase = getSupabaseClient()
+    const { data: invitation, error } = await supabase
+      .from('invitations')
+      .select(`
+        id,
+        inviter_id,
+        invitee_email,
+        target_role,
+        invitation_code,
+        status,
+        expires_at,
+        created_at,
+        updated_at,
+        message,
+        users!inviter_id (
+          display_name,
+          email,
+          role
+        )
+      `)
+      .eq('invitation_code', params.code)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return {
+          success: false,
+          error: {
+            code: 'INVITATION_NOT_FOUND',
+            message: '招待が見つかりません',
+          },
+        }
+      }
+      return {
+        success: false,
+        error: transformSupabaseError(error),
+      }
+    }
+
+    // 追加検証（メールアドレスが一致する場合）
+    if (params.inviteeEmail && invitation.invitee_email !== params.inviteeEmail) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'この招待にアクセスする権限がありません',
+        },
+      }
+    }
+
+    const now = new Date()
+    const expiresAt = new Date(invitation.expires_at)
+    const isExpired = now > expiresAt
+    const alreadyResponded = invitation.status !== 'pending'
+    const isValid = !isExpired && !alreadyResponded
+
+    const transformedInvitation: Invitation = {
+      id: invitation.id,
+      inviterId: invitation.inviter_id,
+      inviterName:
+        (invitation.users as { display_name?: string; email?: string })?.display_name ||
+        (invitation.users as { display_name?: string; email?: string })?.email ||
+        '不明',
+      inviterRole:
+        ((invitation.users as { role?: string })?.role as 'patient' | 'supporter') || 'patient',
+      inviteeEmail: invitation.invitee_email,
+      targetRole: invitation.target_role,
+      token: invitation.invitation_code, // 互換性のため
+      status: invitation.status,
+      expiresAt: invitation.expires_at,
+      createdAt: invitation.created_at,
+      updatedAt: invitation.updated_at,
+      // 8桁コード対応
+      invitationCode: invitation.invitation_code as InvitationCode,
+    }
+
+    return {
+      success: true,
+      data: {
+        invitation: transformedInvitation,
+        isValid,
+        isExpired,
+        alreadyResponded,
+      },
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: transformSupabaseError(error),
+    }
+  }
+}
+
+/**
+ * 8桁コードで招待に応答（承認・拒否）
  */
 export async function respondToInvitation(
+  params: RespondToInvitationParams
+): Promise<PairResponse<{ pairId?: string }>> {
+  try {
+    const currentUser = await getCurrentUser()
+    if (!currentUser) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'ログインが必要です',
+        },
+      }
+    }
+
+    // コード形式の検証
+    if (!validateInvitationCode(params.invitationCode)) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_CODE',
+          message: '無効な招待コード形式です',
+        },
+      }
+    }
+
+    // 招待詳細取得と検証
+    const invitationResult = await findInvitationByCode({
+      code: params.invitationCode,
+      inviteeEmail: params.inviteeEmail,
+    })
+
+    if (!invitationResult.success || !invitationResult.data) {
+      return {
+        success: false,
+        error: invitationResult.error || {
+          code: 'INVITATION_NOT_FOUND',
+          message: '招待が見つかりません',
+        },
+      }
+    }
+
+    const { invitation, isValid } = invitationResult.data
+    if (!isValid) {
+      return {
+        success: false,
+        error: {
+          code: 'INVITATION_INVALID',
+          message: 'この招待は無効です',
+        },
+      }
+    }
+
+    // 招待対象ユーザーのメールアドレス確認
+    if (currentUser.email !== invitation.inviteeEmail) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED_RESPONSE',
+          message: 'この招待に応答する権限がありません',
+        },
+      }
+    }
+
+    const supabase = getSupabaseClient()
+
+    if (params.action === 'reject') {
+      // 拒否の場合
+      const { error } = await supabase
+        .from('invitations')
+        .update({
+          status: 'rejected',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('invitation_code', params.invitationCode)
+
+      if (error) {
+        return {
+          success: false,
+          error: transformSupabaseError(error),
+        }
+      }
+
+      return {
+        success: true,
+        data: {},
+      }
+    }
+
+    // 承認の場合 - ペア作成
+    const patientId = invitation.targetRole === 'patient' ? currentUser.id : invitation.inviterId
+    const supporterId =
+      invitation.targetRole === 'supporter' ? currentUser.id : invitation.inviterId
+
+    // トランザクションでペア作成と招待更新を実行
+    const { data: pair, error: pairError } = await supabase
+      .from('user_pairs')
+      .insert({
+        patient_id: patientId,
+        supporter_id: supporterId,
+        status: 'approved',
+      })
+      .select('id')
+      .single()
+
+    if (pairError) {
+      return {
+        success: false,
+        error: transformSupabaseError(pairError),
+      }
+    }
+
+    // 招待ステータス更新
+    const { error: invitationError } = await supabase
+      .from('invitations')
+      .update({
+        status: 'accepted',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('invitation_code', params.invitationCode)
+
+    if (invitationError) {
+      // ペア作成は成功したが招待更新に失敗 (無視して続行)
+      console.warn('招待ステータス更新に失敗:', invitationError)
+    }
+
+    return {
+      success: true,
+      data: { pairId: pair.id },
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: transformSupabaseError(error),
+    }
+  }
+}
+
+/**
+ * 招待への応答（承認・拒否）- レガシートークンベース関数
+ */
+export async function respondToInvitationByToken(
   formData: InvitationResponseFormData
 ): Promise<PairResponse<{ pairId?: string }>> {
   try {
