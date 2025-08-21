@@ -3,7 +3,7 @@
  * Supabase認証機能のラッパー
  */
 
-import { createServerSupabaseClient, getSupabaseClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type {
   AuthError,
   AuthResponse,
@@ -261,38 +261,4 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 }
 
-/**
- * サーバーサイド用：現在のユーザー情報取得
- */
-export async function getCurrentUserServer(): Promise<AuthUser | null> {
-  try {
-    const supabase = await createServerSupabaseClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return null
-
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (error || !userData) {
-      return null
-    }
-
-    return {
-      id: userData.id,
-      email: userData.email,
-      role: userData.role,
-      displayName: userData.display_name,
-      phoneNumber: userData.phone_number,
-      emailConfirmed: user.email_confirmed_at != null,
-    }
-  } catch (error) {
-    console.error('サーバーサイドユーザー取得エラー:', error)
-    return null
-  }
-}
+// サーバーサイド専用関数は auth-server-service.ts に移動

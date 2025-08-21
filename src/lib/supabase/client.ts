@@ -4,8 +4,7 @@
  * SSR/SSG対応の強化とセッション管理
  */
 
-import { createBrowserClient, createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createBrowserClient } from '@supabase/ssr'
 import { supabaseConfig } from './config'
 
 /**
@@ -17,32 +16,7 @@ export const createClient = () => {
   return createBrowserClient(supabaseConfig.url, supabaseConfig.anonKey)
 }
 
-/**
- * サーバー用Supabaseクライアント
- * Server Components、Server Actions、Route Handlersで使用
- */
-export const createServerSupabaseClient = async () => {
-  const cookieStore = await cookies()
-
-  return createServerClient(supabaseConfig.url, supabaseConfig.anonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll()
-      },
-      setAll(cookiesToSet) {
-        try {
-          for (const { name, value, options } of cookiesToSet) {
-            cookieStore.set({ name, value, ...options })
-          }
-        } catch (error) {
-          // SSR時にクッキー設定エラーが発生する場合があるため、
-          // ログ出力のみ行い処理を続行
-          console.warn('Failed to set cookies:', error)
-        }
-      },
-    },
-  })
-}
+// サーバー用Supabaseクライアントは server.ts で定義
 
 /**
  * グローバルクライアントインスタンス（シングルトン）
@@ -66,10 +40,11 @@ export const getSupabaseClient = () => {
  * コンテキストに応じた適切なクライアントを取得
  * SSR/CSRの判定を自動で行う
  */
-export const getContextualClient = async () => {
+export const getContextualClient = () => {
   if (typeof window === 'undefined') {
-    // サーバーサイドの場合
-    return await createServerSupabaseClient()
+    throw new Error(
+      'getContextualClient should not be used on server side. Use createServerSupabaseClient from server.ts instead.'
+    )
   }
   // クライアントサイドの場合
   return getSupabaseClient()

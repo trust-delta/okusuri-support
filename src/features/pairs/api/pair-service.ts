@@ -3,8 +3,8 @@
  * Supabaseペア管理機能のラッパー
  */
 
-import { getCurrentUser, getCurrentUserServer } from '@/features/auth/api/auth-service'
-import { createServerSupabaseClient, getSupabaseClient } from '@/lib/supabase'
+import { getCurrentUser } from '@/features/auth/api/auth-service'
+import { getSupabaseClient } from '@/lib/supabase'
 import {
   type InvitationCode,
   generateInvitationCode,
@@ -934,80 +934,4 @@ export async function terminatePair(pairId: string): Promise<PairResponse> {
   }
 }
 
-/**
- * サーバーサイド用：現在のペア情報取得
- */
-export async function getCurrentPairServer(): Promise<PairResponse<UserPair>> {
-  try {
-    const currentUser = await getCurrentUserServer()
-    if (!currentUser) {
-      return {
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'ログインが必要です',
-        },
-      }
-    }
-
-    const supabase = await createServerSupabaseClient()
-    const { data: pair, error } = await supabase
-      .from('user_pairs')
-      .select(
-        `
-        id,
-        patient_id,
-        supporter_id,
-        status,
-        created_at,
-        updated_at,
-        patient:users!patient_id (display_name, email),
-        supporter:users!supporter_id (display_name, email)
-      `
-      )
-      .or(`patient_id.eq.${currentUser.id},supporter_id.eq.${currentUser.id}`)
-      .eq('status', 'approved')
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // ペアが見つからない場合
-        return {
-          success: true,
-          data: undefined,
-        }
-      }
-      return {
-        success: false,
-        error: transformSupabaseError(error),
-      }
-    }
-
-    const transformedPair: UserPair = {
-      id: pair.id,
-      patientId: pair.patient_id,
-      supporterId: pair.supporter_id,
-      patientName:
-        (pair.patient as { display_name?: string; email?: string })?.display_name ||
-        (pair.patient as { display_name?: string; email?: string })?.email ||
-        '不明',
-      supporterName:
-        (pair.supporter as { display_name?: string; email?: string })?.display_name ||
-        (pair.supporter as { display_name?: string; email?: string })?.email ||
-        '不明',
-      status: pair.status,
-      createdAt: pair.created_at,
-      updatedAt: pair.updated_at,
-    }
-
-    return {
-      success: true,
-      data: transformedPair,
-    }
-  } catch (error) {
-    return {
-      success: false,
-      error: transformSupabaseError(error),
-    }
-  }
-}
+// サーバーサイド専用関数は pair-server-service.ts に移動
