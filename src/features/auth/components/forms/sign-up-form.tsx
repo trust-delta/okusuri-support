@@ -4,10 +4,10 @@
 
 'use client'
 
+import type { UserRole } from '@/lib/supabase/types'
 import { useState } from 'react'
 import { signUp } from '../../api/auth-service'
-import type { SignUpFormData, AuthError } from '../../types'
-import type { UserRole } from '@/lib/supabase/types'
+import type { AuthError, SignUpFormData } from '../../types'
 
 interface SignUpFormProps {
   onSuccess?: (data: { needsConfirmation: boolean }) => void
@@ -32,22 +32,22 @@ export function SignUpForm({ onSuccess, onError, className }: SignUpFormProps) {
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // バリデーション
     const newErrors: Partial<Record<keyof SignUpFormData, string>> = {}
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'メールアドレスを入力してください'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = '正しいメールアドレスを入力してください'
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'パスワードを入力してください'
     } else if (formData.password.length < 6) {
       newErrors.password = 'パスワードは6文字以上で入力してください'
     }
-    
+
     if (!formData.displayName?.trim()) {
       newErrors.displayName = '表示名を入力してください'
     }
@@ -62,7 +62,7 @@ export function SignUpForm({ onSuccess, onError, className }: SignUpFormProps) {
 
     try {
       const result = await signUp(formData)
-      
+
       if (result.success && result.data) {
         onSuccess?.(result.data)
       } else if (result.error) {
@@ -85,7 +85,7 @@ export function SignUpForm({ onSuccess, onError, className }: SignUpFormProps) {
    * 入力値更新
    */
   const updateFormData = (field: keyof SignUpFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // エラーをクリア
     if (errors[field]) {
       const newErrors = { ...errors }
@@ -130,9 +130,7 @@ export function SignUpForm({ onSuccess, onError, className }: SignUpFormProps) {
             placeholder="山田太郎"
             disabled={isLoading}
           />
-          {errors.displayName && (
-            <p className="mt-1 text-sm text-red-500">{errors.displayName}</p>
-          )}
+          {errors.displayName && <p className="mt-1 text-sm text-red-500">{errors.displayName}</p>}
         </div>
 
         {/* メールアドレス */}
@@ -151,9 +149,7 @@ export function SignUpForm({ onSuccess, onError, className }: SignUpFormProps) {
             placeholder="example@email.com"
             disabled={isLoading}
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-          )}
+          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </div>
 
         {/* パスワード */}
@@ -172,9 +168,7 @@ export function SignUpForm({ onSuccess, onError, className }: SignUpFormProps) {
             placeholder="6文字以上"
             disabled={isLoading}
           />
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-500">{errors.password}</p>
-          )}
+          {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
         </div>
 
         {/* 電話番号（任意） */}
@@ -206,11 +200,21 @@ export function SignUpForm({ onSuccess, onError, className }: SignUpFormProps) {
       {/* 利用規約への同意（実装時に追加） */}
       <div className="mt-4 text-center text-sm text-gray-600">
         アカウントを作成することで、
-        <a href="/terms" className="text-blue-600 hover:underline" rel="noopener noreferrer" target="_blank">
+        <a
+          href="/terms"
+          className="text-blue-600 hover:underline"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           利用規約
         </a>
         と
-        <a href="/privacy" className="text-blue-600 hover:underline" rel="noopener noreferrer" target="_blank">
+        <a
+          href="/privacy"
+          className="text-blue-600 hover:underline"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           プライバシーポリシー
         </a>
         に同意したものとみなします。

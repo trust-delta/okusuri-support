@@ -1,9 +1,16 @@
 'use client'
 
-import React, { useState } from 'react'
-import { CheckIcon, ClockIcon } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog/dialog'
+import { CheckIcon, ClockIcon } from '@/components/ui/icons'
+import React, { useState } from 'react'
 
 interface PatientActionsProps {
   patientId: string
@@ -43,14 +50,14 @@ export default function PatientActions({ patientId }: PatientActionsProps) {
 
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" data-testid="add-medication">詳細表示</Button>
+          <Button variant="outline" data-testid="add-medication">
+            詳細表示
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>患者詳細情報</DialogTitle>
-            <DialogDescription>
-              患者の詳細な医療情報と服薬履歴を確認できます。
-            </DialogDescription>
+            <DialogDescription>患者の詳細な医療情報と服薬履歴を確認できます。</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <p>患者ID: {patientId}</p>

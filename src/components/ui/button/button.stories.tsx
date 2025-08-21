@@ -21,7 +21,8 @@ const meta = {
     },
     asChild: {
       control: { type: 'boolean' },
-      description: 'Change the default rendered element for the one passed as a child, merging their props and behavior.',
+      description:
+        'Change the default rendered element for the one passed as a child, merging their props and behavior.',
     },
     disabled: {
       control: { type: 'boolean' },

@@ -10,7 +10,7 @@ import type { CreateInvitationParams, FindInvitationParams } from '../types/invi
 // モック設定
 vi.mock('@/features/auth/api/auth-service')
 vi.mock('@/lib/supabase')
-vi.mock('@/lib/utils/code-generator')
+vi.mock('@/utils/code-generator')
 
 // テスト用のモックデータ
 const mockUser = {
@@ -72,9 +72,7 @@ beforeEach(async () => {
   // モックの実装設定
   const { getCurrentUser } = await import('@/features/auth/api/auth-service')
   const { getSupabaseClient } = await import('@/lib/supabase')
-  const { generateInvitationCode, validateInvitationCode } = await import(
-    '@/lib/utils/code-generator'
-  )
+  const { generateInvitationCode, validateInvitationCode } = await import('@/utils/code-generator')
 
   vi.mocked(getCurrentUser).mockResolvedValue(mockUser)
   vi.mocked(getSupabaseClient).mockReturnValue(mockSupabaseClient as never)
@@ -161,7 +159,7 @@ describe('invitation.ts API', () => {
     })
 
     test('招待コード生成に失敗した場合はエラーになる', async () => {
-      const { generateInvitationCode } = await import('@/lib/utils/code-generator')
+      const { generateInvitationCode } = await import('@/utils/code-generator')
       vi.mocked(generateInvitationCode)
       generateInvitationCode.mockRejectedValueOnce(new Error('Generation failed'))
 

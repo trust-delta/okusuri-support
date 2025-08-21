@@ -1,7 +1,13 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card/card'
 import React from 'react'
-import { Patient } from '../types'
+import type { Patient } from '../types'
 import PatientActions from './PatientActions'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card/card'
 
 interface PatientCardProps {
   patient: Patient
@@ -13,7 +19,9 @@ export default function PatientCard({ patient }: PatientCardProps) {
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl" data-testid="patient-name">{patient.name}</CardTitle>
+            <CardTitle className="text-xl" data-testid="patient-name">
+              {patient.name}
+            </CardTitle>
             <CardDescription data-testid="patient-age">{patient.age}歳</CardDescription>
           </div>
           <div className="text-sm text-muted-foreground">

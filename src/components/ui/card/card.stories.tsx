@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { Button } from '../button/button'
 import {
   Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  CardAction
 } from './card'
-import { Button } from '../button/button'
 
 const meta = {
   title: 'UI/Card',
@@ -110,9 +110,7 @@ export const Complete: Story = {
           <Button variant="outline" className="flex-1">
             Cancel
           </Button>
-          <Button className="flex-1">
-            Confirm
-          </Button>
+          <Button className="flex-1">Confirm</Button>
         </div>
       </CardFooter>
     </Card>
@@ -149,9 +147,7 @@ export const PatientCard: Story = {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">
-          服薬記録を確認
-        </Button>
+        <Button className="w-full">服薬記録を確認</Button>
       </CardFooter>
     </Card>
   ),
@@ -177,7 +173,9 @@ export const MultipleCards: Story = {
           <CardTitle>Card with Action</CardTitle>
           <CardDescription>Includes header action</CardDescription>
           <CardAction>
-            <Button size="sm" variant="outline">Edit</Button>
+            <Button size="sm" variant="outline">
+              Edit
+            </Button>
           </CardAction>
         </CardHeader>
         <CardContent>
@@ -190,14 +188,18 @@ export const MultipleCards: Story = {
           <CardTitle>Full Featured</CardTitle>
           <CardDescription>Complete card example</CardDescription>
           <CardAction>
-            <Button size="sm" variant="ghost">⋯</Button>
+            <Button size="sm" variant="ghost">
+              ⋯
+            </Button>
           </CardAction>
         </CardHeader>
         <CardContent>
           <p>Content area</p>
         </CardContent>
         <CardFooter>
-          <Button variant="outline" className="flex-1">Cancel</Button>
+          <Button variant="outline" className="flex-1">
+            Cancel
+          </Button>
           <Button className="flex-1 ml-2">Save</Button>
         </CardFooter>
       </Card>

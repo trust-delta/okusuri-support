@@ -4,10 +4,10 @@
 
 'use client'
 
-import { useState } from 'react'
 import { useAuth } from '@/features/auth'
-import type { CreateInvitationFormData, PairError } from '../../types'
 import type { UserRole } from '@/lib/supabase/types'
+import { useState } from 'react'
+import type { CreateInvitationFormData, PairError } from '../../types'
 
 interface CreateInvitationFormProps {
   onSuccess?: (data: { invitationId: string }) => void
@@ -17,7 +17,7 @@ interface CreateInvitationFormProps {
 
 export function CreateInvitationForm({ onSuccess, onError, className }: CreateInvitationFormProps) {
   const { user } = useAuth()
-  
+
   const [formData, setFormData] = useState<CreateInvitationFormData>({
     inviteeEmail: '',
     targetRole: user?.role === 'patient' ? 'supporter' : 'patient',
@@ -32,10 +32,10 @@ export function CreateInvitationForm({ onSuccess, onError, className }: CreateIn
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // バリデーション
     const newErrors: Partial<Record<keyof CreateInvitationFormData, string>> = {}
-    
+
     if (!formData.inviteeEmail.trim()) {
       newErrors.inviteeEmail = 'メールアドレスを入力してください'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.inviteeEmail)) {
@@ -55,7 +55,7 @@ export function CreateInvitationForm({ onSuccess, onError, className }: CreateIn
     try {
       const { createInvitation } = await import('../../api/pair-service')
       const result = await createInvitation(formData)
-      
+
       if (result.success && result.data) {
         // フォームをリセット
         setFormData({
@@ -84,7 +84,7 @@ export function CreateInvitationForm({ onSuccess, onError, className }: CreateIn
    * 入力値更新
    */
   const updateFormData = (field: keyof CreateInvitationFormData, value: string | UserRole) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // エラーをクリア
     if (errors[field]) {
       const newErrors = { ...errors }
@@ -96,9 +96,7 @@ export function CreateInvitationForm({ onSuccess, onError, className }: CreateIn
   if (!user) {
     return (
       <div className={className}>
-        <div className="text-center text-gray-600">
-          招待を送るにはログインが必要です。
-        </div>
+        <div className="text-center text-gray-600">招待を送るにはログインが必要です。</div>
       </div>
     )
   }
@@ -108,18 +106,12 @@ export function CreateInvitationForm({ onSuccess, onError, className }: CreateIn
       <div className="space-y-4">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {
-              user.role === 'patient' 
-                ? '支援者を招待' 
-                : '患者を招待'
-            }
+            {user.role === 'patient' ? '支援者を招待' : '患者を招待'}
           </h2>
           <p className="text-sm text-gray-600">
-            {
-              user.role === 'patient'
-                ? 'あなたをサポートしてくれる方のメールアドレスを入力してください。'
-                : 'あなたがサポートする患者さんのメールアドレスを入力してください。'
-            }
+            {user.role === 'patient'
+              ? 'あなたをサポートしてくれる方のメールアドレスを入力してください。'
+              : 'あなたがサポートする患者さんのメールアドレスを入力してください。'}
           </p>
         </div>
 
@@ -182,7 +174,9 @@ export function CreateInvitationForm({ onSuccess, onError, className }: CreateIn
             </div>
           </div>
           <p className="mt-1 text-xs text-gray-500">
-            あなたは「{user.role === 'patient' ? '患者' : '支援者'}」として登録されているため、相手は「{user.role === 'patient' ? '支援者' : '患者'}」である必要があります。
+            あなたは「{user.role === 'patient' ? '患者' : '支援者'}
+            」として登録されているため、相手は「{user.role === 'patient' ? '支援者' : '患者'}
+            」である必要があります。
           </p>
         </div>
 

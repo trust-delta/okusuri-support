@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import { resetPassword } from '../../api/auth-service'
-import type { ResetPasswordFormData, AuthError } from '../../types'
+import type { AuthError, ResetPasswordFormData } from '../../types'
 
 interface ResetPasswordFormProps {
   onSuccess?: () => void
@@ -28,10 +28,10 @@ export function ResetPasswordForm({ onSuccess, onError, className }: ResetPasswo
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // バリデーション
     const newErrors: Partial<Record<keyof ResetPasswordFormData, string>> = {}
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'メールアドレスを入力してください'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -48,7 +48,7 @@ export function ResetPasswordForm({ onSuccess, onError, className }: ResetPasswo
 
     try {
       const result = await resetPassword(formData)
-      
+
       if (result.success) {
         setIsSuccess(true)
         onSuccess?.()
@@ -72,7 +72,7 @@ export function ResetPasswordForm({ onSuccess, onError, className }: ResetPasswo
    * 入力値更新
    */
   const updateFormData = (field: keyof ResetPasswordFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // エラーをクリア
     if (errors[field]) {
       const newErrors = { ...errors }
@@ -88,26 +88,26 @@ export function ResetPasswordForm({ onSuccess, onError, className }: ResetPasswo
         <div className="text-center">
           <div className="mb-4">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-              <svg 
-                className="h-6 w-6 text-green-600" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="h-6 w-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth="2" 
+                <title>送信完了</title>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
                   d="M5 13l4 4L19 7"
                 />
               </svg>
             </div>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            メールを送信しました
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">メールを送信しました</h3>
           <p className="text-sm text-gray-600 mb-4">
-            <span className="font-medium">{formData.email}</span> 宛てにパスワードリセットの手順を送信しました。
+            <span className="font-medium">{formData.email}</span>{' '}
+            宛てにパスワードリセットの手順を送信しました。
             メールを確認して、手順に従ってパスワードをリセットしてください。
           </p>
           <p className="text-xs text-gray-500">
@@ -122,9 +122,7 @@ export function ResetPasswordForm({ onSuccess, onError, className }: ResetPasswo
     <form onSubmit={handleSubmit} className={className}>
       <div className="space-y-4">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            パスワードを忘れた方
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">パスワードを忘れた方</h2>
           <p className="text-sm text-gray-600">
             メールアドレスを入力してください。パスワードリセットの手順を送信します。
           </p>
@@ -147,9 +145,7 @@ export function ResetPasswordForm({ onSuccess, onError, className }: ResetPasswo
             disabled={isLoading}
             autoComplete="email"
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-          )}
+          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </div>
 
         {/* 送信ボタン */}

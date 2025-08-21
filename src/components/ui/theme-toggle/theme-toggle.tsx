@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button/button'
-import { SunIcon, MoonIcon, ComputerIcon } from '@/components/ui/icons'
+import { ComputerIcon, MoonIcon, SunIcon } from '@/components/ui/icons'
+import { useTheme } from 'next-themes'
+import React, { useState, useEffect } from 'react'
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false)

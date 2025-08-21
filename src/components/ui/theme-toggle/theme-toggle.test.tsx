@@ -1,6 +1,6 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ThemeToggle from './theme-toggle'
 
 // Mock next-themes
@@ -28,26 +28,26 @@ describe('ThemeToggle', () => {
 
   it('should show correct icon for light theme after mounted', async () => {
     render(<ThemeToggle />)
-    
+
     // Wait for component to mount
     await waitFor(() => {
       expect(screen.getByRole('button')).toHaveAttribute('title', '現在のテーマ: ライト')
     })
-    
+
     expect(screen.getByTestId('sun-icon')).toBeInTheDocument()
   })
 
   it('should cycle theme when clicked', async () => {
     render(<ThemeToggle />)
-    
+
     // Wait for component to mount
     await waitFor(() => {
       expect(screen.getByRole('button')).toBeInTheDocument()
     })
-    
+
     const button = screen.getByRole('button')
     fireEvent.click(button)
-    
+
     expect(mockSetTheme).toHaveBeenCalledWith('dark')
   })
 })
@@ -59,7 +59,7 @@ describe('ThemeToggle interactions', () => {
 
   it('should have accessible title attribute', async () => {
     render(<ThemeToggle />)
-    
+
     await waitFor(() => {
       const button = screen.getByRole('button')
       expect(button).toHaveAttribute('title')
@@ -69,7 +69,7 @@ describe('ThemeToggle interactions', () => {
 
   it('should render as a clickable button', () => {
     render(<ThemeToggle />)
-    
+
     const button = screen.getByRole('button')
     expect(button).toBeInTheDocument()
     expect(button).toBeEnabled()

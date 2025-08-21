@@ -63,7 +63,7 @@
     }
   },
   "files": {
-    "include": ["src/**/*.ts", "src/**/*.js", "app/**/*.ts", "app/**/*.tsx"],
+    "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.tsx"],
     "ignore": ["node_modules/**", "dist/**", ".next/**"]
   }
 }

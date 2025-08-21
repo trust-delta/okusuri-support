@@ -9,7 +9,7 @@ import {
   type InvitationCode,
   generateInvitationCode,
   validateInvitationCode,
-} from '@/lib/utils/code-generator'
+} from '@/utils/code-generator'
 import type {
   CreateInvitationParams,
   CreateInvitationResult,
@@ -116,7 +116,8 @@ export async function createInvitation(
         expires_at: expiresAt.toISOString(),
         message: params.message || null,
       })
-      .select(`
+      .select(
+        `
         id,
         inviter_id,
         invitee_email,
@@ -127,7 +128,8 @@ export async function createInvitation(
         created_at,
         updated_at,
         message
-      `)
+      `
+      )
       .single()
 
     if (error) {
@@ -178,7 +180,8 @@ export async function findByCode(params: FindInvitationParams): Promise<Invitati
     const supabase = getSupabaseClient()
     const { data: invitation, error } = await supabase
       .from('invitations')
-      .select(`
+      .select(
+        `
         id,
         inviter_id,
         invitee_email,
@@ -195,7 +198,8 @@ export async function findByCode(params: FindInvitationParams): Promise<Invitati
           email,
           role
         )
-      `)
+      `
+      )
       .eq('invitation_code', params.code)
       .maybeSingle()
 

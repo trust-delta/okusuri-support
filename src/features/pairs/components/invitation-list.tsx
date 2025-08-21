@@ -4,8 +4,8 @@
 
 'use client'
 
-import { useState } from 'react'
 import { useAuth } from '@/features/auth'
+import { useState } from 'react'
 import type { Invitation, PairError } from '../types'
 
 interface InvitationListProps {
@@ -75,13 +75,13 @@ export function InvitationList({
    */
   const handleCancelInvitation = async (invitationId: string) => {
     if (!onCancelInvitation) return
-    
-    setActionLoading(prev => ({ ...prev, [`cancel_${invitationId}`]: true }))
-    
+
+    setActionLoading((prev) => ({ ...prev, [`cancel_${invitationId}`]: true }))
+
     try {
       await onCancelInvitation(invitationId)
     } finally {
-      setActionLoading(prev => ({ ...prev, [`cancel_${invitationId}`]: false }))
+      setActionLoading((prev) => ({ ...prev, [`cancel_${invitationId}`]: false }))
     }
   }
 
@@ -90,20 +90,23 @@ export function InvitationList({
    */
   const handleRespondToInvitation = async (token: string, action: 'accept' | 'reject') => {
     if (!onRespondToInvitation) return
-    
-    setActionLoading(prev => ({ ...prev, [`${action}_${token}`]: true }))
-    
+
+    setActionLoading((prev) => ({ ...prev, [`${action}_${token}`]: true }))
+
     try {
       await onRespondToInvitation(token, action)
     } finally {
-      setActionLoading(prev => ({ ...prev, [`${action}_${token}`]: false }))
+      setActionLoading((prev) => ({ ...prev, [`${action}_${token}`]: false }))
     }
   }
 
   /**
    * 招待カードコンポーネント
    */
-  const InvitationCard = ({ invitation, type }: { invitation: Invitation; type: 'sent' | 'received' }) => {
+  const InvitationCard = ({
+    invitation,
+    type,
+  }: { invitation: Invitation; type: 'sent' | 'received' }) => {
     const isExpired = new Date(invitation.expiresAt) < new Date()
     const canCancel = type === 'sent' && invitation.status === 'pending' && !isExpired
     const canRespond = type === 'received' && invitation.status === 'pending' && !isExpired
@@ -113,9 +116,11 @@ export function InvitationList({
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                getStatusColorClass(invitation.status)
-              }`}>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColorClass(
+                  invitation.status
+                )}`}
+              >
                 {getStatusLabel(invitation.status)}
               </span>
               {isExpired && (
@@ -124,21 +129,36 @@ export function InvitationList({
                 </span>
               )}
             </div>
-            
+
             <div className="space-y-1 text-sm">
               {type === 'sent' ? (
                 <>
-                  <p><span className="font-medium">送信先:</span> {invitation.inviteeEmail}</p>
-                  <p><span className="font-medium">役割:</span> {invitation.targetRole === 'patient' ? '患者' : '支援者'}</p>
+                  <p>
+                    <span className="font-medium">送信先:</span> {invitation.inviteeEmail}
+                  </p>
+                  <p>
+                    <span className="font-medium">役割:</span>{' '}
+                    {invitation.targetRole === 'patient' ? '患者' : '支援者'}
+                  </p>
                 </>
               ) : (
                 <>
-                  <p><span className="font-medium">送信者:</span> {invitation.inviterName} ({invitation.inviterRole === 'patient' ? '患者' : '支援者'})</p>
-                  <p><span className="font-medium">あなたの役割:</span> {invitation.targetRole === 'patient' ? '患者' : '支援者'}</p>
+                  <p>
+                    <span className="font-medium">送信者:</span> {invitation.inviterName} (
+                    {invitation.inviterRole === 'patient' ? '患者' : '支援者'})
+                  </p>
+                  <p>
+                    <span className="font-medium">あなたの役割:</span>{' '}
+                    {invitation.targetRole === 'patient' ? '患者' : '支援者'}
+                  </p>
                 </>
               )}
-              <p><span className="font-medium">送信日時:</span> {formatDate(invitation.createdAt)}</p>
-              <p><span className="font-medium">有効期限:</span> {formatDate(invitation.expiresAt)}</p>
+              <p>
+                <span className="font-medium">送信日時:</span> {formatDate(invitation.createdAt)}
+              </p>
+              <p>
+                <span className="font-medium">有効期限:</span> {formatDate(invitation.expiresAt)}
+              </p>
             </div>
           </div>
         </div>
@@ -155,7 +175,7 @@ export function InvitationList({
               {actionLoading[`cancel_${invitation.id}`] ? 'キャンセル中...' : 'キャンセル'}
             </button>
           )}
-          
+
           {canRespond && (
             <>
               <button
@@ -184,9 +204,7 @@ export function InvitationList({
   if (!user) {
     return (
       <div className={className}>
-        <div className="text-center text-gray-600">
-          招待一覧を表示するにはログインが必要です。
-        </div>
+        <div className="text-center text-gray-600">招待一覧を表示するにはログインが必要です。</div>
       </div>
     )
   }
@@ -220,11 +238,7 @@ export function InvitationList({
             ) : (
               <div className="space-y-3">
                 {receivedInvitations.map((invitation) => (
-                  <InvitationCard
-                    key={invitation.id}
-                    invitation={invitation}
-                    type="received"
-                  />
+                  <InvitationCard key={invitation.id} invitation={invitation} type="received" />
                 ))}
               </div>
             )}
@@ -242,11 +256,7 @@ export function InvitationList({
             ) : (
               <div className="space-y-3">
                 {sentInvitations.map((invitation) => (
-                  <InvitationCard
-                    key={invitation.id}
-                    invitation={invitation}
-                    type="sent"
-                  />
+                  <InvitationCard key={invitation.id} invitation={invitation} type="sent" />
                 ))}
               </div>
             )}

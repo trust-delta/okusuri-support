@@ -9,7 +9,7 @@ import {
   type InvitationCode,
   generateInvitationCode,
   validateInvitationCode,
-} from '@/lib/utils/code-generator'
+} from '@/utils/code-generator'
 import type {
   CreateInvitationFormData,
   FindInvitationParams,
@@ -116,7 +116,11 @@ export async function createInvitation(
     }
 
     // セキュアな8桁コード生成
-    let codeResult: { code: InvitationCode; attempts: number; generatedAt: Date }
+    let codeResult: {
+      code: InvitationCode
+      attempts: number
+      generatedAt: Date
+    }
     try {
       codeResult = await generateInvitationCode(checkCodeDuplicate)
     } catch (error) {
@@ -187,7 +191,8 @@ export async function getSentInvitations(): Promise<PairResponse<Invitation[]>> 
     const supabase = getSupabaseClient()
     const { data: invitations, error } = await supabase
       .from('invitations')
-      .select(`
+      .select(
+        `
         id,
         invitee_email,
         role,
@@ -197,7 +202,8 @@ export async function getSentInvitations(): Promise<PairResponse<Invitation[]>> 
         created_at,
         updated_at,
         message
-      `)
+      `
+      )
       .eq('inviter_id', currentUser.id)
       .order('created_at', { ascending: false })
 
@@ -253,7 +259,8 @@ export async function getReceivedInvitations(): Promise<PairResponse<Invitation[
     const supabase = getSupabaseClient()
     const { data: invitations, error } = await supabase
       .from('invitations')
-      .select(`
+      .select(
+        `
         id,
         inviter_id,
         role,
@@ -268,7 +275,8 @@ export async function getReceivedInvitations(): Promise<PairResponse<Invitation[
           email,
           role
         )
-      `)
+      `
+      )
       .eq('invitee_email', currentUser.email)
       .order('created_at', { ascending: false })
 
@@ -318,7 +326,8 @@ export async function getInvitationByToken(
     const supabase = getSupabaseClient()
     const { data: invitation, error } = await supabase
       .from('invitations')
-      .select(`
+      .select(
+        `
         id,
         inviter_id,
         invitee_email,
@@ -334,7 +343,8 @@ export async function getInvitationByToken(
           email,
           role
         )
-      `)
+      `
+      )
       .eq('token', token)
       .single()
 
@@ -407,7 +417,8 @@ export async function findInvitationByCode(
     const supabase = getSupabaseClient()
     const { data: invitation, error } = await supabase
       .from('invitations')
-      .select(`
+      .select(
+        `
         id,
         inviter_id,
         invitee_email,
@@ -423,7 +434,8 @@ export async function findInvitationByCode(
           email,
           role
         )
-      `)
+      `
+      )
       .eq('invitation_code', params.code)
       .single()
 
@@ -821,7 +833,8 @@ export async function getCurrentPair(): Promise<PairResponse<UserPair>> {
     const supabase = getSupabaseClient()
     const { data: pair, error } = await supabase
       .from('user_pairs')
-      .select(`
+      .select(
+        `
         id,
         patient_id,
         supporter_id,
@@ -830,7 +843,8 @@ export async function getCurrentPair(): Promise<PairResponse<UserPair>> {
         updated_at,
         patient:users!patient_id (display_name, email),
         supporter:users!supporter_id (display_name, email)
-      `)
+      `
+      )
       .or(`patient_id.eq.${currentUser.id},supporter_id.eq.${currentUser.id}`)
       .eq('status', 'approved')
       .single()
@@ -939,7 +953,8 @@ export async function getCurrentPairServer(): Promise<PairResponse<UserPair>> {
     const supabase = await createServerSupabaseClient()
     const { data: pair, error } = await supabase
       .from('user_pairs')
-      .select(`
+      .select(
+        `
         id,
         patient_id,
         supporter_id,
@@ -948,7 +963,8 @@ export async function getCurrentPairServer(): Promise<PairResponse<UserPair>> {
         updated_at,
         patient:users!patient_id (display_name, email),
         supporter:users!supporter_id (display_name, email)
-      `)
+      `
+      )
       .or(`patient_id.eq.${currentUser.id},supporter_id.eq.${currentUser.id}`)
       .eq('status', 'approved')
       .single()

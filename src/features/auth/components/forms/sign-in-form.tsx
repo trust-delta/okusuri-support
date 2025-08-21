@@ -4,11 +4,11 @@
 
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
 import type { Route } from 'next'
+import Link from 'next/link'
+import { useState } from 'react'
 import { signIn } from '../../api/auth-service'
-import type { SignInFormData, AuthError, AuthUser } from '../../types'
+import type { AuthError, AuthUser, SignInFormData } from '../../types'
 
 interface SignInFormProps {
   onSuccess?: (user: AuthUser) => void
@@ -17,11 +17,11 @@ interface SignInFormProps {
   showForgotPassword?: boolean
 }
 
-export function SignInForm({ 
-  onSuccess, 
-  onError, 
+export function SignInForm({
+  onSuccess,
+  onError,
   className,
-  showForgotPassword = true
+  showForgotPassword = true,
 }: SignInFormProps) {
   const [formData, setFormData] = useState<SignInFormData>({
     email: '',
@@ -37,16 +37,16 @@ export function SignInForm({
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // バリデーション
     const newErrors: Partial<Record<keyof SignInFormData, string>> = {}
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'メールアドレスを入力してください'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = '正しいメールアドレスを入力してください'
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'パスワードを入力してください'
     }
@@ -62,7 +62,7 @@ export function SignInForm({
 
     try {
       const result = await signIn(formData)
-      
+
       if (result.success && result.data) {
         onSuccess?.(result.data)
       } else if (result.error) {
@@ -85,7 +85,7 @@ export function SignInForm({
    * 入力値更新
    */
   const updateFormData = (field: keyof SignInFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // エラーをクリア
     if (errors[field]) {
       const newErrors = { ...errors }
@@ -117,9 +117,7 @@ export function SignInForm({
             disabled={isLoading}
             autoComplete="email"
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-          )}
+          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </div>
 
         {/* パスワード */}
@@ -139,9 +137,7 @@ export function SignInForm({
             disabled={isLoading}
             autoComplete="current-password"
           />
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-500">{errors.password}</p>
-          )}
+          {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
         </div>
 
         {/* 全般エラー */}
@@ -154,7 +150,7 @@ export function SignInForm({
         {/* パスワード忘れ */}
         {showForgotPassword && (
           <div className="text-right">
-            <Link 
+            <Link
               href={'/auth/forgot-password' as Route}
               className="text-sm text-blue-600 hover:underline"
             >

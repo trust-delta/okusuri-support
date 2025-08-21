@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import type { Patient } from '../types'
 import PatientCard from './PatientCard'
-import { Patient } from '../types'
 
 // Mock patient data
 const createMockPatient = (overrides?: Partial<Patient>): Patient => ({
@@ -160,14 +160,14 @@ export const MultiplePatients: Story = {
   },
   render: () => (
     <div className="space-y-4 max-w-4xl">
-      <PatientCard 
+      <PatientCard
         patient={createMockPatient({
           id: 'patient-multi-1',
           name: '田中 太郎',
           age: 65,
-        })} 
+        })}
       />
-      <PatientCard 
+      <PatientCard
         patient={createMockPatient({
           id: 'patient-multi-2',
           name: '佐藤 花子',
@@ -181,9 +181,9 @@ export const MultiplePatients: Story = {
               nextDue: new Date('2025-08-20'),
             },
           ],
-        })} 
+        })}
       />
-      <PatientCard 
+      <PatientCard
         patient={createMockPatient({
           id: 'patient-multi-3',
           name: '山田 一郎',
@@ -211,7 +211,7 @@ export const MultiplePatients: Story = {
               nextDue: new Date('2025-08-19'),
             },
           ],
-        })} 
+        })}
       />
     </div>
   ),

@@ -4,7 +4,7 @@
  */
 
 import type { UserRole } from '@/lib/supabase/types'
-import type { InvitationCode } from '@/lib/utils/code-generator'
+import type { InvitationCode } from '@/utils/code-generator'
 
 /**
  * 招待作成パラメータ

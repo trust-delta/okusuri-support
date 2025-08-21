@@ -8,7 +8,7 @@ import {
   type InvitationCode,
   generateInvitationCode,
   validateInvitationCode,
-} from '@/lib/utils/code-generator'
+} from '@/utils/code-generator'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createInvitation,
@@ -30,7 +30,7 @@ vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: vi.fn(),
 }))
 
-vi.mock('@/lib/utils/code-generator', () => ({
+vi.mock('@/utils/code-generator', () => ({
   generateInvitationCode: vi.fn(),
   validateInvitationCode: vi.fn(),
 }))
@@ -84,11 +84,17 @@ describe('Pair Service API', () => {
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
         patient: { display_name: '患者テスト', email: 'patient@example.com' },
-        supporter: { display_name: '支援者テスト', email: 'supporter@example.com' },
+        supporter: {
+          display_name: '支援者テスト',
+          email: 'supporter@example.com',
+        },
       }
       ;(getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser)
       mockSupabase.from.mockReturnValue(mockUserPairsTable)
-      mockUserPairsTable.single.mockResolvedValue({ data: mockPair, error: null })
+      mockUserPairsTable.single.mockResolvedValue({
+        data: mockPair,
+        error: null,
+      })
 
       // Act
       const result = await getCurrentPair()
@@ -276,7 +282,11 @@ describe('Pair Service API', () => {
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
         message: 'よろしくお願いします',
-        users: { display_name: '患者テスト', email: 'patient@example.com', role: 'patient' },
+        users: {
+          display_name: '患者テスト',
+          email: 'patient@example.com',
+          role: 'patient',
+        },
       }
       ;(validateInvitationCode as ReturnType<typeof vi.fn>).mockReturnValue(true)
       mockSupabase.from.mockReturnValue(mockInvitationsTable)
@@ -548,7 +558,11 @@ describe('Pair Service API', () => {
           created_at: '2024-01-01T00:00:00Z',
           updated_at: '2024-01-01T00:00:00Z',
           message: null,
-          users: { display_name: '患者テスト', email: 'patient@example.com', role: 'patient' },
+          users: {
+            display_name: '患者テスト',
+            email: 'patient@example.com',
+            role: 'patient',
+          },
         },
       ]
       ;(getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser)

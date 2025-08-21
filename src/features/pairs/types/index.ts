@@ -3,7 +3,7 @@
  */
 
 import type { UserRole } from '@/lib/supabase/types'
-import type { InvitationCode } from '@/lib/utils/code-generator'
+import type { InvitationCode } from '@/utils/code-generator'
 
 // 新しい招待システムの型定義をエクスポート
 export type {
@@ -22,7 +22,7 @@ export type {
 } from './invitation'
 
 // 8桁コード型もエクスポート
-export type { InvitationCode } from '@/lib/utils/code-generator'
+export type { InvitationCode } from '@/utils/code-generator'
 
 /**
  * 招待ステータス

@@ -15,6 +15,10 @@ export default defineConfig({
     timeout: 5_000,
   },
   
+  // グローバルセットアップとティアダウン
+  globalSetup: './tests/e2e/global-setup.ts',
+  globalTeardown: './tests/e2e/global-teardown.ts',
+  
   // テスト実行設定
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
