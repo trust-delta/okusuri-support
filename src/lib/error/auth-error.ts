@@ -248,7 +248,50 @@ export function getUserMessage(error: unknown): string {
 export function logAuthError(error: unknown, context?: string): void {
   const logData = isAuthError(error)
     ? error.toLogObject()
-    : { error: String(error), timestamp: new Date().toISOString() }
+    : {
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      }
 
   console.error(`[AUTH_ERROR]${context ? ` ${context}` : ''}`, logData)
+}
+
+/**
+ * 統一されたエラーハンドリング関数
+ * try-catch の標準化パターン
+ */
+export async function handleAuthError<T>(
+  operation: () => Promise<T>,
+  context?: string
+): Promise<T> {
+  try {
+    return await operation()
+  } catch (error) {
+    // AuthErrorに変換
+    const authError = isAuthError(error) ? error : convertSupabaseError(error)
+
+    // ログ出力
+    logAuthError(authError, context)
+
+    // エラーを再スロー（呼び出し元で適切に処理される）
+    throw authError
+  }
+}
+
+/**
+ * 同期版のエラーハンドリング関数
+ */
+export function handleAuthErrorSync<T>(operation: () => T, context?: string): T {
+  try {
+    return operation()
+  } catch (error) {
+    // AuthErrorに変換
+    const authError = isAuthError(error) ? error : convertSupabaseError(error)
+
+    // ログ出力
+    logAuthError(authError, context)
+
+    // エラーを再スロー（呼び出し元で適切に処理される）
+    throw authError
+  }
 }
