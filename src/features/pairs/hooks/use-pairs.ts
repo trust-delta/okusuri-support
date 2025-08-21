@@ -6,6 +6,7 @@
 'use client'
 
 import { useAuth } from '@/features/auth'
+import { pairStoreHelpers, usePairStore } from '@/stores/pairs'
 import { useCallback, useEffect, useState } from 'react'
 import {
   cancelInvitation,
@@ -21,8 +22,10 @@ import type {
   Invitation,
   InvitationResponseFormData,
   InvitationState,
+  PairError,
   PairManagementState,
   PairState,
+  UserPair,
 } from '../types'
 
 /**
@@ -37,8 +40,21 @@ export function usePairs(): PairManagementState {
     isLoading: false,
   })
 
+  // Zustandストアからペア状態を取得
+  const {
+    currentPair,
+    pairPartner,
+    hasPair,
+    isLoading: pairLoading,
+    error: pairError,
+    fetchPair,
+    reset: resetPair,
+  } = usePairStore()
+
   const [pairs, setPairs] = useState<PairState>({
-    isLoading: false,
+    currentPair,
+    isLoading: pairLoading,
+    error: pairError,
   })
 
   /**
@@ -125,39 +141,12 @@ export function usePairs(): PairManagementState {
   }, [refreshSentInvitations, refreshReceivedInvitations])
 
   /**
-   * 現在のペア情報を取得
+   * 現在のペア情報を取得（Zustandストア経由）
    */
   const refreshPairs = useCallback(async () => {
     if (!isAuthenticated) return
-
-    setPairs((prev) => ({
-      ...prev,
-      isLoading: true,
-    }))
-
-    try {
-      const result = await getCurrentPair()
-      if (result.success) {
-        setPairs({
-          currentPair: result.data,
-          isLoading: false,
-        })
-      } else {
-        setPairs({
-          error: result.error,
-          isLoading: false,
-        })
-      }
-    } catch {
-      setPairs({
-        error: {
-          code: 'FETCH_ERROR',
-          message: 'ペア情報の取得に失敗しました',
-        },
-        isLoading: false,
-      })
-    }
-  }, [isAuthenticated])
+    await fetchPair()
+  }, [isAuthenticated, fetchPair])
 
   /**
    * 招待作成
@@ -184,13 +173,19 @@ export function usePairs(): PairManagementState {
       const result = await respondToInvitation(data)
 
       if (result.success) {
-        // 受信した招待一覧とペア情報を更新
-        await Promise.all([refreshReceivedInvitations(), refreshPairs()])
+        // 受信した招待一覧を更新
+        await refreshReceivedInvitations()
+
+        // ペア作成が成功した場合はストアヘルパーで状態更新
+        if (data.action === 'accept' && result.data?.pairId) {
+          // ペア情報を再取得してストアに反映
+          await fetchPair()
+        }
       }
 
       return result
     },
-    [refreshReceivedInvitations, refreshPairs]
+    [refreshReceivedInvitations, fetchPair]
   )
 
   /**
@@ -213,19 +208,16 @@ export function usePairs(): PairManagementState {
   /**
    * ペア終了
    */
-  const handleTerminatePair = useCallback(
-    async (pairId: string) => {
-      const result = await terminatePair(pairId)
+  const handleTerminatePair = useCallback(async (pairId: string) => {
+    const result = await terminatePair(pairId)
 
-      if (result.success) {
-        // ペア情報を更新
-        await refreshPairs()
-      }
+    if (result.success) {
+      // ペア状態をクリア
+      pairStoreHelpers.handlePairTerminated()
+    }
 
-      return result
-    },
-    [refreshPairs]
-  )
+    return result
+  }, [])
 
   /**
    * 初期データ読み込み
@@ -233,9 +225,18 @@ export function usePairs(): PairManagementState {
   useEffect(() => {
     if (isAuthenticated && user) {
       refreshInvitations()
-      refreshPairs()
+      // ペア情報はZustandストアが自動的に管理
     }
-  }, [isAuthenticated, user, refreshInvitations, refreshPairs])
+  }, [isAuthenticated, user, refreshInvitations])
+
+  // Zustandストアの状態をPairStateに同期
+  useEffect(() => {
+    setPairs({
+      currentPair,
+      isLoading: pairLoading,
+      error: pairError,
+    })
+  }, [currentPair, pairLoading, pairError])
 
   return {
     invitations,
@@ -294,5 +295,99 @@ export function useInvitationToken(token?: string) {
     invitationDetails,
     isLoading,
     error,
+  }
+}
+
+/**
+ * usePair hookの戻り値型
+ */
+export interface UsePairReturn {
+  /** 現在のペア情報 */
+  currentPair: UserPair | null
+  /** ペア相手の情報 */
+  pairPartner: {
+    id: string
+    name: string
+    role: 'patient' | 'supporter'
+  } | null
+  /** ペアの有無 */
+  hasPair: boolean
+  /** ローディング状態 */
+  isLoading: boolean
+  /** エラー情報 */
+  error: PairError | null
+  /** ペア情報の再取得 */
+  refetch: () => Promise<void>
+  /** ペア状態のリセット */
+  reset: () => void
+}
+
+/**
+ * ペア状態管理フック（Zustandストア直接アクセス版）
+ * @returns ペア状態と操作関数
+ */
+export function usePair(): UsePairReturn {
+  const { currentPair, pairPartner, hasPair, isLoading, error, fetchPair, reset } = usePairStore()
+
+  const { isAuthenticated, isInitialized: authInitialized } = useAuth()
+  const isInitialized = usePairStore((state) => state.isInitialized)
+
+  // 認証完了時にペア情報を自動取得
+  useEffect(() => {
+    if (isAuthenticated && authInitialized && !isInitialized) {
+      fetchPair()
+    }
+  }, [isAuthenticated, authInitialized, isInitialized, fetchPair])
+
+  // 認証解除時にペア情報をクリア
+  useEffect(() => {
+    if (!isAuthenticated && isInitialized) {
+      reset()
+    }
+  }, [isAuthenticated, isInitialized, reset])
+
+  return {
+    currentPair,
+    pairPartner,
+    hasPair,
+    isLoading,
+    error,
+    refetch: fetchPair,
+    reset,
+  }
+}
+
+/**
+ * 現在のユーザーの役割を取得するフック
+ * @returns 現在のユーザーがペア内で持つ役割
+ */
+export function useCurrentUserPairRole(): 'patient' | 'supporter' | null {
+  const { currentPair } = usePairStore()
+  const { user } = useAuth()
+
+  if (!currentPair || !user) {
+    return null
+  }
+
+  return currentPair.patientId === user.id ? 'patient' : 'supporter'
+}
+
+/**
+ * ペア権限チェックフック
+ * @returns 各種権限の有無
+ */
+export function usePairPermissions() {
+  const userRole = useCurrentUserPairRole()
+  const { hasPair } = usePairStore()
+
+  return {
+    /** ペアを組んでいるか */
+    hasPair,
+    /** 患者として完全権限を持つか */
+    hasFullPermission: userRole === 'patient',
+    /** 支援者として閲覧権限を持つか */
+    hasReadPermission: userRole === 'supporter',
+    /** 現在の役割 */
+    currentRole: userRole,
   }
 }
