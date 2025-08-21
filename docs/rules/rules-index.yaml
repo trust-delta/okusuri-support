@@ -4,7 +4,17 @@
 rules:
   typescript:
     file: "typescript.md"
-    tags: [implementation, type-safety, async, refactoring, coding-style, functional-programming, dependency-injection, branded-types]
+    tags:
+      [
+        implementation,
+        type-safety,
+        async,
+        refactoring,
+        coding-style,
+        functional-programming,
+        dependency-injection,
+        branded-types,
+      ]
     typical-use: "TypeScriptコードの作成・修正・リファクタリング、モダンな型機能活用"
     size: medium
     key-references:
@@ -27,7 +37,17 @@ rules:
 
   typescript-testing:
     file: "typescript-testing.md"
-    tags: [quality, testing, tdd, coverage, vitest, implementation, debugging, refactoring]
+    tags:
+      [
+        quality,
+        testing,
+        tdd,
+        coverage,
+        vitest,
+        implementation,
+        debugging,
+        refactoring,
+      ]
     typical-use: "テスト作成、品質チェック、コード修正・バグ修正・リファクタリング・新機能実装時の開発ステップ"
     size: medium
     key-references:
@@ -46,8 +66,20 @@ rules:
 
   ai-development-guide:
     file: "ai-development-guide.md"
-    tags: [anti-patterns, technical-judgment, debugging, quality-commands, rule-of-three, implementation, type-safety, refactoring]
-    typical-use: "技術的判断基準、アンチパターン検出、デバッグ手法、品質チェックコマンド、実装時の失敗回避"
+    tags:
+      [
+        anti-patterns,
+        technical-judgment,
+        debugging,
+        quality-commands,
+        rule-of-three,
+        implementation,
+        type-safety,
+        refactoring,
+        code-reading,
+        best-practices,
+      ]
+    typical-use: "技術的判断基準、アンチパターン検出、デバッグ手法、品質チェックコマンド、実装時のベストプラクティス"
     size: medium
     key-references:
       - "Rule of Three - Martin Fowler"
@@ -66,7 +98,15 @@ rules:
 
   technical-spec:
     file: "technical-spec.md"
-    tags: [architecture, design, documentation, environment, data-flow, implementation]
+    tags:
+      [
+        architecture,
+        design,
+        documentation,
+        environment,
+        data-flow,
+        implementation,
+      ]
     typical-use: "技術設計、環境設定、ドキュメント作成プロセス、実装方針決定"
     size: medium
     key-references:
@@ -93,7 +133,8 @@ rules:
 
   documentation-criteria:
     file: "documentation-criteria.md"
-    tags: [documentation, decision-making, adr, prd, design-doc, planning, process]
+    tags:
+      [documentation, decision-making, adr, prd, design-doc, planning, process]
     typical-use: "実装開始時の規模判定、ドキュメント作成判定、ADR/PRD/Design Doc/作業計画書の作成基準"
     size: medium
     key-references:
@@ -113,7 +154,8 @@ rules:
 
   vertical-slice-architecture:
     file: "architecture/vertical-slice/rules.md"
-    tags: [architecture, vertical-slice, llm-optimized, single-file, implementation]
+    tags:
+      [architecture, vertical-slice, llm-optimized, single-file, implementation]
     typical-use: "Vertical Slice Architecture採用時、機能実装"
     size: medium
     key-references:
@@ -149,7 +191,18 @@ rules:
 
   implementation-approach:
     file: "architecture/implementation-approach.md"
-    tags: [architecture, implementation, task-decomposition, strategy-patterns, strangler-pattern, facade-pattern, design, planning, confirmation-levels]
+    tags:
+      [
+        architecture,
+        implementation,
+        task-decomposition,
+        strategy-patterns,
+        strangler-pattern,
+        facade-pattern,
+        design,
+        planning,
+        confirmation-levels,
+      ]
     typical-use: "実装戦略の選択、タスク分解、設計判断、大規模変更の計画"
     size: medium
     key-references:

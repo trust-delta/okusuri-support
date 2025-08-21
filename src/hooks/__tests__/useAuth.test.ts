@@ -14,7 +14,7 @@ import type {
 } from '@/types/auth'
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useAuth } from '../useAuth'
+import { type UseAuthReturn, useAuth } from '../useAuth'
 
 // 認証APIをモック
 vi.mock('@/lib/supabase/auth', () => ({
@@ -106,19 +106,32 @@ describe('useAuth', () => {
   })
 
   describe('初期状態', () => {
-    it('初期状態が正しく返される', () => {
-      const { result } = renderHook(() => useAuth())
+    it('初期状態が正しく返される', async () => {
+      let result: { current: UseAuthReturn } | undefined
 
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(result.current.isLoading).toBe(true) // 初期化中
-      expect(result.current.user).toBe(null)
-      expect(result.current.session).toBe(null)
-      expect(result.current.error).toBe(null)
-      expect(result.current.isInitialized).toBe(false)
+      await act(async () => {
+        const hookResult = renderHook(() => useAuth())
+        result = hookResult.result
+        // 初期化が完了するまで待機
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
+
+      expect(result?.current.isAuthenticated).toBe(false)
+      expect(result?.current.user).toBe(null)
+      expect(result?.current.session).toBe(null)
+      expect(result?.current.error).toBe(null)
+      expect(result?.current.isInitialized).toBe(true)
     })
 
-    it('必要な関数がすべて提供される', () => {
-      const { result } = renderHook(() => useAuth())
+    it('必要な関数がすべて提供される', async () => {
+      let result: { current: UseAuthReturn } | undefined
+
+      await act(async () => {
+        const hookResult = renderHook(() => useAuth())
+        result = hookResult.result
+        // 初期化が完了するまで待機
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
 
       expect(typeof result.current.handleSignUp).toBe('function')
       expect(typeof result.current.handleSignIn).toBe('function')
@@ -148,9 +161,9 @@ describe('useAuth', () => {
         await new Promise((resolve) => setTimeout(resolve, 0))
       })
 
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(result.current.isLoading).toBe(false)
-      expect(result.current.isInitialized).toBe(true)
+      expect(result?.current.isAuthenticated).toBe(false)
+      expect(result?.current.isLoading).toBe(false)
+      expect(result?.current.isInitialized).toBe(true)
       expect(mockCheckAuth).toHaveBeenCalledTimes(1)
     })
 
@@ -168,10 +181,10 @@ describe('useAuth', () => {
         await new Promise((resolve) => setTimeout(resolve, 0))
       })
 
-      expect(result.current.isAuthenticated).toBe(true)
-      expect(result.current.user).toEqual(mockUser)
-      expect(result.current.isLoading).toBe(false)
-      expect(result.current.isInitialized).toBe(true)
+      expect(result?.current.isAuthenticated).toBe(true)
+      expect(result?.current.user).toEqual(mockUser)
+      expect(result?.current.isLoading).toBe(false)
+      expect(result?.current.isInitialized).toBe(true)
     })
 
     it('セッション更新が必要な場合、自動で更新される', async () => {
@@ -195,8 +208,8 @@ describe('useAuth', () => {
       })
 
       expect(mockRefreshSession).toHaveBeenCalledTimes(1)
-      expect(result.current.isAuthenticated).toBe(true)
-      expect(result.current.session).toEqual(mockSession)
+      expect(result?.current.isAuthenticated).toBe(true)
+      expect(result?.current.session).toEqual(mockSession)
     })
   })
 
@@ -223,8 +236,8 @@ describe('useAuth', () => {
         user: mockUser,
         session: mockSession,
       })
-      expect(result.current.isAuthenticated).toBe(true)
-      expect(result.current.user).toEqual(mockUser)
+      expect(result?.current.isAuthenticated).toBe(true)
+      expect(result?.current.user).toEqual(mockUser)
     })
 
     it('失敗時にエラーが設定される', async () => {
@@ -246,8 +259,8 @@ describe('useAuth', () => {
       })
 
       expect(response).toEqual(errorResponse)
-      expect(result.current.error).toEqual(errorResponse.error)
-      expect(result.current.isAuthenticated).toBe(false)
+      expect(result?.current.error).toEqual(errorResponse.error)
+      expect(result?.current.isAuthenticated).toBe(false)
     })
   })
 
@@ -269,9 +282,9 @@ describe('useAuth', () => {
 
       expect(mockSignIn).toHaveBeenCalledWith(mockSignInParams)
       expect(response.success).toBe(true)
-      expect(result.current.isAuthenticated).toBe(true)
-      expect(result.current.user).toEqual(mockUser)
-      expect(result.current.session).toEqual(mockSession)
+      expect(result?.current.isAuthenticated).toBe(true)
+      expect(result?.current.user).toEqual(mockUser)
+      expect(result?.current.session).toEqual(mockSession)
     })
 
     it('失敗時にエラーが設定される', async () => {
@@ -293,8 +306,8 @@ describe('useAuth', () => {
       })
 
       expect(response).toEqual(errorResponse)
-      expect(result.current.error).toEqual(errorResponse.error)
-      expect(result.current.isAuthenticated).toBe(false)
+      expect(result?.current.error).toEqual(errorResponse.error)
+      expect(result?.current.isAuthenticated).toBe(false)
     })
   })
 
@@ -322,9 +335,9 @@ describe('useAuth', () => {
         success: true,
         data: null,
       })
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(result.current.user).toBe(null)
-      expect(result.current.session).toBe(null)
+      expect(result?.current.isAuthenticated).toBe(false)
+      expect(result?.current.user).toBe(null)
+      expect(result?.current.session).toBe(null)
     })
   })
 
@@ -400,14 +413,19 @@ describe('useAuth', () => {
 
       expect(mockUpdateProfile).toHaveBeenCalledWith(mockUpdateProfileParams)
       expect(response.success).toBe(true)
-      expect(result.current.user).toEqual(updatedUser)
-      expect(result.current.session).toEqual(mockSession)
+      expect(result?.current.user).toEqual(updatedUser)
+      expect(result?.current.session).toEqual(mockSession)
     })
   })
 
   describe('ユーティリティ関数', () => {
-    it('clearError でエラーがクリアされる', () => {
+    it('clearError でエラーがクリアされる', async () => {
       const { result } = renderHook(() => useAuth())
+
+      // 初期化を待機
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
 
       // エラーを設定
       act(() => {
@@ -417,34 +435,39 @@ describe('useAuth', () => {
         })
       })
 
-      expect(result.current.error).not.toBe(null)
+      expect(result?.current.error).not.toBe(null)
 
       // エラーをクリア
       act(() => {
         result.current.clearError()
       })
 
-      expect(result.current.error).toBe(null)
+      expect(result?.current.error).toBe(null)
     })
 
-    it('resetAuth で状態がリセットされる', () => {
+    it('resetAuth で状態がリセットされる', async () => {
       const { result } = renderHook(() => useAuth())
+
+      // 初期化を待機
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
 
       // 認証状態にする
       act(() => {
         useAuthStore.getState().setAuthenticated(mockUser, mockSession)
       })
 
-      expect(result.current.isAuthenticated).toBe(true)
+      expect(result?.current.isAuthenticated).toBe(true)
 
       // リセット実行
       act(() => {
         result.current.resetAuth()
       })
 
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(result.current.user).toBe(null)
-      expect(result.current.session).toBe(null)
+      expect(result?.current.isAuthenticated).toBe(false)
+      expect(result?.current.user).toBe(null)
+      expect(result?.current.session).toBe(null)
     })
   })
 
@@ -461,7 +484,7 @@ describe('useAuth', () => {
 
       expect(response.success).toBe(false)
       expect(response.error?.type).toBe('UNKNOWN_ERROR')
-      expect(result.current.error?.type).toBe('UNKNOWN_ERROR')
+      expect(result?.current.error?.type).toBe('UNKNOWN_ERROR')
     })
   })
 })

@@ -150,3 +150,264 @@ export interface InvitationNotificationSettings {
   /** 自動期限延長 */
   autoExtendEnabled: boolean
 }
+
+// =========================================
+// 実装部分（カスタムフック）
+// =========================================
+
+import { useCallback, useState } from 'react'
+import {
+  createInvitation as apiCreateInvitation,
+  findByCode as apiFindByCode,
+} from '../api/invitation'
+
+/**
+ * 招待作成用カスタムフック
+ */
+export function useInvitationCreate(): UseInvitationCreateReturn {
+  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<InvitationError | null>(null)
+  const [lastCreated, setLastCreated] = useState<CreateInvitationResult | null>(null)
+
+  const createInvitation = useCallback(async (params: CreateInvitationParams) => {
+    setIsCreating(true)
+    setError(null)
+
+    try {
+      const result = await apiCreateInvitation(params)
+      setLastCreated(result)
+      return result
+    } catch (err) {
+      const invitationError: InvitationError = {
+        code: 'GENERATION_FAILED',
+        message: err instanceof Error ? err.message : '招待作成に失敗しました',
+        details: String(err),
+      }
+      setError(invitationError)
+      return null
+    } finally {
+      setIsCreating(false)
+    }
+  }, [])
+
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
+  return {
+    createInvitation,
+    isCreating,
+    error,
+    lastCreated,
+    clearError,
+  }
+}
+
+/**
+ * 招待検索用カスタムフック
+ */
+export function useInvitationFind(): UseInvitationFindReturn {
+  const [isSearching, setIsSearching] = useState(false)
+  const [error, setError] = useState<InvitationError | null>(null)
+  const [foundInvitation, setFoundInvitation] = useState<InvitationDetails | null>(null)
+
+  const findInvitation = useCallback(async (params: FindInvitationParams) => {
+    setIsSearching(true)
+    setError(null)
+
+    try {
+      const result = await apiFindByCode(params)
+      setFoundInvitation(result)
+      return result
+    } catch (err) {
+      const invitationError: InvitationError = {
+        code: 'INVITATION_NOT_FOUND',
+        message: err instanceof Error ? err.message : '招待検索に失敗しました',
+        details: String(err),
+      }
+      setError(invitationError)
+      return null
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
+  const clearResult = useCallback(() => {
+    setFoundInvitation(null)
+  }, [])
+
+  return {
+    findInvitation,
+    isSearching,
+    error,
+    foundInvitation,
+    clearError,
+    clearResult,
+  }
+}
+
+/**
+ * 招待応答用カスタムフック（プレースホルダー実装）
+ */
+export function useInvitationResponse(): UseInvitationResponseReturn {
+  const [isResponding, setIsResponding] = useState(false)
+  const [error, setError] = useState<InvitationError | null>(null)
+  const [responseResult, setResponseResult] = useState<InvitationResponseResult | null>(null)
+
+  const respondToInvitation = useCallback(async (params: RespondToInvitationParams) => {
+    setIsResponding(true)
+    setError(null)
+
+    try {
+      // TODO: T013で実装予定
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const result: InvitationResponseResult = {
+        success: true,
+        invitation: {
+          id: 'placeholder',
+          inviterId: 'placeholder',
+          inviteeEmail: params.inviteeEmail,
+          targetRole: 'patient',
+          invitationCode: params.invitationCode,
+          status: params.action === 'accept' ? 'accepted' : 'rejected',
+          expiresAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          message: null,
+        },
+      }
+
+      setResponseResult(result)
+      return result
+    } catch (err) {
+      const invitationError: InvitationError = {
+        code: 'VALIDATION_FAILED',
+        message: err instanceof Error ? err.message : '招待応答に失敗しました',
+        details: String(err),
+      }
+      setError(invitationError)
+      return null
+    } finally {
+      setIsResponding(false)
+    }
+  }, [])
+
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
+  return {
+    respondToInvitation,
+    isResponding,
+    error,
+    responseResult,
+    clearError,
+  }
+}
+
+/**
+ * 招待一覧用カスタムフック（プレースホルダー実装）
+ */
+export function useInvitationList(): UseInvitationListReturn {
+  const [invitations, setInvitations] = useState<InvitationListResult | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<InvitationError | null>(null)
+  const [currentFilter, setCurrentFilter] = useState<InvitationFilter>({})
+
+  const refreshInvitations = useCallback(async (filter?: InvitationFilter) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // TODO: 招待一覧API実装時に対応
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const result: InvitationListResult = {
+        invitations: [],
+        totalCount: 0,
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrevious: false,
+        },
+        stats: {
+          sentCount: 0,
+          receivedCount: 0,
+          acceptedCount: 0,
+          expiredCount: 0,
+          todayCreatedCount: 0,
+        },
+      }
+
+      setInvitations(result)
+      if (filter) setCurrentFilter(filter)
+    } catch (err) {
+      const invitationError: InvitationError = {
+        code: 'VALIDATION_FAILED',
+        message: err instanceof Error ? err.message : '招待一覧取得に失敗しました',
+        details: String(err),
+      }
+      setError(invitationError)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const updateFilter = useCallback(
+    (filter: InvitationFilter) => {
+      setCurrentFilter(filter)
+      refreshInvitations(filter)
+    },
+    [refreshInvitations]
+  )
+
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
+  return {
+    invitations,
+    refreshInvitations,
+    isLoading,
+    error,
+    updateFilter,
+    currentFilter,
+    clearError,
+  }
+}
+
+/**
+ * 招待統合管理用カスタムフック
+ */
+export function useInvitationManager(): UseInvitationManagerReturn {
+  const create = useInvitationCreate()
+  const find = useInvitationFind()
+  const respond = useInvitationResponse()
+  const list = useInvitationList()
+
+  const refreshAll = useCallback(async () => {
+    await list.refreshInvitations()
+  }, [list])
+
+  const clearAllErrors = useCallback(() => {
+    create.clearError()
+    find.clearError()
+    respond.clearError()
+    list.clearError()
+  }, [create, find, respond, list])
+
+  return {
+    create,
+    find,
+    respond,
+    list,
+    refreshAll,
+    clearAllErrors,
+  }
+}

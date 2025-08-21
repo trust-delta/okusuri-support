@@ -11,10 +11,9 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   cancelInvitation,
   createInvitation,
-  getCurrentPair,
   getReceivedInvitations,
   getSentInvitations,
-  respondToInvitation,
+  respondToInvitationByToken,
   terminatePair,
 } from '../api/pair-service'
 import type {
@@ -41,20 +40,12 @@ export function usePairs(): PairManagementState {
   })
 
   // Zustandストアからペア状態を取得
-  const {
-    currentPair,
-    pairPartner,
-    hasPair,
-    isLoading: pairLoading,
-    error: pairError,
-    fetchPair,
-    reset: resetPair,
-  } = usePairStore()
+  const { currentPair, isLoading: pairLoading, error: pairError, fetchPair } = usePairStore()
 
   const [pairs, setPairs] = useState<PairState>({
-    currentPair,
+    currentPair: currentPair || undefined,
     isLoading: pairLoading,
-    error: pairError,
+    error: pairError || undefined,
   })
 
   /**
@@ -170,7 +161,7 @@ export function usePairs(): PairManagementState {
    */
   const handleRespondToInvitation = useCallback(
     async (data: InvitationResponseFormData) => {
-      const result = await respondToInvitation(data)
+      const result = await respondToInvitationByToken(data)
 
       if (result.success) {
         // 受信した招待一覧を更新
@@ -232,9 +223,9 @@ export function usePairs(): PairManagementState {
   // Zustandストアの状態をPairStateに同期
   useEffect(() => {
     setPairs({
-      currentPair,
+      currentPair: currentPair || undefined,
       isLoading: pairLoading,
-      error: pairError,
+      error: pairError || undefined,
     })
   }, [currentPair, pairLoading, pairError])
 
@@ -329,15 +320,15 @@ export interface UsePairReturn {
 export function usePair(): UsePairReturn {
   const { currentPair, pairPartner, hasPair, isLoading, error, fetchPair, reset } = usePairStore()
 
-  const { isAuthenticated, isInitialized: authInitialized } = useAuth()
+  const { isAuthenticated } = useAuth()
   const isInitialized = usePairStore((state) => state.isInitialized)
 
   // 認証完了時にペア情報を自動取得
   useEffect(() => {
-    if (isAuthenticated && authInitialized && !isInitialized) {
+    if (isAuthenticated && !isInitialized) {
       fetchPair()
     }
-  }, [isAuthenticated, authInitialized, isInitialized, fetchPair])
+  }, [isAuthenticated, isInitialized, fetchPair])
 
   // 認証解除時にペア情報をクリア
   useEffect(() => {

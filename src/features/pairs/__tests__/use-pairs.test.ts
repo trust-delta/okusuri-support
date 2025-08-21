@@ -4,7 +4,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { UserPair } from '../../types'
+import type { UserPair } from '../types'
 
 // Supabase関連のモック（先にモックしてからインポート）
 vi.mock('@/lib/supabase', () => ({
@@ -20,7 +20,15 @@ vi.mock('@/lib/supabase/config', () => ({
 }))
 
 // モック設定
-vi.mock('../../api/pair-service')
+vi.mock('../api/pair-service', () => ({
+  getCurrentPair: vi.fn(),
+  createInvitation: vi.fn(),
+  findInvitationByCode: vi.fn(),
+  respondToInvitation: vi.fn(),
+  terminatePair: vi.fn(),
+  getSentInvitations: vi.fn(),
+  getReceivedInvitations: vi.fn(),
+}))
 vi.mock('@/features/auth', () => ({
   useAuth: vi.fn(() => ({
     isAuthenticated: true,
@@ -30,9 +38,9 @@ vi.mock('@/features/auth', () => ({
 }))
 
 import { usePairStore } from '@/stores/pairs'
-import * as pairService from '../../api/pair-service'
+import * as pairService from '../api/pair-service'
 // モック後にインポート
-import { useCurrentUserPairRole, usePair, usePairPermissions } from '../use-pairs'
+import { useCurrentUserPairRole, usePair, usePairPermissions } from '../hooks/use-pairs'
 
 describe('usePair', () => {
   const mockPair: UserPair = {
@@ -92,7 +100,9 @@ describe('usePair', () => {
     })
 
     it('ペア情報を再取得できる', async () => {
-      vi.mocked(pairService.getCurrentPair).mockResolvedValue({
+      ;(
+        pairService.getCurrentPair as vi.MockedFunction<typeof pairService.getCurrentPair>
+      ).mockResolvedValue({
         success: true,
         data: mockPair,
       })
@@ -128,17 +138,19 @@ describe('usePair', () => {
 
   describe('認証連携', () => {
     it('認証完了時にペア情報を自動取得する', async () => {
-      vi.mocked(pairService.getCurrentPair).mockResolvedValue({
+      ;(
+        pairService.getCurrentPair as vi.MockedFunction<typeof pairService.getCurrentPair>
+      ).mockResolvedValue({
         success: true,
         data: mockPair,
       })
 
       const { useAuth } = await import('@/features/auth')
-      vi.mocked(useAuth).mockReturnValue({
+      ;(useAuth as vi.MockedFunction<typeof useAuth>).mockReturnValue({
         isAuthenticated: true,
         isInitialized: true,
         user: { id: 'user-123', email: 'test@example.com', role: 'patient' },
-      } as any)
+      } as never)
 
       renderHook(() => usePair())
 
@@ -155,11 +167,11 @@ describe('usePair', () => {
       })
 
       const { useAuth } = await import('@/features/auth')
-      vi.mocked(useAuth).mockReturnValue({
+      ;(useAuth as vi.MockedFunction<typeof useAuth>).mockReturnValue({
         isAuthenticated: false,
         isInitialized: true,
         user: null,
-      } as any)
+      } as never)
 
       renderHook(() => usePair())
 
@@ -202,9 +214,9 @@ describe('useCurrentUserPairRole', () => {
     })
 
     const { useAuth } = await import('@/features/auth')
-    vi.mocked(useAuth).mockReturnValue({
+    ;(useAuth as vi.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { id: 'user-123', role: 'patient' },
-    } as any)
+    } as never)
 
     const { result } = renderHook(() => useCurrentUserPairRole())
 
@@ -218,9 +230,9 @@ describe('useCurrentUserPairRole', () => {
     })
 
     const { useAuth } = await import('@/features/auth')
-    vi.mocked(useAuth).mockReturnValue({
+    ;(useAuth as vi.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { id: 'user-456', role: 'supporter' },
-    } as any)
+    } as never)
 
     const { result } = renderHook(() => useCurrentUserPairRole())
 
@@ -265,9 +277,9 @@ describe('usePairPermissions', () => {
     })
 
     const { useAuth } = await import('@/features/auth')
-    vi.mocked(useAuth).mockReturnValue({
+    ;(useAuth as vi.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { id: 'user-123', role: 'patient' },
-    } as any)
+    } as never)
 
     const { result } = renderHook(() => usePairPermissions())
 
@@ -284,9 +296,9 @@ describe('usePairPermissions', () => {
     })
 
     const { useAuth } = await import('@/features/auth')
-    vi.mocked(useAuth).mockReturnValue({
+    ;(useAuth as vi.MockedFunction<typeof useAuth>).mockReturnValue({
       user: { id: 'user-456', role: 'supporter' },
-    } as any)
+    } as never)
 
     const { result } = renderHook(() => usePairPermissions())
 
