@@ -5,32 +5,29 @@ export const createGroup = mutation({
   args: {
     name: v.string(),
     description: v.optional(v.string()),
-    creatorAuth0Id: v.string(),
     creatorRole: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args) => {
-    // ユーザーを取得
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_auth0Id", (q) => q.eq("auth0Id", args.creatorAuth0Id))
-      .first();
-
-    if (!user) {
-      throw new Error("ユーザーが見つかりません");
+    // Convex Authで認証されたユーザーを取得
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("認証が必要です");
     }
+
+    const userId = identity.subject;
 
     // グループを作成
     const groupId = await ctx.db.insert("groups", {
       name: args.name,
       description: args.description,
-      createdBy: user._id,
+      createdBy: userId,
       createdAt: Date.now(),
     });
 
     // 作成者をメンバーとして追加
     await ctx.db.insert("groupMembers", {
       groupId,
-      userId: user._id,
+      userId,
       role: args.creatorRole,
       joinedAt: Date.now(),
     });
@@ -41,51 +38,32 @@ export const createGroup = mutation({
 
 export const completeOnboardingWithNewGroup = mutation({
   args: {
-    auth0Id: v.string(),
-    email: v.string(),
     userName: v.string(),
     groupName: v.string(),
     groupDescription: v.optional(v.string()),
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args) => {
-    // ユーザーを取得または作成
-    let user = await ctx.db
-      .query("users")
-      .withIndex("by_auth0Id", (q) => q.eq("auth0Id", args.auth0Id))
-      .first();
-
-    if (!user) {
-      // ユーザーが存在しない場合は作成
-      const userId = await ctx.db.insert("users", {
-        auth0Id: args.auth0Id,
-        email: args.email,
-        name: args.userName,
-        createdAt: Date.now(),
-      });
-      user = await ctx.db.get(userId);
-      if (!user) {
-        throw new Error("ユーザーの作成に失敗しました");
-      }
-    } else {
-      // 既存ユーザーの名前を更新
-      await ctx.db.patch(user._id, {
-        name: args.userName,
-      });
+    // Convex Authで認証されたユーザーを取得
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("認証が必要です");
     }
+
+    const userId = identity.subject;
 
     // グループを作成
     const groupId = await ctx.db.insert("groups", {
       name: args.groupName,
       description: args.groupDescription,
-      createdBy: user._id,
+      createdBy: userId,
       createdAt: Date.now(),
     });
 
     // グループに参加
     await ctx.db.insert("groupMembers", {
       groupId,
-      userId: user._id,
+      userId,
       role: args.role,
       joinedAt: Date.now(),
     });
@@ -97,25 +75,22 @@ export const completeOnboardingWithNewGroup = mutation({
 export const joinGroup = mutation({
   args: {
     groupId: v.id("groups"),
-    auth0Id: v.string(),
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args) => {
-    // ユーザーを取得
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_auth0Id", (q) => q.eq("auth0Id", args.auth0Id))
-      .first();
-
-    if (!user) {
-      throw new Error("ユーザーが見つかりません");
+    // Convex Authで認証されたユーザーを取得
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("認証が必要です");
     }
+
+    const userId = identity.subject;
 
     // 既に参加済みかチェック
     const existing = await ctx.db
       .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("groupId"), args.groupId))
-      .filter((q) => q.eq(q.field("userId"), user._id))
       .first();
 
     if (existing) {
@@ -125,7 +100,7 @@ export const joinGroup = mutation({
     // グループに参加
     return await ctx.db.insert("groupMembers", {
       groupId: args.groupId,
-      userId: user._id,
+      userId,
       role: args.role,
       joinedAt: Date.now(),
     });
@@ -135,21 +110,37 @@ export const joinGroup = mutation({
 export const getGroupMembers = query({
   args: { groupId: v.id("groups") },
   handler: async (ctx, args) => {
+    // 認証確認
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("認証が必要です");
+    }
+
+    const userId = identity.subject;
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
     const memberships = await ctx.db
       .query("groupMembers")
-      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
       .collect();
 
-    // ユーザー情報を取得
+    // Convex Authのユーザー情報を取得
     return Promise.all(
       memberships.map(async (membership) => {
-        const user = await ctx.db.get(membership.userId);
         return {
           userId: membership.userId,
           role: membership.role,
           joinedAt: membership.joinedAt,
-          name: user?.name,
-          email: user?.email,
         };
       }),
     );
@@ -157,20 +148,19 @@ export const getGroupMembers = query({
 });
 
 export const getUserGroupStatus = query({
-  args: { auth0Id: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_auth0Id", (q) => q.eq("auth0Id", args.auth0Id))
-      .first();
-
-    if (!user) {
+  args: {},
+  handler: async (ctx) => {
+    // Convex Authで認証されたユーザーを取得
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
       return { hasGroup: false, groups: [] };
     }
 
+    const userId = identity.subject;
+
     const memberships = await ctx.db
       .query("groupMembers")
-      .filter((q) => q.eq(q.field("userId"), user._id))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
 
     if (memberships.length === 0) {

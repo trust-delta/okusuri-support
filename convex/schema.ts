@@ -1,24 +1,22 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
-  users: defineTable({
-    auth0Id: v.string(),
-    email: v.string(),
-    name: v.string(),
-    createdAt: v.number(),
-  }).index("by_auth0Id", ["auth0Id"]),
+  ...authTables,
+
+  // Convex Authのusersテーブルを使用するため、カスタムusersテーブルは不要
 
   groups: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
-    createdBy: v.id("users"),
+    createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
   }),
 
   groupMembers: defineTable({
     groupId: v.id("groups"),
-    userId: v.id("users"),
+    userId: v.string(), // Convex AuthのuserIdを文字列として保存
     role: v.union(v.literal("patient"), v.literal("supporter")),
     joinedAt: v.number(),
   })
@@ -30,7 +28,7 @@ export default defineSchema({
     groupId: v.id("groups"),
     name: v.string(), // 薬剤名
     description: v.optional(v.string()), // 備考・説明
-    createdBy: v.id("users"),
+    createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
     isActive: v.boolean(), // 服用中かどうか
   })
@@ -53,7 +51,7 @@ export default defineSchema({
     ),
     dosage: v.optional(v.string()), // 用量 (例: "1錠", "2カプセル")
     notes: v.optional(v.string()), // メモ
-    createdBy: v.id("users"),
+    createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -66,7 +64,7 @@ export default defineSchema({
     scheduleId: v.optional(v.id("medicationSchedules")), // スケジュール登録済みの場合に設定
     simpleMedicineName: v.optional(v.string()), // 薬剤未登録時の表示名（例: "朝の薬"）
     groupId: v.id("groups"),
-    patientId: v.id("users"), // 服薬者のユーザーID
+    patientId: v.string(), // 服薬者のConvex AuthユーザーID
     timing: v.union(
       v.literal("morning"),
       v.literal("noon"),
@@ -81,7 +79,7 @@ export default defineSchema({
       v.literal("taken"), // 服用済み
       v.literal("skipped"), // スキップ
     ),
-    recordedBy: v.id("users"), // 記録者 (服薬者本人またはサポーター)
+    recordedBy: v.string(), // 記録者 Convex AuthユーザーID (服薬者本人またはサポーター)
     notes: v.optional(v.string()), // メモ
     createdAt: v.number(),
     updatedAt: v.number(),

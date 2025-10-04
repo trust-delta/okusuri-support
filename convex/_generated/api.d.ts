@@ -13,11 +13,10 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as auth_jwt from "../auth/jwt.js";
+import type * as auth from "../auth.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as medications from "../medications.js";
-import type * as users from "../users.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -28,11 +27,10 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  "auth/jwt": typeof auth_jwt;
+  auth: typeof auth;
   groups: typeof groups;
   http: typeof http;
   medications: typeof medications;
-  users: typeof users;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

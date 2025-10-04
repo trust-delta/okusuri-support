@@ -1,9 +1,7 @@
 "use client";
 
-import { useUser } from "@auth0/nextjs-auth0";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { recordMedication } from "@/app/actions/medications";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -21,42 +19,29 @@ const TIMINGS = [
 ];
 
 export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
-  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const today = formatJST(nowJST(), "yyyy-MM-dd");
 
-  const todayRecords = useQuery(
-    api.medications.getTodayRecords,
-    user?.sub
-      ? {
-          auth0Id: user.sub,
-          groupId,
-          scheduledDate: today,
-        }
-      : "skip",
-  );
+  const todayRecords = useQuery(api.medications.getTodayRecords, {
+    groupId,
+    scheduledDate: today,
+  });
+
+  const recordMutation = useMutation(api.medications.recordSimpleMedication);
 
   const handleRecord = async (
     timing: (typeof TIMINGS)[number]["value"],
     status: "taken" | "skipped",
   ) => {
-    if (!user?.sub) return;
-
     setIsLoading(true);
     try {
-      const result = await recordMedication({
+      await recordMutation({
         groupId,
         timing,
         scheduledDate: today,
         simpleMedicineName: TIMINGS.find((t) => t.value === timing)?.label,
         status,
       });
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      // 成功したら記録を再取得（useQueryが自動更新）
     } catch (error) {
       console.error("Record error:", error);
       alert(error instanceof Error ? error.message : "記録に失敗しました");
