@@ -13,7 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth_jwt from "../auth/jwt.js";
 import type * as groups from "../groups.js";
+import type * as http from "../http.js";
 import type * as medications from "../medications.js";
 import type * as users from "../users.js";
 
@@ -26,7 +28,9 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "auth/jwt": typeof auth_jwt;
   groups: typeof groups;
+  http: typeof http;
   medications: typeof medications;
   users: typeof users;
 }>;

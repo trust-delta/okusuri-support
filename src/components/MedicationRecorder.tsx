@@ -1,7 +1,9 @@
 "use client";
 
 import { useUser } from "@auth0/nextjs-auth0";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
+import { useState } from "react";
+import { recordMedication } from "@/app/actions/medications";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -20,6 +22,7 @@ const TIMINGS = [
 
 export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
   const { user } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
   const today = formatJST(nowJST(), "yyyy-MM-dd");
 
   const todayRecords = useQuery(
@@ -30,31 +33,42 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
           groupId,
           scheduledDate: today,
         }
-      : "skip"
+      : "skip",
   );
-
-  const recordSimple = useMutation(api.medications.recordSimpleMedication);
 
   const handleRecord = async (
     timing: (typeof TIMINGS)[number]["value"],
-    status: "taken" | "skipped"
+    status: "taken" | "skipped",
   ) => {
     if (!user?.sub) return;
 
-    await recordSimple({
-      auth0Id: user.sub,
-      groupId,
-      timing,
-      scheduledDate: today,
-      simpleMedicineName: TIMINGS.find((t) => t.value === timing)?.label,
-      status,
-    });
+    setIsLoading(true);
+    try {
+      const result = await recordMedication({
+        groupId,
+        timing,
+        scheduledDate: today,
+        simpleMedicineName: TIMINGS.find((t) => t.value === timing)?.label,
+        status,
+      });
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // 成功したら記録を再取得（useQueryが自動更新）
+    } catch (error) {
+      console.error("Record error:", error);
+      alert(error instanceof Error ? error.message : "記録に失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getRecordStatus = (timing: (typeof TIMINGS)[number]["value"]) => {
     if (!todayRecords) return null;
     return todayRecords.find(
-      (r) => r.timing === timing && r.scheduledDate === today
+      (r) => r.timing === timing && r.scheduledDate === today,
     );
   };
 
@@ -93,14 +107,16 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
                   <button
                     type="button"
                     onClick={() => handleRecord(timing.value, "taken")}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     服用
                   </button>
                   <button
                     type="button"
                     onClick={() => handleRecord(timing.value, "skipped")}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     スキップ
                   </button>
