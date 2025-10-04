@@ -1,26 +1,47 @@
+"use client";
+
 import "./globals.css";
-import { redirect } from "next/navigation";
-import { auth0 } from "@/lib/auth0";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default async function Home() {
-  const session = await auth0.getSession();
+export default function Home() {
+  const { signIn } = useAuthActions();
+  const router = useRouter();
 
-  if (session?.user) {
-    redirect("/dashboard");
-  }
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-center">お薬サポート</h1>
-        <div>
-          <a
-            href="/auth/login"
-            className="inline-block px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-          >
-            ログイン
-          </a>
+    <>
+      <Authenticated>
+        <RedirectToDashboard />
+      </Authenticated>
+      <Unauthenticated>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="space-y-4 text-center">
+            <h1 className="text-3xl font-bold">お薬サポート</h1>
+            <button
+              onClick={() => void signIn("auth0")}
+              className="inline-block px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            >
+              ログイン
+            </button>
+          </div>
         </div>
-      </div>
+      </Unauthenticated>
+    </>
+  );
+}
+
+function RedirectToDashboard() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [router]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-lg">読み込み中...</div>
     </div>
   );
 }

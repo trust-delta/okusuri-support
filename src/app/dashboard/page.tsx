@@ -1,7 +1,7 @@
 "use client";
 
-import { useUser } from "@auth0/nextjs-auth0";
-import { useQuery } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { MedicationRecorder } from "@/components/MedicationRecorder";
@@ -9,28 +9,31 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 export default function DashboardPage() {
-  const { user, isLoading: authLoading } = useUser();
+  return (
+    <>
+      <Authenticated>
+        <DashboardContent />
+      </Authenticated>
+      <Unauthenticated>
+        <RedirectToLogin />
+      </Unauthenticated>
+    </>
+  );
+}
+
+function DashboardContent() {
+  const { signOut } = useAuthActions();
   const router = useRouter();
 
-  const onboardingStatus = useQuery(
-    api.users.getOnboardingStatus,
-    user?.sub ? { auth0Id: user.sub } : "skip",
-  );
+  const groupStatus = useQuery(api.groups.getUserGroupStatus);
 
   useEffect(() => {
-    if (authLoading) return;
-
-    if (!user) {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (onboardingStatus && !onboardingStatus.isOnboarded) {
+    if (groupStatus && !groupStatus.hasGroup) {
       router.push("/onboarding");
     }
-  }, [user, authLoading, onboardingStatus, router]);
+  }, [groupStatus, router]);
 
-  if (authLoading || !onboardingStatus) {
+  if (!groupStatus) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">読み込み中...</div>
@@ -38,36 +41,53 @@ export default function DashboardPage() {
     );
   }
 
-  if (!onboardingStatus.isOnboarded) {
+  if (!groupStatus.hasGroup) {
     return null;
   }
+
+  const firstGroup = groupStatus.groups[0];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">ダッシュボード</h1>
-          <a
-            href="/auth/logout"
+          <button
+            onClick={() => void signOut()}
             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
           >
             ログアウト
-          </a>
+          </button>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-700">
-            ようこそ、{user?.name || user?.email}さん
+            グループ: {firstGroup?.groupName || "未設定"}
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            役割: {firstGroup?.role === "patient" ? "服薬者" : "サポーター"}
           </p>
         </div>
 
-        {onboardingStatus.groupId && (
+        {firstGroup && (
           <div className="mt-6">
-            <MedicationRecorder
-              groupId={onboardingStatus.groupId as Id<"groups">}
-            />
+            <MedicationRecorder groupId={firstGroup.groupId as Id<"groups">} />
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function RedirectToLogin() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/");
+  }, [router]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-lg">読み込み中...</div>
     </div>
   );
 }

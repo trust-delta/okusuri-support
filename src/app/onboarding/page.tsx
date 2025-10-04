@@ -1,6 +1,5 @@
 "use client";
 
-import { useUser } from "@auth0/nextjs-auth0";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,7 +7,6 @@ import { api } from "../../../convex/_generated/api";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user } = useUser();
   const completeOnboarding = useMutation(
     api.groups.completeOnboardingWithNewGroup,
   );
@@ -22,15 +20,9 @@ export default function OnboardingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.sub) {
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       await completeOnboarding({
-        auth0Id: user.sub,
-        email: user.email || "",
         userName,
         groupName,
         groupDescription: groupDescription || undefined,
