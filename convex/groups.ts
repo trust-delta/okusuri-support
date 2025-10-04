@@ -151,7 +151,7 @@ export const getGroupMembers = query({
           name: user?.name,
           email: user?.email,
         };
-      })
+      }),
     );
   },
 });
@@ -187,7 +187,7 @@ export const getUserGroupStatus = query({
           role: membership.role,
           joinedAt: membership.joinedAt,
         };
-      })
+      }),
     );
 
     return { hasGroup: true, groups };

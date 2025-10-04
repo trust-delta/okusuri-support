@@ -36,7 +36,7 @@ export const getOnboardingStatus = query({
       return { isOnboarded: false, reason: "no_group" };
     }
 
-    return { isOnboarded: true };
+    return { isOnboarded: true, groupId: membership.groupId };
   },
 });
 
@@ -60,11 +60,10 @@ export const getUserGroups = query({
       memberships.map(async (membership) => {
         const group = await ctx.db.get(membership.groupId);
         return { ...group, role: membership.role };
-      })
+      }),
     );
   },
 });
-
 
 export const updateUserName = mutation({
   args: {

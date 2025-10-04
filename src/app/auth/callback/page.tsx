@@ -2,19 +2,19 @@
 
 import { useUser } from "@auth0/nextjs-auth0";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { api } from "../../../../convex/_generated/api";
 
 export default function CallbackPage() {
   const { user, isLoading } = useUser();
   const router = useRouter();
   const [isCreatingUser, setIsCreatingUser] = useState(false);
-  
+
   const createUser = useMutation(api.users.createUser);
   const onboardingStatus = useQuery(
     api.users.getOnboardingStatus,
-    user?.sub && !isCreatingUser ? { auth0Id: user.sub } : "skip"
+    user?.sub && !isCreatingUser ? { auth0Id: user.sub } : "skip",
   );
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function CallbackPage() {
     }
 
     handleCallback();
-  }, [user, isLoading, onboardingStatus, router, createUser, isCreatingUser]);
+  }, [user, isLoading, onboardingStatus, router, createUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

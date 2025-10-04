@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as groups from "../groups.js";
+import type * as medications from "../medications.js";
 import type * as users from "../users.js";
 
 /**
@@ -26,6 +27,7 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   groups: typeof groups;
+  medications: typeof medications;
   users: typeof users;
 }>;
 export declare const api: FilterApi<
