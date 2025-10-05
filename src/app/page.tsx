@@ -18,7 +18,12 @@ export default function Home() {
           <p className="text-gray-600">
             服薬管理を簡単に。家族みんなで見守りをサポート。
           </p>
-          <button type="button" onClick={() => void signIn("github", { redirectTo: "/dashboard" })}>Sign in with GitHub</button>
+          <button
+            type="button"
+            onClick={() => void signIn("github", { redirectTo: "/dashboard" })}
+          >
+            Sign in with GitHub
+          </button>
         </div>
       </Unauthenticated>
     </div>
@@ -52,5 +57,3 @@ function AuthenticatedHome() {
     </div>
   );
 }
-
-

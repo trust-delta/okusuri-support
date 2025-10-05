@@ -15,7 +15,13 @@ export default function DashboardPage() {
   const groupStatus = useQuery(api.groups.getUserGroupStatus);
 
   useEffect(() => {
-    if (groupStatus && !groupStatus.hasGroup) {
+    // groupStatusがundefinedの場合は読み込み中なので何もしない
+    if (groupStatus === undefined) {
+      return;
+    }
+
+    // groupStatusがnullの場合（エラー等）または明示的にhasGroupがfalseの場合のみリダイレクト
+    if (groupStatus === null || (groupStatus && !groupStatus.hasGroup)) {
       router.push("/onboarding");
     }
   }, [groupStatus, router]);
@@ -40,7 +46,9 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">ダッシュボード</h1>
         </div>
-        <button type="button" onClick={() => void signOut()}>Sign Out</button>
+        <button type="button" onClick={() => void signOut()}>
+          Sign Out
+        </button>
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-700">
             グループ: {firstGroup?.groupName || "未設定"}

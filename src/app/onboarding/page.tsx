@@ -29,7 +29,7 @@ export default function OnboardingPage() {
         role,
       });
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
       console.error("オンボーディング失敗:", error);
       alert("エラーが発生しました。もう一度お試しください。");
