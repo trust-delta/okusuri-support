@@ -42,3 +42,6 @@ next-env.d.ts
 
 # node
 .node-version
+
+# playwright mcp
+.playwright-mcp/
