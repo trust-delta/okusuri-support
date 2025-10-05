@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
@@ -18,13 +19,10 @@ export const recordSimpleMedication = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Convex Authで認証されたユーザーを取得
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("認証が必要です");
     }
-
-    const userId = identity.subject;
 
     // グループメンバーか確認
     const membership = await ctx.db
@@ -73,13 +71,10 @@ export const getTodayRecords = query({
     scheduledDate: v.string(),
   },
   handler: async (ctx, args) => {
-    // 認証確認
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("認証が必要です");
     }
-
-    const userId = identity.subject;
 
     // グループメンバーか確認
     const membership = await ctx.db

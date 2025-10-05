@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
@@ -8,13 +9,10 @@ export const createGroup = mutation({
     creatorRole: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args) => {
-    // Convex Authで認証されたユーザーを取得
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("認証が必要です");
     }
-
-    const userId = identity.subject;
 
     // グループを作成
     const groupId = await ctx.db.insert("groups", {
@@ -44,13 +42,10 @@ export const completeOnboardingWithNewGroup = mutation({
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args) => {
-    // Convex Authで認証されたユーザーを取得
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("認証が必要です");
     }
-
-    const userId = identity.subject;
 
     // グループを作成
     const groupId = await ctx.db.insert("groups", {
@@ -78,13 +73,10 @@ export const joinGroup = mutation({
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args) => {
-    // Convex Authで認証されたユーザーを取得
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("認証が必要です");
     }
-
-    const userId = identity.subject;
 
     // 既に参加済みかチェック
     const existing = await ctx.db
@@ -110,13 +102,10 @@ export const joinGroup = mutation({
 export const getGroupMembers = query({
   args: { groupId: v.id("groups") },
   handler: async (ctx, args) => {
-    // 認証確認
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("認証が必要です");
     }
-
-    const userId = identity.subject;
 
     // グループメンバーか確認
     const membership = await ctx.db
@@ -150,13 +139,10 @@ export const getGroupMembers = query({
 export const getUserGroupStatus = query({
   args: {},
   handler: async (ctx) => {
-    // Convex Authで認証されたユーザーを取得
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       return { hasGroup: false, groups: [] };
     }
-
-    const userId = identity.subject;
 
     const memberships = await ctx.db
       .query("groupMembers")
