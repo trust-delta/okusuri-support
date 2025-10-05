@@ -1,6 +1,6 @@
 import Resend from "@auth/core/providers/resend";
+import { generateRandomString, type RandomReader } from "@oslojs/crypto/random";
 import { Resend as ResendAPI } from "resend";
-import { RandomReader, generateRandomString } from "@oslojs/crypto/random";
 
 export const ResendOTP = Resend({
   id: "resend-otp",
@@ -22,7 +22,7 @@ export const ResendOTP = Resend({
       from: "My App <onboarding@resend.dev>",
       to: [email],
       subject: `Sign in to My App`,
-      text: "Your code is " + token,
+      text: `Your code is ${token}`,
     });
 
     if (error) {

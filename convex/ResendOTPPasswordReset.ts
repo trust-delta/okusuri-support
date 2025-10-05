@@ -1,6 +1,6 @@
 import Resend from "@auth/core/providers/resend";
+import { generateRandomString, type RandomReader } from "@oslojs/crypto/random";
 import { Resend as ResendAPI } from "resend";
-import { RandomReader, generateRandomString } from "@oslojs/crypto/random";
 
 export const ResendOTPPasswordReset = Resend({
   id: "resend-otp",
@@ -22,7 +22,7 @@ export const ResendOTPPasswordReset = Resend({
       from: "My App <onboarding@resend.dev>",
       to: [email],
       subject: `Reset your password in My App`,
-      text: "Your password reset code is " + token,
+      text: `Your password reset code is ${token}`,
     });
 
     if (error) {

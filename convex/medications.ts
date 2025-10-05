@@ -90,7 +90,7 @@ export const recordSimpleMedication = mutation({
       updatedAt: now,
     });
   },
-});;
+});
 
 // 今日の服薬記録を取得
 export const getTodayRecords = query({

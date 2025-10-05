@@ -10,7 +10,7 @@ export function PasswordReset() {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         void signIn("password", formData).then(() =>
-          setStep({ email: formData.get("email") as string })
+          setStep({ email: formData.get("email") as string }),
         );
       }}
     >

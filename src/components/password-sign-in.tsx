@@ -4,7 +4,7 @@ import { useState } from "react";
 export function PasswordSignIn() {
   const { signIn } = useAuthActions();
   const [step, setStep] = useState<"signIn" | "signUp" | { email: string }>(
-    "signIn"
+    "signIn",
   );
   return step === "signIn" || step === "signUp" ? (
     <form
@@ -12,7 +12,7 @@ export function PasswordSignIn() {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         void signIn("password", formData).then(() =>
-          setStep({ email: formData.get("email") as string })
+          setStep({ email: formData.get("email") as string }),
         );
       }}
     >

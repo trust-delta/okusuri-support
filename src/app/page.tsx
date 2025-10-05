@@ -2,11 +2,10 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
-import { PasswordSignIn } from "@/components/password-sign-in";
 
 export default function Home() {
   const { signIn } = useAuthActions();
-  const [step, setStep] = useState<"signUp" | "signIn">("signIn");
+  const [_step, _setStep] = useState<"signUp" | "signIn">("signIn");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -20,7 +19,9 @@ export default function Home() {
           <div>
             <button
               type="button"
-              onClick={() => void signIn("github", { redirectTo: "/dashboard" })}
+              onClick={() =>
+                void signIn("github", { redirectTo: "/dashboard" })
+              }
             >
               Sign in with GitHub
             </button>
@@ -28,7 +29,9 @@ export default function Home() {
           <div>
             <button
               type="button"
-              onClick={() => void signIn("google", { redirectTo: "/dashboard" })}
+              onClick={() =>
+                void signIn("google", { redirectTo: "/dashboard" })
+              }
             >
               Sign in with Google
             </button>
