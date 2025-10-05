@@ -5,8 +5,6 @@ import { authTables } from "@convex-dev/auth/server";
 export default defineSchema({
   ...authTables,
 
-  // Convex Authのusersテーブルを使用するため、カスタムusersテーブルは不要
-
   groups: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
@@ -46,8 +44,8 @@ export default defineSchema({
         v.literal("noon"), // 昼
         v.literal("evening"), // 晩
         v.literal("bedtime"), // 就寝前
-        v.literal("asNeeded"), // 頓服
-      ),
+        v.literal("asNeeded") // 頓服
+      )
     ),
     dosage: v.optional(v.string()), // 用量 (例: "1錠", "2カプセル")
     notes: v.optional(v.string()), // メモ
@@ -70,14 +68,14 @@ export default defineSchema({
       v.literal("noon"),
       v.literal("evening"),
       v.literal("bedtime"),
-      v.literal("asNeeded"),
+      v.literal("asNeeded")
     ),
     scheduledDate: v.string(), // 予定日 (YYYY-MM-DD形式)
     takenAt: v.optional(v.number()), // 実際に服用した日時 (timestamp)
     status: v.union(
       v.literal("pending"), // 未服用
       v.literal("taken"), // 服用済み
-      v.literal("skipped"), // スキップ
+      v.literal("skipped") // スキップ
     ),
     recordedBy: v.string(), // 記録者 Convex AuthユーザーID (服薬者本人またはサポーター)
     notes: v.optional(v.string()), // メモ

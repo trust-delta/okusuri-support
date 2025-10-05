@@ -1,47 +1,56 @@
 "use client";
 
-import "./globals.css";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function Home() {
   const { signIn } = useAuthActions();
-  const router = useRouter();
 
   return (
-    <>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Authenticated>
-        <RedirectToDashboard />
+        <AuthenticatedHome />
       </Authenticated>
       <Unauthenticated>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="space-y-4 text-center">
-            <h1 className="text-3xl font-bold">お薬サポート</h1>
-            <button
-              onClick={() => void signIn("auth0")}
-              className="inline-block px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-            >
-              ログイン
-            </button>
-          </div>
+        <div className="space-y-4 text-center">
+          <h1 className="text-3xl font-bold">お薬サポート</h1>
+          <p className="text-gray-600">
+            服薬管理を簡単に。家族みんなで見守りをサポート。
+          </p>
+          <button type="button" onClick={() => void signIn("github", { redirectTo: "/dashboard" })}>Sign in with GitHub</button>
         </div>
       </Unauthenticated>
-    </>
-  );
-}
-
-function RedirectToDashboard() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.push("/dashboard");
-  }, [router]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-lg">読み込み中...</div>
     </div>
   );
 }
+
+function AuthenticatedHome() {
+  const { signOut } = useAuthActions();
+  const router = useRouter();
+
+  return (
+    <div className="space-y-4 text-center">
+      <h1 className="text-3xl font-bold">お薬サポート</h1>
+      <p className="text-gray-600">ログイン済みです</p>
+      <div className="flex gap-4 justify-center">
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard")}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          ダッシュボードへ
+        </button>
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          ログアウト
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
