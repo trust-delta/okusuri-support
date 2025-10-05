@@ -46,6 +46,34 @@ export const recordSimpleMedication = mutation({
 
     const now = Date.now();
 
+    // 同じタイミング・日付の削除済みレコードを検索
+    const deletedRecord = await ctx.db
+      .query("medicationRecords")
+      .withIndex("by_patientId_timing_scheduledDate", (q) =>
+        q
+          .eq("patientId", patientId)
+          .eq("timing", args.timing)
+          .eq("scheduledDate", args.scheduledDate),
+      )
+      .filter((q) => q.neq(q.field("deletedAt"), undefined))
+      .first();
+
+    if (deletedRecord) {
+      // 削除済みレコードを復元
+      await ctx.db.patch(deletedRecord._id, {
+        simpleMedicineName: args.simpleMedicineName,
+        status: args.status,
+        takenAt: args.status === "taken" ? now : undefined,
+        recordedBy: userId,
+        notes: args.notes,
+        deletedAt: undefined,
+        deletedBy: undefined,
+        updatedAt: now,
+      });
+      return deletedRecord._id;
+    }
+
+    // 新規レコード作成
     return await ctx.db.insert("medicationRecords", {
       medicineId: undefined,
       scheduleId: undefined,
@@ -62,7 +90,7 @@ export const recordSimpleMedication = mutation({
       updatedAt: now,
     });
   },
-});
+});;
 
 // 今日の服薬記録を取得
 export const getTodayRecords = query({
@@ -92,8 +120,55 @@ export const getTodayRecords = query({
       .withIndex("by_groupId_scheduledDate", (q) =>
         q.eq("groupId", args.groupId).eq("scheduledDate", args.scheduledDate),
       )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
     return records;
+  },
+});
+
+// 服薬記録を論理削除
+export const deleteMedicationRecord = mutation({
+  args: {
+    recordId: v.id("medicationRecords"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    // 記録を取得
+    const record = await ctx.db.get(args.recordId);
+    if (!record) {
+      throw new Error("記録が見つかりません");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), record.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    // 既に削除済みの場合はエラー
+    if (record.deletedAt) {
+      throw new Error("この記録は既に削除されています");
+    }
+
+    const now = Date.now();
+
+    // 論理削除
+    await ctx.db.patch(args.recordId, {
+      deletedAt: now,
+      deletedBy: userId,
+      updatedAt: now,
+    });
+
+    return { success: true };
   },
 });

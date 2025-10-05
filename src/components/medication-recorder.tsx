@@ -28,6 +28,7 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
   });
 
   const recordMutation = useMutation(api.medications.recordSimpleMedication);
+  const deleteMutation = useMutation(api.medications.deleteMedicationRecord);
 
   const handleRecord = async (
     timing: (typeof TIMINGS)[number]["value"],
@@ -45,6 +46,22 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
     } catch (error) {
       console.error("Record error:", error);
       alert(error instanceof Error ? error.message : "記録に失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (recordId: Id<"medicationRecords">) => {
+    if (!confirm("この記録を取り消してもよろしいですか？")) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await deleteMutation({ recordId });
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert(error instanceof Error ? error.message : "取消しに失敗しました");
     } finally {
       setIsLoading(false);
     }
@@ -72,18 +89,28 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
               key={timing.value}
               className="flex items-center justify-between p-4 border rounded-lg"
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 flex-1">
                 <span className="font-medium w-20">{timing.label}</span>
                 {record && (
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      record.status === "taken"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {record.status === "taken" ? "服用済み" : "スキップ"}
-                  </span>
+                  <>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        record.status === "taken"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {record.status === "taken" ? "服用済み" : "スキップ"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(record._id)}
+                      disabled={isLoading}
+                      className="ml-auto px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      取消し
+                    </button>
+                  </>
                 )}
               </div>
 

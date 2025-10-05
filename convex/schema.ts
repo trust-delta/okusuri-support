@@ -79,6 +79,8 @@ export default defineSchema({
     ),
     recordedBy: v.string(), // 記録者 Convex AuthユーザーID (服薬者本人またはサポーター)
     notes: v.optional(v.string()), // メモ
+    deletedAt: v.optional(v.number()), // 削除日時（論理削除）
+    deletedBy: v.optional(v.string()), // 削除者のConvex Auth ユーザーID
     createdAt: v.number(),
     updatedAt: v.number(),
   })
