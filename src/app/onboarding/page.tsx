@@ -4,6 +4,8 @@ import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { api } from "../../../convex/_generated/api";
 
 export default function OnboardingPage() {
@@ -63,14 +65,13 @@ export default function OnboardingPage() {
               >
                 お名前
               </label>
-              <input
+              <Input
                 id="userName"
                 name="userName"
                 type="text"
                 required
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="山田 太郎"
               />
             </div>
@@ -82,14 +83,13 @@ export default function OnboardingPage() {
               >
                 グループ名
               </label>
-              <input
+              <Input
                 id="groupName"
                 name="groupName"
                 type="text"
                 required
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="山田家"
               />
             </div>
@@ -146,13 +146,9 @@ export default function OnboardingPage() {
           </div>
 
           <div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
+            <Button type="submit" disabled={isSubmitting} className="w-full">
               {isSubmitting ? "設定中..." : "設定を完了する"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

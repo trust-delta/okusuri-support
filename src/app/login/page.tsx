@@ -4,6 +4,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 import { PasswordReset } from "@/components/password-reset";
 import { PasswordSignIn } from "@/components/password-sign-in";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const { signIn } = useAuthActions();
@@ -22,12 +23,13 @@ export default function LoginPage() {
         {mode === "oauth" ? (
           <>
             <div className="space-y-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() =>
                   void signIn("github", { redirectTo: "/dashboard" })
                 }
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="w-full gap-3"
               >
                 <svg
                   className="w-5 h-5"
@@ -43,14 +45,15 @@ export default function LoginPage() {
                   />
                 </svg>
                 GitHubでログイン
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() =>
                   void signIn("google", { redirectTo: "/dashboard" })
                 }
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="w-full gap-3"
               >
                 <svg
                   className="w-5 h-5"
@@ -76,7 +79,7 @@ export default function LoginPage() {
                   />
                 </svg>
                 Googleでログイン
-              </button>
+              </Button>
             </div>
 
             <div className="relative my-6">
@@ -88,42 +91,46 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => setMode("password")}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="w-full"
             >
               メールアドレスでログイン
-            </button>
+            </Button>
           </>
         ) : mode === "password" ? (
           <div className="space-y-4">
             <PasswordSignIn />
-            <button
+            <Button
               type="button"
+              variant="link"
               onClick={() => setMode("reset")}
-              className="w-full text-sm text-blue-600 hover:text-blue-500 transition-colors"
+              className="w-full"
             >
               パスワードをお忘れですか?
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => setMode("oauth")}
-              className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="w-full"
             >
               ← 他の方法でログイン
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">
             <PasswordReset />
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => setMode("password")}
-              className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="w-full"
             >
               ← ログインに戻る
-            </button>
+            </Button>
           </div>
         )}
 

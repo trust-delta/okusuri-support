@@ -1,5 +1,12 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 export function PasswordReset() {
   const { signIn } = useAuthActions();
@@ -30,21 +37,17 @@ export function PasswordReset() {
         <p>パスワードリセット用の認証コードを送信します。</p>
       </div>
       <div>
-        <input
+        <Input
           name="email"
           placeholder="メールアドレス"
           type="email"
           required
-          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
       <input name="flow" type="hidden" value="reset" />
-      <button
-        type="submit"
-        className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium"
-      >
+      <Button type="submit" className="w-full">
         認証コードを送信
-      </button>
+      </Button>
     </form>
   ) : (
     <form
@@ -71,46 +74,49 @@ export function PasswordReset() {
         <p>{step.email} に認証コードを送信しました。</p>
         <p>メールをご確認ください。</p>
       </div>
-      <div>
-        <input
+      <div className="flex justify-center">
+        <InputOTP
           key={`reset-code-${step.email}`}
           name="code"
-          placeholder="認証コード (8桁)"
-          type="text"
-          inputMode="numeric"
-          required
-          pattern="[0-9]{8}"
           maxLength={8}
-          autoComplete="off"
-          defaultValue=""
-          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest"
-        />
+          required
+          aria-label="認証コード"
+          pattern="[0-9]{8}"
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+            <InputOTPSlot index={6} />
+            <InputOTPSlot index={7} />
+          </InputOTPGroup>
+        </InputOTP>
       </div>
       <div>
-        <input
+        <Input
           name="newPassword"
           placeholder="新しいパスワード"
           type="password"
           required
           minLength={8}
-          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
       <input name="email" value={step.email} type="hidden" />
       <input name="flow" value="reset-verification" type="hidden" />
-      <button
-        type="submit"
-        className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium"
-      >
+      <Button type="submit" className="w-full">
         パスワードをリセット
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => setStep("forgot")}
-        className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        className="w-full"
       >
         キャンセル
-      </button>
+      </Button>
     </form>
   );
 }

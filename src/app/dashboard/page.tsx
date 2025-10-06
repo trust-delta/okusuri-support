@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { MedicationRecorder } from "@/components/medication-recorder";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { api } from "../../../convex/_generated/api";
 export default function DashboardPage() {
@@ -60,9 +61,9 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">ダッシュボード</h1>
         </div>
-        <button type="button" onClick={() => void signOut()}>
+        <Button type="button" variant="outline" onClick={() => void signOut()}>
           Sign Out
-        </button>
+        </Button>
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-700">
             グループ: {firstGroup.groupName || "未設定"}

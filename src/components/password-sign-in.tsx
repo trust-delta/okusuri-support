@@ -1,5 +1,12 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 export function PasswordSignIn() {
   const { signIn } = useAuthActions();
@@ -37,40 +44,36 @@ export function PasswordSignIn() {
         </div>
       )}
       <div>
-        <input
+        <Input
           name="email"
           placeholder="メールアドレス"
           type="email"
           required
-          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
       <div>
-        <input
+        <Input
           name="password"
           placeholder="パスワード"
           type="password"
           required
           minLength={8}
-          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
       <input name="flow" value={step} type="hidden" />
-      <button
-        type="submit"
-        className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium"
-      >
+      <Button type="submit" className="w-full">
         {step === "signIn" ? "ログイン" : "新規登録"}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => {
           setStep(step === "signIn" ? "signUp" : "signIn");
         }}
-        className="w-full text-sm text-blue-600 hover:text-blue-500 transition-colors"
+        className="w-full"
       >
         {step === "signIn" ? "アカウントを作成" : "ログインに戻る"}
-      </button>
+      </Button>
     </form>
   ) : (
     <form
@@ -97,38 +100,41 @@ export function PasswordSignIn() {
         <p>{step.email} に認証コードを送信しました。</p>
         <p>メールをご確認ください。</p>
       </div>
-      <div>
-        <input
+      <div className="flex justify-center">
+        <InputOTP
           key={`code-${step.email}`}
           name="code"
-          placeholder="認証コード (8桁)"
-          type="text"
-          inputMode="numeric"
-          required
-          pattern="[0-9]{8}"
           maxLength={8}
-          autoComplete="off"
-          defaultValue=""
+          required
           aria-label="認証コード"
-          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest"
-        />
+          pattern="[0-9]{8}"
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+            <InputOTPSlot index={6} />
+            <InputOTPSlot index={7} />
+          </InputOTPGroup>
+        </InputOTP>
       </div>
       <input name="flow" type="hidden" value="email-verification" />
       <input name="email" value={step.email} type="hidden" />
       <input name="password" value={step.password} type="hidden" />
-      <button
-        type="submit"
-        className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium"
-      >
+      <Button type="submit" className="w-full">
         確認
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => setStep("signIn")}
-        className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        className="w-full"
       >
         キャンセル
-      </button>
+      </Button>
     </form>
   );
 }

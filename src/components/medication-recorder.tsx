@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -106,36 +107,37 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
                     >
                       {record.status === "taken" ? "服用済み" : "スキップ"}
                     </span>
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleDelete(record._id)}
                       disabled={isLoading}
-                      className="ml-auto px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="ml-auto text-red-600 hover:text-red-800 hover:bg-red-50"
                     >
                       取消し
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
 
               {!record && (
                 <div className="flex space-x-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleRecord(timing.value, "taken")}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     服用
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={() => handleRecord(timing.value, "skipped")}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     スキップ
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
