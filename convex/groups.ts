@@ -141,7 +141,7 @@ export const getUserGroupStatus = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      return { hasGroup: false, groups: [] };
+      return null;
     }
 
     const memberships = await ctx.db

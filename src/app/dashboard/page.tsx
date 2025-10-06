@@ -20,8 +20,14 @@ export default function DashboardPage() {
       return;
     }
 
-    // groupStatusがnullの場合（エラー等）または明示的にhasGroupがfalseの場合のみリダイレクト
-    if (groupStatus === null || (groupStatus && !groupStatus.hasGroup)) {
+    // groupStatusがnullの場合は認証されていないのでログインページへ
+    if (groupStatus === null) {
+      router.push("/login");
+      return;
+    }
+
+    // hasGroupがfalseの場合のみオンボーディングへリダイレクト
+    if (!groupStatus.hasGroup) {
       router.push("/onboarding");
     }
   }, [groupStatus, router]);

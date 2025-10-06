@@ -17,6 +17,7 @@ export const ResendOTP = Resend({
     return generateRandomString(random, alphabet, length);
   },
   async sendVerificationRequest({ identifier: email, provider, token }) {
+    console.log(`[ResendOTP] Sending OTP to ${email}: ${token}`);
     const resend = new ResendAPI(provider.apiKey);
     const { error } = await resend.emails.send({
       from: "My App <onboarding@resend.dev>",
@@ -26,7 +27,9 @@ export const ResendOTP = Resend({
     });
 
     if (error) {
+      console.error("[ResendOTP] Failed to send email:", error);
       throw new Error("Could not send");
     }
+    console.log(`[ResendOTP] Successfully sent OTP to ${email}`);
   },
 });

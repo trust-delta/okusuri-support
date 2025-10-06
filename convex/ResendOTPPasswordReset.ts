@@ -3,7 +3,7 @@ import { generateRandomString, type RandomReader } from "@oslojs/crypto/random";
 import { Resend as ResendAPI } from "resend";
 
 export const ResendOTPPasswordReset = Resend({
-  id: "resend-otp",
+  id: "resend-otp-password-reset",
   apiKey: process.env.AUTH_RESEND_KEY,
   async generateVerificationToken() {
     const random: RandomReader = {
@@ -17,6 +17,9 @@ export const ResendOTPPasswordReset = Resend({
     return generateRandomString(random, alphabet, length);
   },
   async sendVerificationRequest({ identifier: email, provider, token }) {
+    console.log(
+      `[ResendOTPPasswordReset] Sending reset code to ${email}: ${token}`,
+    );
     const resend = new ResendAPI(provider.apiKey);
     const { error } = await resend.emails.send({
       from: "My App <onboarding@resend.dev>",
@@ -26,7 +29,11 @@ export const ResendOTPPasswordReset = Resend({
     });
 
     if (error) {
+      console.error("[ResendOTPPasswordReset] Failed to send email:", error);
       throw new Error("Could not send");
     }
+    console.log(
+      `[ResendOTPPasswordReset] Successfully sent reset code to ${email}`,
+    );
   },
 });
