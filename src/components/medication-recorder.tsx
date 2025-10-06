@@ -22,13 +22,17 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const today = formatJST(nowJST(), "yyyy-MM-dd");
 
-  const todayRecords = useQuery(api.medications.getTodayRecords, {
+  const todayRecords = useQuery(api.medicationRecords.getTodayRecords, {
     groupId,
     scheduledDate: today,
   });
 
-  const recordMutation = useMutation(api.medications.recordSimpleMedication);
-  const deleteMutation = useMutation(api.medications.deleteMedicationRecord);
+  const recordMutation = useMutation(
+    api.medicationRecords.recordSimpleMedication,
+  );
+  const deleteMutation = useMutation(
+    api.medicationRecords.deleteMedicationRecord,
+  );
 
   const handleRecord = async (
     timing: (typeof TIMINGS)[number]["value"],

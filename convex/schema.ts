@@ -56,7 +56,7 @@ export default defineSchema({
     .index("by_medicineId", ["medicineId"])
     .index("by_groupId", ["groupId"]),
 
-  // 服薬記録: 実際の服薬記録
+  // 服薬記録: 実際の服薬記録（最新状態のみ）
   medicationRecords: defineTable({
     medicineId: v.optional(v.id("medicines")), // 薬剤登録済みの場合に設定
     scheduleId: v.optional(v.id("medicationSchedules")), // スケジュール登録済みの場合に設定
@@ -79,8 +79,6 @@ export default defineSchema({
     ),
     recordedBy: v.string(), // 記録者 Convex AuthユーザーID (服薬者本人またはサポーター)
     notes: v.optional(v.string()), // メモ
-    deletedAt: v.optional(v.number()), // 削除日時（論理削除）
-    deletedBy: v.optional(v.string()), // 削除者のConvex Auth ユーザーID
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -95,5 +93,44 @@ export default defineSchema({
       "patientId",
       "timing",
       "scheduledDate",
-    ]), // 特定タイミングの記録を効率的に取得
+    ]),
+
+  // 服薬記録履歴: 削除・編集前の全ての履歴を保存
+  medicationRecordsHistory: defineTable({
+    originalRecordId: v.id("medicationRecords"), // 元のレコードID
+    medicineId: v.optional(v.id("medicines")),
+    scheduleId: v.optional(v.id("medicationSchedules")),
+    simpleMedicineName: v.optional(v.string()),
+    groupId: v.id("groups"),
+    patientId: v.string(),
+    timing: v.union(
+      v.literal("morning"),
+      v.literal("noon"),
+      v.literal("evening"),
+      v.literal("bedtime"),
+      v.literal("asNeeded"),
+    ),
+    scheduledDate: v.string(),
+    takenAt: v.optional(v.number()),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("taken"),
+      v.literal("skipped"),
+    ),
+    recordedBy: v.string(),
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    // 履歴メタデータ
+    historyType: v.union(
+      v.literal("deleted"), // 削除によるアーカイブ
+      v.literal("updated"), // 更新によるアーカイブ
+    ),
+    archivedAt: v.number(), // 履歴に移動した日時
+    archivedBy: v.string(), // 履歴に移動した実行者のConvex Auth ユーザーID
+  })
+    .index("by_originalRecordId", ["originalRecordId"])
+    .index("by_groupId", ["groupId"])
+    .index("by_patientId", ["patientId"])
+    .index("by_archivedAt", ["archivedAt"]), // 特定タイミングの記録を効率的に取得
 });

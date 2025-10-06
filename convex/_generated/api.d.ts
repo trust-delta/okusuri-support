@@ -18,7 +18,8 @@ import type * as ResendOTPPasswordReset from "../ResendOTPPasswordReset.js";
 import type * as auth from "../auth.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
-import type * as medications from "../medications.js";
+import type * as medicationHistory from "../medicationHistory.js";
+import type * as medicationRecords from "../medicationRecords.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -34,7 +35,8 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   groups: typeof groups;
   http: typeof http;
-  medications: typeof medications;
+  medicationHistory: typeof medicationHistory;
+  medicationRecords: typeof medicationRecords;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
