@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -48,24 +49,23 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
         status,
       });
     } catch (error) {
-      console.error("Record error:", error);
-      alert(error instanceof Error ? error.message : "記録に失敗しました");
+      toast.error(
+        error instanceof Error ? error.message : "記録に失敗しました",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async (recordId: Id<"medicationRecords">) => {
-    if (!confirm("この記録を取り消してもよろしいですか？")) {
-      return;
-    }
-
     setIsLoading(true);
     try {
       await deleteMutation({ recordId });
+      toast.success("記録を取り消しました");
     } catch (error) {
-      console.error("Delete error:", error);
-      alert(error instanceof Error ? error.message : "取消しに失敗しました");
+      toast.error(
+        error instanceof Error ? error.message : "取消しに失敗しました",
+      );
     } finally {
       setIsLoading(false);
     }

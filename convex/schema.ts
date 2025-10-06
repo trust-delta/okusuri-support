@@ -15,6 +15,7 @@ export default defineSchema({
   groupMembers: defineTable({
     groupId: v.id("groups"),
     userId: v.string(), // Convex AuthのuserIdを文字列として保存
+    displayName: v.optional(v.string()), // ユーザー表示名
     role: v.union(v.literal("patient"), v.literal("supporter")),
     joinedAt: v.number(),
   })

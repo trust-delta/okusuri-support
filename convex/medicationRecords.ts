@@ -44,6 +44,11 @@ export const recordSimpleMedication = mutation({
 
     const patientId = patientMember?.userId ?? userId;
 
+    // 薬剤情報のバリデーション（薬剤名が必要）
+    if (!args.simpleMedicineName) {
+      throw new Error("薬剤名が必要です");
+    }
+
     const now = Date.now();
 
     // 新規レコード作成

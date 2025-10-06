@@ -5,9 +5,8 @@ import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { MedicationRecorder } from "@/components/medication-recorder";
+import { Spinner } from "@/components/ui/spinner";
 import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-
 export default function DashboardPage() {
   const router = useRouter();
   const { signOut } = useAuthActions();
@@ -34,8 +33,9 @@ export default function DashboardPage() {
 
   if (!groupStatus) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">読み込み中...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <Spinner className="size-8" />
+        <div className="text-lg text-gray-600">読み込み中...</div>
       </div>
     );
   }
@@ -45,6 +45,14 @@ export default function DashboardPage() {
   }
 
   const firstGroup = groupStatus.groups[0];
+
+  if (!firstGroup) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">グループ情報の取得に失敗しました</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -57,18 +65,16 @@ export default function DashboardPage() {
         </button>
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-700">
-            グループ: {firstGroup?.groupName || "未設定"}
+            グループ: {firstGroup.groupName || "未設定"}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            役割: {firstGroup?.role === "patient" ? "服薬者" : "サポーター"}
+            役割: {firstGroup.role === "patient" ? "服薬者" : "サポーター"}
           </p>
         </div>
 
-        {firstGroup && (
-          <div className="mt-6">
-            <MedicationRecorder groupId={firstGroup.groupId as Id<"groups">} />
-          </div>
-        )}
+        <div className="mt-6">
+          <MedicationRecorder groupId={firstGroup.groupId} />
+        </div>
       </div>
     </div>
   );

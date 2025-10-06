@@ -13,20 +13,14 @@ export function PasswordSignIn() {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         setError(null);
-        console.log("[PasswordSignIn] Submitting:", {
-          flow: formData.get("flow"),
-          email: formData.get("email"),
-        });
         void signIn("password", formData)
           .then(() => {
-            console.log("[PasswordSignIn] signIn succeeded");
             setStep({
               email: formData.get("email") as string,
               password: formData.get("password") as string,
             });
           })
           .catch((error) => {
-            console.error("[PasswordSignIn] signIn failed:", error);
             const errorMessage = error?.message || String(error);
             if (errorMessage.includes("InvalidAccountId")) {
               setError("メールアドレスまたはパスワードが正しくありません");
@@ -84,18 +78,11 @@ export function PasswordSignIn() {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         setError(null);
-        console.log("[PasswordSignIn] Verifying code:", {
-          flow: formData.get("flow"),
-          email: formData.get("email"),
-          code: formData.get("code"),
-        });
         void signIn("password", formData)
           .then(() => {
-            console.log("[PasswordSignIn] Code verification succeeded");
             window.location.href = "/dashboard";
           })
-          .catch((error) => {
-            console.error("[PasswordSignIn] Code verification failed:", error);
+          .catch(() => {
             setError("認証コードが正しくありません。もう一度お試しください。");
           });
       }}
@@ -116,11 +103,13 @@ export function PasswordSignIn() {
           name="code"
           placeholder="認証コード (8桁)"
           type="text"
+          inputMode="numeric"
           required
           pattern="[0-9]{8}"
           maxLength={8}
           autoComplete="off"
           defaultValue=""
+          aria-label="認証コード"
           className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest"
         />
       </div>

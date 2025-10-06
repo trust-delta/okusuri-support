@@ -55,10 +55,11 @@ export const completeOnboardingWithNewGroup = mutation({
       createdAt: Date.now(),
     });
 
-    // グループに参加
+    // グループに参加（表示名も保存）
     await ctx.db.insert("groupMembers", {
       groupId,
       userId,
+      displayName: args.userName,
       role: args.role,
       joinedAt: Date.now(),
     });

@@ -3,6 +3,7 @@
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 
 export default function OnboardingPage() {
@@ -31,8 +32,11 @@ export default function OnboardingPage() {
 
       router.push("/dashboard");
     } catch (error) {
-      console.error("オンボーディング失敗:", error);
-      alert("エラーが発生しました。もう一度お試しください。");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "エラーが発生しました。もう一度お試しください。",
+      );
     } finally {
       setIsSubmitting(false);
     }

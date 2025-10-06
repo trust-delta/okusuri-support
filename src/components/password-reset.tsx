@@ -13,9 +13,10 @@ export function PasswordReset() {
         setError(null);
         void signIn("password", formData)
           .then(() => setStep({ email: formData.get("email") as string }))
-          .catch((error) => {
-            console.error("[PasswordReset] Send code failed:", error);
-            setError("認証コードの送信に失敗しました。もう一度お試しください。");
+          .catch(() => {
+            setError(
+              "認証コードの送信に失敗しました。もう一度お試しください。",
+            );
           });
       }}
       className="space-y-4"
@@ -55,8 +56,7 @@ export function PasswordReset() {
           .then(() => {
             window.location.href = "/dashboard";
           })
-          .catch((error) => {
-            console.error("[PasswordReset] Verification failed:", error);
+          .catch(() => {
             setError("認証コードが正しくありません。もう一度お試しください。");
           });
       }}
