@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const { signOut } = useAuthActions();
 
   const groupStatus = useQuery(api.groups.getUserGroupStatus);
+  const currentUser = useQuery(api.groups.getCurrentUser);
 
   useEffect(() => {
     // groupStatusがundefinedの場合は読み込み中なので何もしない
@@ -60,18 +61,27 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">ダッシュボード</h1>
-          <Link href="/dashboard/settings">
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">設定</span>
-            </Button>
-          </Link>
+        <div className="mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                ダッシュボード
+              </h1>
+              {currentUser?.displayName && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  ようこそ、{currentUser.displayName}さん
+                </p>
+              )}
+            </div>
+            <Link href="/dashboard/settings">
+              <Button variant="ghost" size="icon">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">設定</span>
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Button type="button" variant="outline" onClick={() => void signOut()}>
-          Sign Out
-        </Button>
+
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <p className="text-gray-700 dark:text-gray-300">
             グループ: {firstGroup.groupName || "未設定"}
