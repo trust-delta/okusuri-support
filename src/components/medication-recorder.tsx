@@ -80,8 +80,8 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
         今日の服薬記録 ({formatJST(nowJST(), "M月d日(E)")})
       </h2>
 
@@ -92,17 +92,17 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
           return (
             <div
               key={timing.value}
-              className="flex items-center justify-between p-4 border rounded-lg"
+              className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
             >
               <div className="flex items-center space-x-4 flex-1">
-                <span className="font-medium w-20">{timing.label}</span>
+                <span className="font-medium w-20 text-gray-900 dark:text-gray-100">{timing.label}</span>
                 {record && (
                   <>
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${
                         record.status === "taken"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                       }`}
                     >
                       {record.status === "taken" ? "服用済み" : "スキップ"}
@@ -113,7 +113,7 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
                       size="sm"
                       onClick={() => handleDelete(record._id)}
                       disabled={isLoading}
-                      className="ml-auto text-red-600 hover:text-red-800 hover:bg-red-50"
+                      className="ml-auto text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       取消し
                     </Button>
@@ -146,11 +146,11 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
       </div>
 
       {todayRecords && todayRecords.length > 0 && (
-        <div className="mt-6 pt-6 border-t">
-          <h3 className="font-medium mb-2">記録履歴</h3>
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <h3 className="font-medium mb-2 text-gray-900 dark:text-gray-100">記録履歴</h3>
           <div className="space-y-2">
             {todayRecords.map((record) => (
-              <div key={record._id} className="text-sm text-gray-600">
+              <div key={record._id} className="text-sm text-gray-600 dark:text-gray-400">
                 {TIMINGS.find((t) => t.value === record.timing)?.label} -{" "}
                 {record.status === "taken" ? "服用済み" : "スキップ"}{" "}
                 {record.takenAt &&

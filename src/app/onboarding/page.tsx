@@ -45,13 +45,13 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             初期設定
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             お薬サポートを始めましょう
           </p>
         </div>
@@ -61,7 +61,7 @@ export default function OnboardingPage() {
             <div className="mb-4">
               <label
                 htmlFor="userName"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
                 お名前
               </label>
@@ -79,7 +79,7 @@ export default function OnboardingPage() {
             <div className="mb-4">
               <label
                 htmlFor="groupName"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
                 グループ名
               </label>
@@ -97,7 +97,7 @@ export default function OnboardingPage() {
             <div className="mb-4">
               <label
                 htmlFor="groupDescription"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
                 グループの説明（任意）
               </label>
@@ -106,14 +106,14 @@ export default function OnboardingPage() {
                 name="groupDescription"
                 value={groupDescription}
                 onChange={(e) => setGroupDescription(e.target.value)}
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="家族でお薬を管理するグループです"
                 rows={3}
               />
             </div>
 
             <div className="mb-4">
-              <p className="block text-sm font-medium text-gray-700 mb-2">
+              <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 あなたの役割
               </p>
               <div className="space-y-2">
@@ -126,7 +126,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setRole(e.target.value as "patient")}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                   />
-                  <span className="ml-2 text-sm text-gray-700">服薬する人</span>
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">服薬する人</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -137,7 +137,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setRole(e.target.value as "supporter")}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                     サポートする人
                   </span>
                 </label>

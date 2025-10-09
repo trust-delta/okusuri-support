@@ -5,6 +5,8 @@ import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { MedicationRecorder } from "@/components/medication-recorder";
+import { Settings } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { api } from "../../../convex/_generated/api";
@@ -36,7 +38,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <Spinner className="size-8" />
-        <div className="text-lg text-gray-600">読み込み中...</div>
+        <div className="text-lg text-gray-600 dark:text-gray-400">読み込み中...</div>
       </div>
     );
   }
@@ -50,25 +52,31 @@ export default function DashboardPage() {
   if (!firstGroup) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">グループ情報の取得に失敗しました</div>
+        <div className="text-lg text-gray-900 dark:text-gray-100">グループ情報の取得に失敗しました</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">ダッシュボード</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">ダッシュボード</h1>
+          <Link href="/dashboard/settings">
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">設定</span>
+            </Button>
+          </Link>
         </div>
         <Button type="button" variant="outline" onClick={() => void signOut()}>
           Sign Out
         </Button>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <p className="text-gray-700 dark:text-gray-300">
             グループ: {firstGroup.groupName || "未設定"}
           </p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             役割: {firstGroup.role === "patient" ? "服薬者" : "サポーター"}
           </p>
         </div>
