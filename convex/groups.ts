@@ -170,3 +170,66 @@ export const getUserGroupStatus = query({
     return { hasGroup: true, groups };
   },
 });
+
+
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    // ユーザーのグループメンバーシップから表示名を取得
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+
+    return {
+      userId,
+      displayName: membership?.displayName,
+    };
+  },
+});
+
+export const updateUserDisplayName = mutation({
+  args: {
+    displayName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    if (!args.displayName || args.displayName.trim().length === 0) {
+      throw new Error("表示名を入力してください");
+    }
+
+    if (args.displayName.length > 50) {
+      throw new Error("表示名は50文字以内で入力してください");
+    }
+
+    // ユーザーの全てのグループメンバーシップを更新
+    const memberships = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    if (memberships.length === 0) {
+      throw new Error("グループに参加していません");
+    }
+
+    // 全てのメンバーシップの表示名を更新
+    await Promise.all(
+      memberships.map((membership) =>
+        ctx.db.patch(membership._id, {
+          displayName: args.displayName.trim(),
+        }),
+      ),
+    );
+
+    return { success: true };
+  },
+});
