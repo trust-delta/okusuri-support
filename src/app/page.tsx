@@ -6,7 +6,9 @@ export default function Home() {
       {/* ヘッダー */}
       <header className="container mx-auto px-4 py-6">
         <nav className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">お薬サポート</h1>
+          <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            お薬サポート
+          </h1>
           <Link
             href="/login"
             className="px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
@@ -42,21 +44,27 @@ export default function Home() {
         <section className="grid md:grid-cols-3 gap-8 mb-20">
           <div className="text-center space-y-4 p-6">
             <div className="text-4xl">📝</div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">簡単記録</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              簡単記録
+            </h3>
             <p className="text-gray-600 dark:text-gray-400">
               お薬を飲んだらワンタップで記録。シンプルで使いやすいインターフェース。
             </p>
           </div>
           <div className="text-center space-y-4 p-6">
             <div className="text-4xl">👨‍👩‍👧‍👦</div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">家族で共有</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              家族で共有
+            </h3>
             <p className="text-gray-600 dark:text-gray-400">
               離れて暮らす家族の服薬状況も確認できます。安心の見守り機能。
             </p>
           </div>
           <div className="text-center space-y-4 p-6">
             <div className="text-4xl">📊</div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">履歴管理</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              履歴管理
+            </h3>
             <p className="text-gray-600 dark:text-gray-400">
               過去の服薬記録を一覧で確認。健康管理に役立つデータを蓄積。
             </p>

@@ -134,7 +134,6 @@ export const getUserGroupStatus = query({
   },
 });
 
-
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
@@ -142,6 +141,9 @@ export const getCurrentUser = query({
     if (!userId) {
       return null;
     }
+
+    // usersテーブルから基本情報を取得
+    const user = await ctx.db.get(userId);
 
     // ユーザーのグループメンバーシップから表示名を取得
     const membership = await ctx.db
@@ -152,6 +154,9 @@ export const getCurrentUser = query({
     return {
       userId,
       displayName: membership?.displayName,
+      image: user?.image,
+      name: user?.name,
+      email: user?.email,
     };
   },
 });
@@ -181,12 +186,27 @@ export const getGroupMembers = query({
       .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
       .collect();
 
-    return members.map((member) => ({
-      userId: member.userId,
-      displayName: member.displayName,
-      role: member.role,
-      joinedAt: member.joinedAt,
-    }));
+    // 各メンバーのusersテーブルからプロフィール画像を取得
+    const membersWithImages = await Promise.all(
+      members.map(async (member) => {
+        const user = await ctx.db
+          .query("users")
+          .filter((q) => q.eq(q.field("_id"), member.userId))
+          .first();
+
+        return {
+          userId: member.userId,
+          displayName: member.displayName,
+          role: member.role,
+          joinedAt: member.joinedAt,
+          image: user?.image,
+          name: user?.name,
+          email: user?.email,
+        };
+      }),
+    );
+
+    return membersWithImages;
   },
 });
 
@@ -231,6 +251,79 @@ export const updateUserDisplayName = mutation({
   },
 });
 
+/**
+ * プロフィール画像を更新
+ */
+export const updateUserImage = mutation({
+  args: {
+    imageUrl: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    // 画像URLの簡易バリデーション
+    if (!args.imageUrl || args.imageUrl.trim().length === 0) {
+      throw new Error("画像URLを入力してください");
+    }
+
+    // URLの形式チェック（httpまたはhttpsで始まるか、Convex storageのURLか）
+    const url = args.imageUrl.trim();
+    if (
+      !url.startsWith("http://") &&
+      !url.startsWith("https://") &&
+      !url.startsWith("/_storage/")
+    ) {
+      throw new Error("有効な画像URLを入力してください");
+    }
+
+    // usersテーブルを更新
+    await ctx.db.patch(userId, {
+      image: url,
+    });
+
+    return { success: true };
+  },
+});
+
+/**
+ * 画像アップロード用のURLを生成
+ */
+export const generateUploadUrl = mutation({
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+/**
+ * アップロードされた画像のストレージIDを使ってプロフィール画像を更新
+ */
+export const updateUserImageFromStorage = mutation({
+  args: {
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    // ストレージIDからURLを取得
+    const imageUrl = await ctx.storage.getUrl(args.storageId);
+    if (!imageUrl) {
+      throw new Error("画像が見つかりません");
+    }
+
+    // usersテーブルを更新（URLではなくストレージIDを保存する方が良い）
+    await ctx.db.patch(userId, {
+      image: imageUrl,
+    });
+
+    return { success: true, imageUrl };
+  },
+});
 
 /**
  * 招待コードを使用してグループに参加
@@ -279,7 +372,9 @@ export const joinGroupWithInvitation = mutation({
 
     // 許可ロールチェック
     if (!invitation.allowedRoles.includes(args.role)) {
-      throw new Error(`この招待では${invitation.allowedRoles.join("、")}として参加できます`);
+      throw new Error(
+        `この招待では${invitation.allowedRoles.join("、")}として参加できます`,
+      );
     }
 
     // 4. 既存メンバーシップ確認（重複参加防止）

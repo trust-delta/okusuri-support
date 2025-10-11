@@ -1,10 +1,10 @@
 "use client";
 
 import { useAction, useQuery } from "convex/react";
+import { Copy, Share2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Copy, Share2, Trash2 } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -34,7 +34,9 @@ export function GroupInvitationManager({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "招待コードの作成に失敗しました"
+        error instanceof Error
+          ? error.message
+          : "招待コードの作成に失敗しました",
       );
     } finally {
       setIsCreating(false);
@@ -45,12 +47,12 @@ export function GroupInvitationManager({
     try {
       await navigator.clipboard.writeText(invitationLink);
       toast.success("招待リンクをクリップボードにコピーしました");
-    } catch (error) {
+    } catch (_error) {
       toast.error("コピーに失敗しました");
     }
   };
 
-  const handleShare = async (invitationLink: string, code: string) => {
+  const handleShare = async (invitationLink: string, _code: string) => {
     // Web Share API が利用可能な場合
     if (navigator.share) {
       try {
@@ -126,15 +128,14 @@ export function GroupInvitationManager({
                     </div>
                     <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
                       <p>
-                        有効期限:{" "}
-                        {expiryDate.toLocaleDateString("ja-JP")}{" "}
+                        有効期限: {expiryDate.toLocaleDateString("ja-JP")}{" "}
                         {expiryDate.toLocaleTimeString("ja-JP")}
                       </p>
                       <p>
                         許可ロール:{" "}
                         {invitation.allowedRoles
                           .map((role) =>
-                            role === "patient" ? "患者" : "サポーター"
+                            role === "patient" ? "患者" : "サポーター",
                           )
                           .join(", ")}
                       </p>

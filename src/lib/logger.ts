@@ -3,7 +3,7 @@
  * 開発時にデバッグ情報を出力し、本番環境では無効化できるロガー
  */
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+type LogLevel = "debug" | "info" | "warn" | "error";
 
 interface LoggerConfig {
   enabled: boolean;
@@ -23,8 +23,8 @@ class Logger {
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {
-      enabled: process.env.NODE_ENV !== 'production',
-      level: (process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel) || 'debug',
+      enabled: process.env.NODE_ENV !== "production",
+      level: (process.env.NEXT_PUBLIC_LOG_LEVEL as LogLevel) || "debug",
       ...config,
     };
   }
@@ -38,7 +38,7 @@ class Logger {
 
   private formatMessage(level: LogLevel, message: string): string {
     const timestamp = new Date().toISOString();
-    const prefix = this.config.prefix ? `[${this.config.prefix}]` : '';
+    const prefix = this.config.prefix ? `[${this.config.prefix}]` : "";
     return `[${timestamp}] [${level.toUpperCase()}]${prefix} ${message}`;
   }
 
@@ -50,42 +50,42 @@ class Logger {
     const formattedMessage = this.formatMessage(level, message);
 
     switch (level) {
-      case 'debug':
+      case "debug":
         console.debug(formattedMessage, ...args);
         break;
-      case 'info':
+      case "info":
         console.info(formattedMessage, ...args);
         break;
-      case 'warn':
+      case "warn":
         console.warn(formattedMessage, ...args);
         break;
-      case 'error':
+      case "error":
         console.error(formattedMessage, ...args);
         break;
     }
   }
 
   debug(message: string, ...args: unknown[]): void {
-    this.log('debug', message, ...args);
+    this.log("debug", message, ...args);
   }
 
   info(message: string, ...args: unknown[]): void {
-    this.log('info', message, ...args);
+    this.log("info", message, ...args);
   }
 
   warn(message: string, ...args: unknown[]): void {
-    this.log('warn', message, ...args);
+    this.log("warn", message, ...args);
   }
 
   error(message: string, ...args: unknown[]): void {
-    this.log('error', message, ...args);
+    this.log("error", message, ...args);
   }
 
   /**
    * 特定の処理時間を計測
    */
   async time<T>(label: string, fn: () => Promise<T>): Promise<T> {
-    if (!this.shouldLog('debug')) {
+    if (!this.shouldLog("debug")) {
       return fn();
     }
 
@@ -119,7 +119,10 @@ class Logger {
 export const logger = new Logger();
 
 // 特定のモジュール用にprefixを付けたloggerを作成するヘルパー
-export const createLogger = (prefix: string, config?: Partial<LoggerConfig>): Logger => {
+export const createLogger = (
+  prefix: string,
+  config?: Partial<LoggerConfig>,
+): Logger => {
   return new Logger({ ...config, prefix });
 };
 

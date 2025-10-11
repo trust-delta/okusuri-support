@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,9 @@ export default function InvitePage({ params }: InvitePageProps) {
   const router = useRouter();
   const [invitationCode, setInvitationCode] = useState<string>("");
   const [displayName, setDisplayName] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"patient" | "supporter">("supporter");
+  const [selectedRole, setSelectedRole] = useState<"patient" | "supporter">(
+    "supporter",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // パラメータから招待コードを取得
@@ -29,7 +31,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   // 招待コードの検証とグループ情報の取得
   const invitationInfo = useQuery(
     api.invitations.validateInvitationCode,
-    invitationCode ? { code: invitationCode } : "skip"
+    invitationCode ? { code: invitationCode } : "skip",
   );
 
   const joinGroup = useMutation(api.groups.joinGroupWithInvitation);
@@ -61,7 +63,7 @@ export default function InvitePage({ params }: InvitePageProps) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "エラーが発生しました。もう一度お試しください。"
+          : "エラーが発生しました。もう一度お試しください。",
       );
     } finally {
       setIsSubmitting(false);
@@ -74,7 +76,9 @@ export default function InvitePage({ params }: InvitePageProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">招待情報を確認中...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            招待情報を確認中...
+          </p>
         </div>
       </div>
     );
@@ -117,7 +121,8 @@ export default function InvitePage({ params }: InvitePageProps) {
             「{groupName}」に招待されています
           </p>
           <p className="mt-1 text-center text-xs text-gray-500 dark:text-gray-500">
-            有効期限: {expiryDate.toLocaleDateString("ja-JP")} {expiryDate.toLocaleTimeString("ja-JP")}
+            有効期限: {expiryDate.toLocaleDateString("ja-JP")}{" "}
+            {expiryDate.toLocaleTimeString("ja-JP")}
           </p>
         </div>
 
@@ -157,7 +162,9 @@ export default function InvitePage({ params }: InvitePageProps) {
                       name="role"
                       value="patient"
                       checked={selectedRole === "patient"}
-                      onChange={(e) => setSelectedRole(e.target.value as "patient")}
+                      onChange={(e) =>
+                        setSelectedRole(e.target.value as "patient")
+                      }
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -172,7 +179,9 @@ export default function InvitePage({ params }: InvitePageProps) {
                       name="role"
                       value="supporter"
                       checked={selectedRole === "supporter"}
-                      onChange={(e) => setSelectedRole(e.target.value as "supporter")}
+                      onChange={(e) =>
+                        setSelectedRole(e.target.value as "supporter")
+                      }
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">

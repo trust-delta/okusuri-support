@@ -1,12 +1,13 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { MedicationRecorder } from "@/components/medication-recorder";
-import { GroupMembersList } from "@/components/group-members-list";
 import { Settings } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { GroupMembersList } from "@/components/group-members-list";
+import { MedicationRecorder } from "@/components/medication-recorder";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { api } from "../../../convex/_generated/api";
@@ -38,7 +39,9 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <Spinner className="size-8" />
-        <div className="text-lg text-gray-600 dark:text-gray-400">読み込み中...</div>
+        <div className="text-lg text-gray-600 dark:text-gray-400">
+          読み込み中...
+        </div>
       </div>
     );
   }
@@ -52,7 +55,9 @@ export default function DashboardPage() {
   if (!firstGroup) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg text-gray-900 dark:text-gray-100">グループ情報の取得に失敗しました</div>
+        <div className="text-lg text-gray-900 dark:text-gray-100">
+          グループ情報の取得に失敗しました
+        </div>
       </div>
     );
   }
@@ -62,15 +67,30 @@ export default function DashboardPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                ダッシュボード
-              </h1>
-              {currentUser?.displayName && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  ようこそ、{currentUser.displayName}さん
-                </p>
+            <div className="flex items-center space-x-3">
+              {currentUser && (
+                <Avatar className="h-12 w-12">
+                  <AvatarImage
+                    src={currentUser.image || undefined}
+                    alt={currentUser.name || "プロフィール画像"}
+                  />
+                  <AvatarFallback>
+                    {currentUser.name?.charAt(0) ||
+                      currentUser.email?.charAt(0) ||
+                      "?"}
+                  </AvatarFallback>
+                </Avatar>
               )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  ダッシュボード
+                </h1>
+                {currentUser?.displayName && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    ようこそ、{currentUser.displayName}さん
+                  </p>
+                )}
+              </div>
             </div>
             <Link href="/dashboard/settings">
               <Button variant="ghost" size="icon">

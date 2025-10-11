@@ -3,12 +3,13 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { GroupInvitationManager } from "@/components/group-invitation-manager";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { GroupInvitationManager } from "@/components/group-invitation-manager";
 import { api } from "../../../../convex/_generated/api";
 
 export default function SettingsPage() {
@@ -17,10 +18,16 @@ export default function SettingsPage() {
   const currentUser = useQuery(api.groups.getCurrentUser);
   const groupStatus = useQuery(api.groups.getUserGroupStatus);
   const updateDisplayName = useMutation(api.groups.updateUserDisplayName);
+  const generateUploadUrl = useMutation(api.groups.generateUploadUrl);
+  const updateUserImageFromStorage = useMutation(
+    api.groups.updateUserImageFromStorage,
+  );
 
   const [displayName, setDisplayName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // 初回読み込み時に現在の表示名を設定
   useEffect(() => {
@@ -54,6 +61,57 @@ export default function SettingsPage() {
     setIsEditing(false);
   };
 
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 画像ファイルのバリデーション
+    if (!file.type.startsWith("image/")) {
+      toast.error("画像ファイルを選択してください");
+      return;
+    }
+
+    // ファイルサイズチェック (5MB以下)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("画像サイズは5MB以下にしてください");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      // Step 1: アップロードURLを生成
+      const postUrl = await generateUploadUrl();
+
+      // Step 2: ファイルをアップロード
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { storageId } = await result.json();
+
+      // Step 3: ストレージIDを使ってプロフィール画像を更新
+      await updateUserImageFromStorage({ storageId });
+
+      toast.success("プロフィール画像を更新しました");
+
+      // 入力をリセット
+      if (imageInputRef.current) {
+        imageInputRef.current.value = "";
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "画像のアップロードに失敗しました",
+      );
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -73,6 +131,47 @@ export default function SettingsPage() {
               プロフィール
             </h2>
             <div className="space-y-4">
+              {/* プロフィール画像 */}
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage
+                    src={currentUser?.image || undefined}
+                    alt={currentUser?.name || "プロフィール画像"}
+                  />
+                  <AvatarFallback className="text-2xl">
+                    {currentUser?.name?.charAt(0) ||
+                      currentUser?.email?.charAt(0) ||
+                      "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    プロフィール画像
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploadingImage}
+                      className="hidden"
+                      id="profile-image-upload"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={isUploadingImage}
+                    >
+                      {isUploadingImage ? "アップロード中..." : "画像を変更"}
+                    </Button>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      JPG, PNG (最大5MB)
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div>
                 <label
                   htmlFor="displayName"

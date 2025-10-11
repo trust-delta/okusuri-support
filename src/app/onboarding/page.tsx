@@ -66,7 +66,9 @@ export default function OnboardingPage() {
               className="w-full h-auto py-6 flex flex-col items-center gap-2"
               variant="default"
             >
-              <span className="text-lg font-semibold">新しいグループを作成</span>
+              <span className="text-lg font-semibold">
+                新しいグループを作成
+              </span>
               <span className="text-sm font-normal opacity-90">
                 家族やケアチームのグループを作ります
               </span>
@@ -115,7 +117,9 @@ export default function OnboardingPage() {
                 name="invitationCode"
                 type="text"
                 value={invitationCode}
-                onChange={(e) => setInvitationCode(e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  setInvitationCode(e.target.value.toUpperCase())
+                }
                 placeholder="ABCD1234"
                 maxLength={8}
                 className="text-center text-lg font-mono tracking-wider"
@@ -236,7 +240,9 @@ export default function OnboardingPage() {
                     onChange={(e) => setRole(e.target.value as "patient")}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">服薬する人</span>
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    服薬する人
+                  </span>
                 </label>
                 <label className="flex items-center">
                   <input

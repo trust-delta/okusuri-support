@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { Users, UserCircle } from "lucide-react";
+import { Users } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -21,7 +22,9 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
             グループメンバー
           </h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">読み込み中...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          読み込み中...
+        </p>
       </div>
     );
   }
@@ -55,7 +58,18 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
               key={member.userId}
               className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
             >
-              <UserCircle className="h-10 w-10 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+              <Avatar className="h-10 w-10 flex-shrink-0">
+                <AvatarImage
+                  src={member.image || undefined}
+                  alt={member.name || member.displayName || "プロフィール画像"}
+                />
+                <AvatarFallback>
+                  {member.name?.charAt(0) ||
+                    member.displayName?.charAt(0) ||
+                    member.email?.charAt(0) ||
+                    "?"}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-gray-900 dark:text-gray-100 truncate">

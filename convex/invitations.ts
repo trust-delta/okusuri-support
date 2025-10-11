@@ -1,7 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { action, mutation, query } from "./_generated/server";
 import { api } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
+import { action, mutation, query } from "./_generated/server";
 
 /**
  * 招待コードを生成
@@ -86,8 +87,11 @@ export const createInvitation = action({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args): Promise<{
-    invitationId: any;
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    invitationId: Id<"groupInvitations">;
     code: string;
     expiresAt: number;
     allowedRoles: ("patient" | "supporter")[];
@@ -95,18 +99,23 @@ export const createInvitation = action({
   }> => {
     // 最大3回試行
     const maxAttempts = 3;
-    
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       // 1. 暗号学的に安全な招待コード生成
-      const code: string = await ctx.runAction(api.invitationCodeGenerator.generateInvitationCodeAction);
-      
+      const code: string = await ctx.runAction(
+        api.invitationCodeGenerator.generateInvitationCodeAction,
+      );
+
       try {
         // 2. 招待レコード作成
-        const result = await ctx.runMutation(api.invitations.createInvitationInternal, {
-          groupId: args.groupId,
-          code,
-        });
-        
+        const result = await ctx.runMutation(
+          api.invitations.createInvitationInternal,
+          {
+            groupId: args.groupId,
+            code,
+          },
+        );
+
         return result;
       } catch (error) {
         // コード重複の場合は再試行
@@ -116,10 +125,12 @@ export const createInvitation = action({
         throw error;
       }
     }
-    
-    throw new Error("招待コードの生成に失敗しました。3回試行しても一意なコードを生成できませんでした。");
+
+    throw new Error(
+      "招待コードの生成に失敗しました。3回試行しても一意なコードを生成できませんでした。",
+    );
   },
-});;;
+});
 
 /**
  * 招待コードを検証してグループ情報を返す
@@ -221,7 +232,7 @@ export const listGroupInvitations = query({
 
     return invitations.map((inv) => {
       const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${inv.code}`;
-      
+
       return {
         _id: inv._id,
         code: inv.code,
