@@ -1,10 +1,10 @@
 "use client";
 
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { MedicationRecorder } from "@/components/medication-recorder";
+import { GroupMembersList } from "@/components/group-members-list";
 import { Settings } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { api } from "../../../convex/_generated/api";
 export default function DashboardPage() {
   const router = useRouter();
-  const { signOut } = useAuthActions();
 
   const groupStatus = useQuery(api.groups.getUserGroupStatus);
   const currentUser = useQuery(api.groups.getCurrentUser);
@@ -89,6 +88,10 @@ export default function DashboardPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             役割: {firstGroup.role === "patient" ? "服薬者" : "サポーター"}
           </p>
+        </div>
+
+        <div className="mt-6">
+          <GroupMembersList groupId={firstGroup.groupId} />
         </div>
 
         <div className="mt-6">

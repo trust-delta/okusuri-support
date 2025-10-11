@@ -18,6 +18,8 @@ import type * as ResendOTPPasswordReset from "../ResendOTPPasswordReset.js";
 import type * as auth from "../auth.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
+import type * as invitationCodeGenerator from "../invitationCodeGenerator.js";
+import type * as invitations from "../invitations.js";
 import type * as medicationHistory from "../medicationHistory.js";
 import type * as medicationRecords from "../medicationRecords.js";
 
@@ -35,6 +37,8 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   groups: typeof groups;
   http: typeof http;
+  invitationCodeGenerator: typeof invitationCodeGenerator;
+  invitations: typeof invitations;
   medicationHistory: typeof medicationHistory;
   medicationRecords: typeof medicationRecords;
 }>;

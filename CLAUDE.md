@@ -15,7 +15,7 @@ Kiro-style Spec Driven Development implementation using claude code slash comman
 **Specs** (`.kiro/specs/`) - Formalize development process for individual features
 
 ### Active Specifications
-- Check `.kiro/specs/` for active specifications
+- **group-invitation**: グループ参加・招待機能（招待コード/リンクによるグループ参加）
 - Use `/kiro:spec-status [feature-name]` to check progress
 
 ## Development Guidelines

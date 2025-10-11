@@ -14,10 +14,12 @@ export default function OnboardingPage() {
     api.groups.completeOnboardingWithNewGroup,
   );
 
+  const [mode, setMode] = useState<"select" | "create" | "join">("select");
   const [userName, setUserName] = useState("");
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [role, setRole] = useState<"patient" | "supporter">("patient");
+  const [invitationCode, setInvitationCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,15 +46,123 @@ export default function OnboardingPage() {
     }
   };
 
+  // モード選択画面
+  if (mode === "select") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+              初期設定
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+              お薬サポートを始めましょう
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <Button
+              onClick={() => setMode("create")}
+              className="w-full h-auto py-6 flex flex-col items-center gap-2"
+              variant="default"
+            >
+              <span className="text-lg font-semibold">新しいグループを作成</span>
+              <span className="text-sm font-normal opacity-90">
+                家族やケアチームのグループを作ります
+              </span>
+            </Button>
+
+            <Button
+              onClick={() => setMode("join")}
+              className="w-full h-auto py-6 flex flex-col items-center gap-2"
+              variant="outline"
+            >
+              <span className="text-lg font-semibold">招待コードで参加</span>
+              <span className="text-sm font-normal">
+                既存のグループに参加します
+              </span>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 招待コードで参加モード
+  if (mode === "join") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+              招待コードで参加
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+              グループ管理者から受け取った招待コードを入力してください
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="invitationCode"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                招待コード
+              </label>
+              <Input
+                id="invitationCode"
+                name="invitationCode"
+                type="text"
+                value={invitationCode}
+                onChange={(e) => setInvitationCode(e.target.value.toUpperCase())}
+                placeholder="ABCD1234"
+                maxLength={8}
+                className="text-center text-lg font-mono tracking-wider"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                8文字の英数字コード
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setMode("select")}
+                variant="outline"
+                className="flex-1"
+              >
+                戻る
+              </Button>
+              <Button
+                onClick={() => {
+                  if (invitationCode.length === 8) {
+                    router.push(`/invite/${invitationCode}`);
+                  } else {
+                    toast.error("招待コードは8文字です");
+                  }
+                }}
+                disabled={invitationCode.length !== 8}
+                className="flex-1"
+              >
+                次へ
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 新規グループ作成モード（既存のフォーム）
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
-            初期設定
+            新しいグループを作成
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            お薬サポートを始めましょう
+            グループ情報を入力してください
           </p>
         </div>
 
@@ -145,8 +255,16 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          <div>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => setMode("select")}
+              variant="outline"
+              className="flex-1"
+            >
+              戻る
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? "設定中..." : "設定を完了する"}
             </Button>
           </div>

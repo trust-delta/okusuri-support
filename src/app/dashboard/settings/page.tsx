@@ -8,12 +8,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { GroupInvitationManager } from "@/components/group-invitation-manager";
 import { api } from "../../../../convex/_generated/api";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { signOut } = useAuthActions();
   const currentUser = useQuery(api.groups.getCurrentUser);
+  const groupStatus = useQuery(api.groups.getUserGroupStatus);
   const updateDisplayName = useMutation(api.groups.updateUserDisplayName);
 
   const [displayName, setDisplayName] = useState("");
@@ -142,6 +144,16 @@ export default function SettingsPage() {
               <ThemeToggle />
             </div>
           </div>
+
+          {/* グループ招待管理 */}
+          {groupStatus?.groups[0] && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                グループ招待
+              </h2>
+              <GroupInvitationManager groupId={groupStatus.groups[0].groupId} />
+            </div>
+          )}
 
           {/* アカウント設定 */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
