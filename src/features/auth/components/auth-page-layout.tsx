@@ -1,4 +1,11 @@
 import type { ReactNode } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface AuthPageLayoutProps {
   title: string;
@@ -33,31 +40,27 @@ export function AuthPageLayout({
 }: AuthPageLayoutProps) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md space-y-8 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {title}
-          </h1>
-          {description && (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              {description}
-            </p>
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl">{title}</CardTitle>
+          {description && <CardDescription>{description}</CardDescription>}
+        </CardHeader>
+
+        <CardContent>
+          {children}
+
+          {showBackLink && (
+            <div className="mt-6 text-center">
+              <a
+                href={backLinkHref}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors"
+              >
+                {backLinkText}
+              </a>
+            </div>
           )}
-        </div>
-
-        {children}
-
-        {showBackLink && (
-          <div className="mt-6 text-center">
-            <a
-              href={backLinkHref}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors"
-            >
-              {backLinkText}
-            </a>
-          </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

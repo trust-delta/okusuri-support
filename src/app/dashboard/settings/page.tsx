@@ -7,6 +7,13 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SignOutButton } from "@/features/auth";
 import { GroupInvitationManager } from "@/features/group";
@@ -125,11 +132,11 @@ export default function SettingsPage() {
 
         <div className="space-y-6">
           {/* プロフィール設定 */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-              プロフィール
-            </h2>
-            <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>プロフィール</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               {/* プロフィール画像 */}
               <div className="flex items-center space-x-4">
                 <Avatar className="h-20 w-20">
@@ -222,44 +229,52 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* テーマ設定 */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-              表示設定
-            </h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-gray-100">
-                  テーマ
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  ライト・ダーク・システム設定から選択できます
-                </p>
+          <Card>
+            <CardHeader>
+              <CardTitle>表示設定</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">
+                    テーマ
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    ライト・ダーク・システム設定から選択できます
+                  </p>
+                </div>
+                <ThemeToggle />
               </div>
-              <ThemeToggle />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* グループ招待管理 */}
           {groupStatus?.groups[0] && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                グループ招待
-              </h2>
-              <GroupInvitationManager groupId={groupStatus.groups[0].groupId} />
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>グループ招待</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GroupInvitationManager
+                  groupId={groupStatus.groups[0].groupId}
+                />
+              </CardContent>
+            </Card>
           )}
 
           {/* アカウント設定 */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-              アカウント
-            </h2>
-            <SignOutButton />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>アカウント</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SignOutButton />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import { api } from "../../../../convex/_generated/api";
@@ -29,12 +30,13 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
   // ローディング中はスケルトンを表示
   if (records === undefined) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-          今日の服薬記録 ({formatJST(nowJST(), "M月d日(E)")})
-        </h2>
-
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            今日の服薬記録 ({formatJST(nowJST(), "M月d日(E)")})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {MEDICATION_TIMINGS.map((timing) => (
             <div
               key={timing.value}
@@ -49,18 +51,19 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
               </div>
             </div>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-        今日の服薬記録 ({formatJST(nowJST(), "M月d日(E)")})
-      </h2>
-
-      <div className="space-y-4">
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          今日の服薬記録 ({formatJST(nowJST(), "M月d日(E)")})
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         {MEDICATION_TIMINGS.map((timing) => {
           const recordStatus = getRecordByTiming(timing.value);
 
@@ -85,28 +88,31 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
             </div>
           );
         })}
-      </div>
 
-      {records && records.length > 0 && (
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <h3 className="font-medium mb-2 text-gray-900 dark:text-gray-100">
-            記録履歴
-          </h3>
-          <div className="space-y-2">
-            {records.map((rec) => (
-              <div
-                key={rec._id}
-                className="text-sm text-gray-600 dark:text-gray-400"
-              >
-                {MEDICATION_TIMINGS.find((t) => t.value === rec.timing)?.label}{" "}
-                - {rec.status === "taken" ? "服用済み" : "スキップ"}{" "}
-                {rec.takenAt &&
-                  `(${formatJST(new Date(rec.takenAt), "HH:mm")})`}
-              </div>
-            ))}
+        {records && records.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 className="font-medium mb-2 text-gray-900 dark:text-gray-100">
+              記録履歴
+            </h3>
+            <div className="space-y-2">
+              {records.map((rec) => (
+                <div
+                  key={rec._id}
+                  className="text-sm text-gray-600 dark:text-gray-400"
+                >
+                  {
+                    MEDICATION_TIMINGS.find((t) => t.value === rec.timing)
+                      ?.label
+                  }{" "}
+                  - {rec.status === "taken" ? "服用済み" : "スキップ"}{" "}
+                  {rec.takenAt &&
+                    `(${formatJST(new Date(rec.takenAt), "HH:mm")})`}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

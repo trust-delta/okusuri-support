@@ -10,10 +10,10 @@
  */
 
 import { convexTest } from "convex-test";
-import { expect, it, describe } from "vitest";
+import { describe, expect, it } from "vitest";
 import { api } from "../../_generated/api";
-import schema from "../../schema";
 import type { Id } from "../../_generated/dataModel";
+import schema from "../../schema";
 
 describe("パフォーマンステスト - 招待機能", () => {
   describe("Task 17.1: 招待コード生成のレイテンシ測定", () => {

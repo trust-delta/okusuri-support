@@ -1,8 +1,8 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { api } from "../../_generated/api";
-import schema from "../../schema";
 import type { Id } from "../../_generated/dataModel";
+import schema from "../../schema";
 
 describe("createInvitationInternal - 招待コード生成ロジック", () => {
   describe("認証とメンバーシップ検証", () => {

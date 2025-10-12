@@ -1,6 +1,7 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
 import { GroupMembersList } from "@/features/group";
 import { MedicationRecorder } from "@/features/medication";
 import { api } from "../../../convex/_generated/api";
@@ -66,14 +67,16 @@ export default async function DashboardPage() {
           <DashboardHeader currentUser={currentUserResult} />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <p className="text-gray-700 dark:text-gray-300">
-            グループ: {firstGroup.groupName || "未設定"}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            役割: {firstGroup.role === "patient" ? "服薬者" : "サポーター"}
-          </p>
-        </div>
+        <Card>
+          <CardContent>
+            <p className="text-gray-700 dark:text-gray-300">
+              グループ: {firstGroup.groupName || "未設定"}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              役割: {firstGroup.role === "patient" ? "服薬者" : "サポーター"}
+            </p>
+          </CardContent>
+        </Card>
 
         <div className="mt-6">
           <GroupMembersList members={groupMembersResult} />
