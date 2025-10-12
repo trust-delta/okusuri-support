@@ -22,7 +22,6 @@ import type * as groups_queries from "../groups/queries.js";
 import type * as groups_users from "../groups/users.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
-import type * as invitationCodeGenerator from "../invitationCodeGenerator.js";
 import type * as invitations_actions from "../invitations/actions.js";
 import type * as invitations_index from "../invitations/index.js";
 import type * as invitations_invitationCodeGenerator from "../invitations/invitationCodeGenerator.js";
@@ -59,7 +58,6 @@ declare const fullApi: ApiFromModules<{
   "groups/users": typeof groups_users;
   groups: typeof groups;
   http: typeof http;
-  invitationCodeGenerator: typeof invitationCodeGenerator;
   "invitations/actions": typeof invitations_actions;
   "invitations/index": typeof invitations_index;
   "invitations/invitationCodeGenerator": typeof invitations_invitationCodeGenerator;
