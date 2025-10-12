@@ -5,6 +5,7 @@ import { Copy, Share2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
@@ -76,8 +77,33 @@ export function GroupInvitationManager({
 
   if (invitations === undefined) {
     return (
-      <div className="text-center py-4">
-        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-9 w-32" />
+        </div>
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-7 w-32" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-9 w-9" />
+                  <Skeleton className="h-9 w-9" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

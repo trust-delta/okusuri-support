@@ -1,6 +1,7 @@
 "use client";
 
 import { Users } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { useGroupMembers } from "../hooks/use-group-members";
 import { MemberCard } from "./member-card";
@@ -21,9 +22,17 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
             グループメンバー
           </h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          読み込み中...
-        </p>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 p-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

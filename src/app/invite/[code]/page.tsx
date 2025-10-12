@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "../../../../convex/_generated/api";
 
 // フォームスキーマの定義
@@ -105,12 +106,20 @@ export default function InvitePage({ params }: InvitePageProps) {
   // ローディング中
   if (invitationInfo === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
-            招待情報を確認中...
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-3/4 mx-auto" />
+            <Skeleton className="h-6 w-1/2 mx-auto" />
+            <Skeleton className="h-4 w-1/3 mx-auto" />
+          </div>
+          <div className="mt-8 space-y-6">
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
         </div>
       </div>
     );

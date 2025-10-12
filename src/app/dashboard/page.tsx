@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { GroupMembersList } from "@/features/group";
 import { MedicationRecorder } from "@/features/medication";
 import { api } from "../../../convex/_generated/api";
@@ -37,10 +37,41 @@ export default function DashboardPage() {
 
   if (!groupStatus) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <Spinner className="size-8" />
-        <div className="text-lg text-gray-600 dark:text-gray-400">
-          読み込み中...
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-48" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </div>
+              <Skeleton className="h-9 w-9" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-3">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Skeleton className="h-5 w-5" />
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
