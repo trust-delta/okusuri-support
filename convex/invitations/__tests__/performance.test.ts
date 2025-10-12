@@ -1,8 +1,8 @@
 /**
  * パフォーマンステスト - 招待機能
- * 
+ *
  * このテストスイートは、招待コード生成、一覧表示、並行参加処理のパフォーマンスを測定します。
- * 
+ *
  * 目標:
  * - 招待コード生成: 500ms以下
  * - 100件の招待一覧表示: 2秒以内
@@ -41,16 +41,21 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       // レイテンシ測定
       const startTime = performance.now();
-      await asUser.mutation(api.invitations.mutations.createInvitationInternal, {
-        groupId,
-        code: "PERF001",
-      });
+      await asUser.mutation(
+        api.invitations.mutations.createInvitationInternal,
+        {
+          groupId,
+          code: "PERF001",
+        },
+      );
       const endTime = performance.now();
       const latency = endTime - startTime;
 
       // 500ms以内であることを確認
       expect(latency).toBeLessThan(500);
-      console.log(`招待コード生成レイテンシ (Patient不在): ${latency.toFixed(2)}ms`);
+      console.log(
+        `招待コード生成レイテンシ (Patient不在): ${latency.toFixed(2)}ms`,
+      );
     });
 
     it("Patient存在グループでの招待コード生成が500ms以内で完了", async () => {
@@ -84,16 +89,21 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       // レイテンシ測定（Patient存在チェックを含む）
       const startTime = performance.now();
-      await asUser.mutation(api.invitations.mutations.createInvitationInternal, {
-        groupId,
-        code: "PERF002",
-      });
+      await asUser.mutation(
+        api.invitations.mutations.createInvitationInternal,
+        {
+          groupId,
+          code: "PERF002",
+        },
+      );
       const endTime = performance.now();
       const latency = endTime - startTime;
 
       // 500ms以内であることを確認
       expect(latency).toBeLessThan(500);
-      console.log(`招待コード生成レイテンシ (Patient存在): ${latency.toFixed(2)}ms`);
+      console.log(
+        `招待コード生成レイテンシ (Patient存在): ${latency.toFixed(2)}ms`,
+      );
     });
 
     it("複数回の招待コード生成で一貫したパフォーマンスを維持", async () => {
@@ -121,10 +131,13 @@ describe("パフォーマンステスト - 招待機能", () => {
       // 10回連続で招待コードを生成
       for (let i = 0; i < 10; i++) {
         const startTime = performance.now();
-        await asUser.mutation(api.invitations.mutations.createInvitationInternal, {
-          groupId,
-          code: `PERF${String(i + 10).padStart(3, "0")}`,
-        });
+        await asUser.mutation(
+          api.invitations.mutations.createInvitationInternal,
+          {
+            groupId,
+            code: `PERF${String(i + 10).padStart(3, "0")}`,
+          },
+        );
         const endTime = performance.now();
         latencies.push(endTime - startTime);
       }
@@ -136,7 +149,8 @@ describe("パフォーマンステスト - 招待機能", () => {
       });
 
       // 平均レイテンシを計算
-      const avgLatency = latencies.reduce((sum, l) => sum + l, 0) / latencies.length;
+      const avgLatency =
+        latencies.reduce((sum, l) => sum + l, 0) / latencies.length;
       console.log(`平均レイテンシ: ${avgLatency.toFixed(2)}ms`);
       expect(avgLatency).toBeLessThan(250); // 平均は250ms以下を期待
     });
@@ -186,7 +200,7 @@ describe("パフォーマンステスト - 招待機能", () => {
       const startTime = performance.now();
       const invitations = await asUser.query(
         api.invitations.queries.listGroupInvitations,
-        { groupId }
+        { groupId },
       );
       const endTime = performance.now();
       const latency = endTime - startTime;
@@ -242,7 +256,7 @@ describe("パフォーマンステスト - 招待機能", () => {
       const startTimeAll = performance.now();
       const allInvitations = await asUser.query(
         api.invitations.queries.listGroupInvitations,
-        { groupId }
+        { groupId },
       );
       const endTimeAll = performance.now();
       const latencyAll = endTimeAll - startTimeAll;
@@ -253,7 +267,7 @@ describe("パフォーマンステスト - 招待機能", () => {
       // クライアント側でのフィルタリング（有効な招待のみ）
       const startTimeFilter = performance.now();
       const validInvitations = allInvitations.filter(
-        (inv) => !inv.isUsed && inv.expiresAt > Date.now()
+        (inv) => !inv.isUsed && inv.expiresAt > Date.now(),
       );
       const endTimeFilter = performance.now();
       const latencyFilter = endTimeFilter - startTimeFilter;
@@ -400,7 +414,7 @@ describe("パフォーマンステスト - 招待機能", () => {
               invitationCode: setup.code,
               role: "supporter",
               displayName: `競合ユーザー${index + 1}`,
-            }
+            },
           );
           return { success: true, result };
         } catch (error) {
@@ -413,7 +427,9 @@ describe("パフォーマンステスト - 招待機能", () => {
       // 成功は1人のみ
       const successCount = results.filter((r) => r.success).length;
       expect(successCount).toBe(1);
-      console.log(`成功: ${successCount}人, 失敗: ${results.length - successCount}人`);
+      console.log(
+        `成功: ${successCount}人, 失敗: ${results.length - successCount}人`,
+      );
 
       // グループメンバーが2人（作成者+1人）になっていることを確認
       const members = await t.run(async (ctx) => {
@@ -490,7 +506,7 @@ describe("パフォーマンステスト - 招待機能", () => {
               invitationCode: setup.invitationCodes[index],
               role: "patient",
               displayName: `Patient候補${index + 1}`,
-            }
+            },
           );
           return { success: true, result, userId };
         } catch (error) {
@@ -504,7 +520,7 @@ describe("パフォーマンステスト - 招待機能", () => {
       const successCount = results.filter((r) => r.success).length;
       expect(successCount).toBe(1);
       console.log(
-        `Patient参加成功: ${successCount}人, 失敗: ${results.length - successCount}人`
+        `Patient参加成功: ${successCount}人, 失敗: ${results.length - successCount}人`,
       );
 
       // グループメンバーを確認

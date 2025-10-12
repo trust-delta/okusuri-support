@@ -1,6 +1,6 @@
 /**
  * 既存機能との統合テスト
- * 
+ *
  * 招待機能の追加が既存のグループ作成・参加フローに悪影響を与えないことを確認します。
  */
 
@@ -29,7 +29,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
           groupName: "統合テストグループ",
           groupDescription: "既存フロー確認用",
           role: "patient",
-        }
+        },
       );
 
       expect(result.success).toBe(true);
@@ -73,7 +73,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
           groupName: "Supporterグループ",
           groupDescription: "Supporter作成テスト",
           role: "supporter",
-        }
+        },
       );
 
       expect(result.success).toBe(true);
@@ -96,7 +96,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const { groupId, newUserId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
         const newUserId = await ctx.db.insert("users", {});
-        
+
         const groupId = await ctx.db.insert("groups", {
           name: "既存参加フローグループ",
           createdBy: creatorId,
@@ -116,10 +116,13 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const asNewUser = t.withIdentity({ subject: newUserId });
 
       // 招待コードなしでの参加（既存フロー）
-      const membershipId = await asNewUser.mutation(api.groups.mutations.joinGroup, {
-        groupId,
-        role: "supporter",
-      });
+      const membershipId = await asNewUser.mutation(
+        api.groups.mutations.joinGroup,
+        {
+          groupId,
+          role: "supporter",
+        },
+      );
 
       expect(membershipId).toBeDefined();
 
@@ -143,7 +146,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       // セットアップ: グループとメンバーを作成
       const { groupId, userId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
-        
+
         const groupId = await ctx.db.insert("groups", {
           name: "重複参加確認グループ",
           createdBy: userId,
@@ -167,7 +170,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
         asUser.mutation(api.groups.mutations.joinGroup, {
           groupId,
           role: "supporter",
-        })
+        }),
       ).rejects.toThrow("既にグループに参加しています");
     });
   });
@@ -198,9 +201,12 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
 
       // 未認証での検証試行（Convex Authは未認証でもクエリを実行可能）
       // ただし、ビジネスロジックで認証を要求する場合もある
-      const result = await t.query(api.invitations.queries.validateInvitationCode, {
-        code: "AUTH0001",
-      });
+      const result = await t.query(
+        api.invitations.queries.validateInvitationCode,
+        {
+          code: "AUTH0001",
+        },
+      );
 
       // 招待コードの検証自体は認証不要（公開情報）
       expect(result.valid).toBe(true);
@@ -242,7 +248,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
           invitationCode: "AUTH0002",
           role: "supporter",
           displayName: "未認証ユーザー",
-        })
+        }),
       ).rejects.toThrow();
     });
 
@@ -272,7 +278,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
 
       // 自分のグループを取得
       const status = await asUser.query(api.groups.queries.getUserGroupStatus);
-      
+
       expect(status).toBeDefined();
       expect(status?.hasGroup).toBe(true);
       expect(status?.groups).toHaveLength(1);
@@ -287,7 +293,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const { user1Id, user2Id, groupId } = await t.run(async (ctx) => {
         const user1Id = await ctx.db.insert("users", {});
         const user2Id = await ctx.db.insert("users", {});
-        
+
         const groupId = await ctx.db.insert("groups", {
           name: "ユーザー1のグループ",
           createdBy: user1Id,
@@ -311,7 +317,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
         asUser2.mutation(api.invitations.mutations.createInvitationInternal, {
           groupId,
           code: "UNAUTHORIZED",
-        })
+        }),
       ).rejects.toThrow();
     });
 
@@ -322,7 +328,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const { memberId, nonMemberId, groupId } = await t.run(async (ctx) => {
         const memberId = await ctx.db.insert("users", {});
         const nonMemberId = await ctx.db.insert("users", {});
-        
+
         const groupId = await ctx.db.insert("groups", {
           name: "招待一覧テストグループ",
           createdBy: memberId,
@@ -354,14 +360,16 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const asMember = t.withIdentity({ subject: memberId });
       const invitations = await asMember.query(
         api.invitations.queries.listGroupInvitations,
-        { groupId }
+        { groupId },
       );
       expect(invitations).toHaveLength(1);
 
       // 非メンバーは一覧取得不可
       const asNonMember = t.withIdentity({ subject: nonMemberId });
       await expect(
-        asNonMember.query(api.invitations.queries.listGroupInvitations, { groupId })
+        asNonMember.query(api.invitations.queries.listGroupInvitations, {
+          groupId,
+        }),
       ).rejects.toThrow();
     });
   });

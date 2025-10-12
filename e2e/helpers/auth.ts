@@ -8,37 +8,37 @@ import type { Page } from "@playwright/test";
  * メールアドレスとパスワードでサインインする
  */
 export async function signIn(
-	page: Page,
-	email: string,
-	password: string,
+  page: Page,
+  email: string,
+  password: string,
 ): Promise<void> {
-	await page.goto("/sign-in");
+  await page.goto("/sign-in");
 
-	// メールアドレスを入力
-	await page.fill('input[type="email"]', email);
+  // メールアドレスを入力
+  await page.fill('input[type="email"]', email);
 
-	// パスワードを入力
-	await page.fill('input[type="password"]', password);
+  // パスワードを入力
+  await page.fill('input[type="password"]', password);
 
-	// サインインボタンをクリック
-	await page.click('button[type="submit"]');
+  // サインインボタンをクリック
+  await page.click('button[type="submit"]');
 
-	// ダッシュボードへのリダイレクトを待つ
-	await page.waitForURL("/dashboard");
+  // ダッシュボードへのリダイレクトを待つ
+  await page.waitForURL("/dashboard");
 }
 
 /**
  * サインアウトする
  */
 export async function signOut(page: Page): Promise<void> {
-	// ユーザーメニューを開く
-	await page.click('[data-testid="user-menu"]');
+  // ユーザーメニューを開く
+  await page.click('[data-testid="user-menu"]');
 
-	// サインアウトボタンをクリック
-	await page.click('button:has-text("サインアウト")');
+  // サインアウトボタンをクリック
+  await page.click('button:has-text("サインアウト")');
 
-	// サインインページへのリダイレクトを待つ
-	await page.waitForURL("/sign-in");
+  // サインインページへのリダイレクトを待つ
+  await page.waitForURL("/sign-in");
 }
 
 /**
@@ -47,30 +47,30 @@ export async function signOut(page: Page): Promise<void> {
  * @param userType ユーザータイプ（例: "patient", "supporter"）
  */
 export async function createTestUserAndSignIn(
-	page: Page,
-	userType: "patient" | "supporter" = "supporter",
+  page: Page,
+  userType: "patient" | "supporter" = "supporter",
 ): Promise<{
-	email: string;
-	password: string;
-	displayName: string;
+  email: string;
+  password: string;
+  displayName: string;
 }> {
-	const timestamp = Date.now();
-	const email = `test-${userType}-${timestamp}@example.com`;
-	const password = "TestPassword123!";
-	const displayName = `Test ${userType} ${timestamp}`;
+  const timestamp = Date.now();
+  const email = `test-${userType}-${timestamp}@example.com`;
+  const password = "TestPassword123!";
+  const displayName = `Test ${userType} ${timestamp}`;
 
-	await page.goto("/sign-up");
+  await page.goto("/sign-up");
 
-	// サインアップフォームに入力
-	await page.fill('input[name="email"]', email);
-	await page.fill('input[name="password"]', password);
-	await page.fill('input[name="displayName"]', displayName);
+  // サインアップフォームに入力
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
+  await page.fill('input[name="displayName"]', displayName);
 
-	// サインアップボタンをクリック
-	await page.click('button[type="submit"]');
+  // サインアップボタンをクリック
+  await page.click('button[type="submit"]');
 
-	// オンボーディングまたはダッシュボードへのリダイレクトを待つ
-	await page.waitForURL(/\/(onboarding|dashboard)/);
+  // オンボーディングまたはダッシュボードへのリダイレクトを待つ
+  await page.waitForURL(/\/(onboarding|dashboard)/);
 
-	return { email, password, displayName };
+  return { email, password, displayName };
 }

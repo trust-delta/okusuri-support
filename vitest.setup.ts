@@ -4,5 +4,5 @@ import { afterEach } from "vitest";
 
 // テストごとにクリーンアップを実行
 afterEach(() => {
-	cleanup();
+  cleanup();
 });
