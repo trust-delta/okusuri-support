@@ -262,7 +262,10 @@ export default function SettingsPage() {
             <Button
               type="button"
               variant="destructive"
-              onClick={() => void signOut()}
+              onClick={async () => {
+                await signOut();
+                router.push("/login");
+              }}
             >
               ログアウト
             </Button>

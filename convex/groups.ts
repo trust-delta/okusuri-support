@@ -149,10 +149,21 @@ export const getCurrentUser = query({
     // usersテーブルから基本情報を取得
     const user = await ctx.db.get(userId);
 
+    // カスタム画像がある場合はURLを生成、なければOAuth画像を使用
+    let imageUrl = user?.image;
+    if (user?.customImageStorageId) {
+      const customImageUrl = await ctx.storage.getUrl(
+        user.customImageStorageId,
+      );
+      if (customImageUrl) {
+        imageUrl = customImageUrl;
+      }
+    }
+
     return {
       userId,
       displayName: user?.displayName,
-      image: user?.image,
+      image: imageUrl,
       name: user?.name,
       email: user?.email,
     };
@@ -294,15 +305,15 @@ export const updateUserImageFromStorage = mutation({
       throw new Error("認証が必要です");
     }
 
-    // ストレージIDからURLを取得
+    // ストレージIDが有効か確認
     const imageUrl = await ctx.storage.getUrl(args.storageId);
     if (!imageUrl) {
       throw new Error("画像が見つかりません");
     }
 
-    // usersテーブルを更新（URLではなくストレージIDを保存する方が良い）
+    // usersテーブルにストレージIDを保存（URLではなく）
     await ctx.db.patch(userId, {
-      image: imageUrl,
+      customImageStorageId: args.storageId,
     });
 
     return { success: true, imageUrl };

@@ -13,6 +13,7 @@ export default defineSchema({
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
     displayName: v.optional(v.string()), // ユーザー表示名（全グループ共通）
+    customImageStorageId: v.optional(v.id("_storage")), // カスタムアップロード画像のストレージID
   }).index("email", ["email"]),
 
   groups: defineTable({
