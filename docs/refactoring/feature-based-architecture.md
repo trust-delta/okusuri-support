@@ -978,7 +978,77 @@ export default function LoginPage() {
 
 ---
 
-### 🔜 Phase 3-5（未実施）
+### ✅ Phase 3: グループ機能の整理（完了）
+
+**実施日**: 2025年10月12日 15:15-15:20 JST
+
+**ディレクトリ構造作成**:
+- ✅ `src/features/group/{components,hooks,types}` を作成
+
+**移動したファイル**:
+- ✅ `src/components/group-members-list.tsx` → `src/features/group/components/`
+- ✅ `src/components/group-invitation-manager.tsx` → `src/features/group/components/`
+
+**作成したファイル**:
+- ✅ `src/features/group/hooks/use-group-members.ts` - メンバー取得・ソートロジック
+- ✅ `src/features/group/components/member-card.tsx` - メンバー表示UIコンポーネント
+- ✅ 各ディレクトリの `index.ts` でエクスポート設定
+
+**リファクタリングしたファイル**:
+- ✅ `src/features/group/components/group-members-list.tsx`
+  - **Before**: 107行（ソートロジック、UI含む）
+  - **After**: 50行（フックとコンポーネント使用）
+  - **削減**: 57行（53%削減）
+
+**更新したimportパス**:
+- ✅ `src/app/dashboard/page.tsx`
+- ✅ `src/app/dashboard/settings/page.tsx`
+- 新パス: `@/features/group`
+
+**検証結果**:
+- 型チェック: ✅ 通過
+- Lint: ✅ 通過
+- フォーマット: ✅ 自動修正完了
+
+**効果**:
+- グループ関連コードが `features/group/` に集約
+- メンバー表示ロジックが再利用可能なフック・コンポーネントに
+- 約50行のコード削減
+- 保守性・テスタビリティの向上
+
+**コード比較**:
+```tsx
+// Before: 107行（複雑なロジック、インラインUI）
+export function GroupMembersList({ groupId }: GroupMembersListProps) {
+  const members = useQuery(api.groups.getGroupMembers, { groupId });
+  const sortedMembers = [...members].sort((a, b) => {
+    // ソートロジック...
+  });
+  
+  return (
+    // 大量のJSX...
+    {sortedMembers.map((member) => (
+      // 複雑なメンバー表示UI...
+    ))}
+  );
+}
+
+// After: 50行（シンプル、再利用可能）
+export function GroupMembersList({ groupId }: GroupMembersListProps) {
+  const { members, isLoading } = useGroupMembers(groupId);
+  
+  return (
+    // シンプルな構造
+    {members.map((member) => (
+      <MemberCard key={member.userId} member={member} />
+    ))}
+  );
+}
+```
+
+---
+
+### 🔜 Phase 4-5（未実施）
 
 残りのフェーズは必要に応じて実施予定。
 

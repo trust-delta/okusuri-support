@@ -5,11 +5,11 @@ import { Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { MedicationRecorder } from "@/components/medication-recorder";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { GroupMembersList } from "@/features/group";
+import { MedicationRecorder } from "@/features/medication";
 import { api } from "../../../convex/_generated/api";
 export default function DashboardPage() {
   const router = useRouter();
