@@ -3,7 +3,6 @@ import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
 import { GroupMembersList } from "@/features/group";
 import { MedicationRecorder } from "@/features/medication";
-import { formatJST, nowJST } from "@/lib/date-fns";
 import { api } from "../../../convex/_generated/api";
 import { DashboardHeader } from "./dashboard-header";
 export default async function DashboardPage() {
@@ -58,18 +57,7 @@ export default async function DashboardPage() {
     { token },
   );
 
-  const today = formatJST(nowJST(), "yyyy-MM-dd");
-  const medicationRecords = await preloadQuery(
-    api.medications.getTodayRecords,
-    {
-      groupId: firstGroup.groupId,
-      scheduledDate: today,
-    },
-    { token },
-  );
-
   const groupMembersResult = preloadedQueryResult(groupMembers);
-  const medicationRecordsResult = preloadedQueryResult(medicationRecords);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
@@ -92,11 +80,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="mt-6">
-          <MedicationRecorder
-            groupId={firstGroup.groupId}
-            records={medicationRecordsResult}
-            today={today}
-          />
+          <MedicationRecorder groupId={firstGroup.groupId} />
         </div>
       </div>
     </div>
