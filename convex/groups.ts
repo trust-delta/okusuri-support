@@ -203,12 +203,23 @@ export const getGroupMembers = query({
           .filter((q) => q.eq(q.field("_id"), member.userId))
           .first();
 
+        // カスタム画像がある場合はURLを生成、なければOAuth画像を使用
+        let imageUrl = user?.image;
+        if (user?.customImageStorageId) {
+          const customImageUrl = await ctx.storage.getUrl(
+            user.customImageStorageId,
+          );
+          if (customImageUrl) {
+            imageUrl = customImageUrl;
+          }
+        }
+
         return {
           userId: member.userId,
           displayName: user?.displayName,
           role: member.role,
           joinedAt: member.joinedAt,
-          image: user?.image,
+          image: imageUrl,
           name: user?.name,
           email: user?.email,
         };
