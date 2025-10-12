@@ -1,0 +1,42 @@
+import { convexTest } from "convex-test";
+import { describe, expect, it } from "vitest";
+import { api } from "../../_generated/api";
+import schema from "../../schema";
+
+describe("generateInvitationCodeAction", () => {
+	it("should generate an 8-character code", async () => {
+		const t = convexTest(schema);
+
+		const code = await t.action(api.invitationCodeGenerator.generateInvitationCodeAction);
+
+		expect(code).toBeDefined();
+		expect(typeof code).toBe("string");
+		expect(code).toHaveLength(8);
+	});
+
+	it("should generate codes with only alphanumeric characters", async () => {
+		const t = convexTest(schema);
+
+		const code = await t.action(api.invitationCodeGenerator.generateInvitationCodeAction);
+
+		// 英数字のみを含むかチェック（a-z, A-Z, 0-9）
+		expect(code).toMatch(/^[a-zA-Z0-9]+$/);
+	});
+
+	it("should generate unique codes on multiple calls", async () => {
+		const t = convexTest(schema);
+
+		// 複数回生成して一意性を確認
+		const codes = await Promise.all([
+			t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
+			t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
+			t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
+			t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
+			t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
+		]);
+
+		// すべてのコードが異なることを確認（Set のサイズが配列の長さと一致）
+		const uniqueCodes = new Set(codes);
+		expect(uniqueCodes.size).toBe(codes.length);
+	});
+});
