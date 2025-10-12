@@ -19,6 +19,7 @@ export default defineConfig({
 			"**/dist/**",
 			"**/.next/**",
 			"**/convex/_generated/**",
+			"**/e2e/**", // Playwright E2Eテストを除外
 		],
 		coverage: {
 			provider: "v8",
