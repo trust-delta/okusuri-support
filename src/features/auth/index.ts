@@ -4,6 +4,7 @@ export {
   OAuthButton,
   PasswordReset,
   PasswordSignIn,
+  SignOutButton,
 } from "./components";
 
 // Hooks

@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -9,12 +8,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SignOutButton } from "@/features/auth";
 import { GroupInvitationManager } from "@/features/group";
 import { api } from "../../../../convex/_generated/api";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { signOut } = useAuthActions();
   const currentUser = useQuery(api.groups.getCurrentUser);
   const groupStatus = useQuery(api.groups.getUserGroupStatus);
   const updateDisplayName = useMutation(api.groups.updateUserDisplayName);
@@ -259,16 +258,7 @@ export default function SettingsPage() {
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               アカウント
             </h2>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={async () => {
-                await signOut();
-                router.push("/login");
-              }}
-            >
-              ログアウト
-            </Button>
+            <SignOutButton />
           </div>
         </div>
       </div>
