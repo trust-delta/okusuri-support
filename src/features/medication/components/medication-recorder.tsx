@@ -1,84 +1,29 @@
 "use client";
 
-import type { Preloaded } from "convex/react";
-import { useMutation, usePreloadedQuery } from "convex/react";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import type { FunctionReturnType } from "convex/server";
 import { formatJST, nowJST } from "@/lib/date-fns";
-import { api } from "../../../../convex/_generated/api";
+import type { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import {
-  MEDICATION_TIMINGS,
-  type MedicationTiming,
-} from "../constants/timings";
+import { MEDICATION_TIMINGS } from "../constants/timings";
+import { MedicationRecordActions } from "./medication-record-actions";
 
 interface MedicationRecorderProps {
   groupId: Id<"groups">;
-  preloadedRecords: Preloaded<typeof api.medications.getTodayRecords>;
+  records: FunctionReturnType<typeof api.medications.getTodayRecords> | null;
   today: string;
 }
 
 export function MedicationRecorder({
   groupId,
-  preloadedRecords,
+  records,
   today,
 }: MedicationRecorderProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const records = usePreloadedQuery(preloadedRecords);
-
-  const recordMutation = useMutation(api.medications.recordSimpleMedication);
-  const deleteMutation = useMutation(api.medications.deleteMedicationRecord);
-
-  const record = useCallback(
-    async (timing: MedicationTiming, status: "taken" | "skipped") => {
-      setIsLoading(true);
-      try {
-        await recordMutation({
-          groupId,
-          timing,
-          scheduledDate: today,
-          simpleMedicineName: MEDICATION_TIMINGS.find((t) => t.value === timing)
-            ?.label,
-          status,
-        });
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "記録に失敗しました",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [groupId, today, recordMutation],
-  );
-
-  const deleteRecord = useCallback(
-    async (recordId: Id<"medicationRecords">) => {
-      setIsLoading(true);
-      try {
-        await deleteMutation({ recordId });
-        toast.success("記録を取り消しました");
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "取消しに失敗しました",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [deleteMutation],
-  );
-
-  const getRecordByTiming = useCallback(
-    (timing: MedicationTiming) => {
-      if (!records) return null;
-      return records.find(
-        (r) => r.timing === timing && r.scheduledDate === today,
-      );
-    },
-    [records, today],
-  );
+  const getRecordByTiming = (timing: string) => {
+    if (!records) return null;
+    return records.find(
+      (r) => r.timing === timing && r.scheduledDate === today,
+    );
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -99,52 +44,15 @@ export function MedicationRecorder({
                 <span className="font-medium w-20 text-gray-900 dark:text-gray-100">
                   {timing.label}
                 </span>
-                {recordStatus && (
-                  <>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        recordStatus.status === "taken"
-                          ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                      }`}
-                    >
-                      {recordStatus.status === "taken"
-                        ? "服用済み"
-                        : "スキップ"}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteRecord(recordStatus._id)}
-                      disabled={isLoading}
-                      className="ml-auto text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      取消し
-                    </Button>
-                  </>
-                )}
+                <MedicationRecordActions
+                  groupId={groupId}
+                  timing={timing.value}
+                  scheduledDate={today}
+                  simpleMedicineName={timing.label}
+                  recordId={recordStatus?._id}
+                  recordStatus={recordStatus?.status}
+                />
               </div>
-
-              {!recordStatus && (
-                <div className="flex space-x-2">
-                  <Button
-                    type="button"
-                    onClick={() => record(timing.value, "taken")}
-                    disabled={isLoading}
-                  >
-                    服用
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => record(timing.value, "skipped")}
-                    disabled={isLoading}
-                  >
-                    スキップ
-                  </Button>
-                </div>
-              )}
             </div>
           );
         })}

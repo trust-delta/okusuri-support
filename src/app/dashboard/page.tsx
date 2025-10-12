@@ -1,9 +1,11 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
+import { GroupMembersList } from "@/features/group";
+import { MedicationRecorder } from "@/features/medication";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import { api } from "../../../convex/_generated/api";
-import { DashboardClient } from "./dashboard-client";
+import { DashboardHeader } from "./dashboard-header";
 export default async function DashboardPage() {
   const token = await convexAuthNextjsToken();
   const groupStatus = await preloadQuery(
@@ -66,13 +68,37 @@ export default async function DashboardPage() {
     { token },
   );
 
+  const groupMembersResult = preloadedQueryResult(groupMembers);
+  const medicationRecordsResult = preloadedQueryResult(medicationRecords);
+
   return (
-    <DashboardClient
-      currentUser={currentUser}
-      firstGroup={firstGroup}
-      groupMembers={groupMembers}
-      medicationRecords={medicationRecords}
-      today={today}
-    />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <DashboardHeader currentUser={currentUserResult} />
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <p className="text-gray-700 dark:text-gray-300">
+            グループ: {firstGroup.groupName || "未設定"}
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            役割: {firstGroup.role === "patient" ? "服薬者" : "サポーター"}
+          </p>
+        </div>
+
+        <div className="mt-6">
+          <GroupMembersList members={groupMembersResult} />
+        </div>
+
+        <div className="mt-6">
+          <MedicationRecorder
+            groupId={firstGroup.groupId}
+            records={medicationRecordsResult}
+            today={today}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

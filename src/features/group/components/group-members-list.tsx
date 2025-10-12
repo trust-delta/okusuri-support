@@ -1,35 +1,28 @@
 "use client";
 
-import type { Preloaded } from "convex/react";
-import { usePreloadedQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { Users } from "lucide-react";
-import { useMemo } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { api } from "../../../../convex/_generated/api";
 import { MemberCard } from "./member-card";
 
 interface GroupMembersListProps {
-  preloadedMembers: Preloaded<typeof api.groups.getGroupMembers>;
+  members: FunctionReturnType<typeof api.groups.getGroupMembers> | null;
 }
 
-export function GroupMembersList({ preloadedMembers }: GroupMembersListProps) {
-  const membersData = usePreloadedQuery(preloadedMembers);
+export function GroupMembersList({
+  members: membersData,
+}: GroupMembersListProps) {
+  const members = !membersData
+    ? []
+    : [...membersData].sort((a, b) => {
+        // 患者を先頭に
+        if (a.role === "patient" && b.role !== "patient") return -1;
+        if (a.role !== "patient" && b.role === "patient") return 1;
+        // 同じロールなら参加日時順
+        return a.joinedAt - b.joinedAt;
+      });
 
-  const members = useMemo(() => {
-    if (!membersData) return [];
-
-    return [...membersData].sort((a, b) => {
-      // 患者を先頭に
-      if (a.role === "patient" && b.role !== "patient") return -1;
-      if (a.role !== "patient" && b.role === "patient") return 1;
-      // 同じロールなら参加日時順
-      return a.joinedAt - b.joinedAt;
-    });
-  }, [membersData]);
-
-  const isLoading = membersData === undefined;
-
-  if (isLoading) {
+  if (!membersData) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -38,17 +31,9 @@ export function GroupMembersList({ preloadedMembers }: GroupMembersListProps) {
             グループメンバー
           </h2>
         </div>
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3 p-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <p className="text-gray-600 dark:text-gray-400">
+          メンバー情報を読み込めませんでした
+        </p>
       </div>
     );
   }
