@@ -4,7 +4,7 @@ import { api } from "../../_generated/api";
 import schema from "../../schema";
 
 describe("generateInvitationCodeAction", () => {
-	it("should generate an 8-character code", async () => {
+	it("8文字のコードを生成する", async () => {
 		const t = convexTest(schema);
 
 		const code = await t.action(api.invitationCodeGenerator.generateInvitationCodeAction);
@@ -14,7 +14,7 @@ describe("generateInvitationCodeAction", () => {
 		expect(code).toHaveLength(8);
 	});
 
-	it("should generate codes with only alphanumeric characters", async () => {
+	it("英数字のみでコードを生成する", async () => {
 		const t = convexTest(schema);
 
 		const code = await t.action(api.invitationCodeGenerator.generateInvitationCodeAction);
@@ -23,7 +23,7 @@ describe("generateInvitationCodeAction", () => {
 		expect(code).toMatch(/^[a-zA-Z0-9]+$/);
 	});
 
-	it("should generate unique codes on multiple calls", async () => {
+	it("複数回の呼び出しで一意のコードを生成する", async () => {
 		const t = convexTest(schema);
 
 		// 複数回生成して一意性を確認

@@ -5,7 +5,7 @@ test.describe("ホームページ", () => {
 		await page.goto("/");
 
 		// ページタイトルが表示されることを確認
-		await expect(page).toHaveTitle(/おくすりサポート/);
+		await expect(page).toHaveTitle(/お薬サポート/);
 	});
 
 	test("認証されていない状態でダッシュボードにアクセスするとリダイレクトされる", async ({
@@ -14,6 +14,6 @@ test.describe("ホームページ", () => {
 		await page.goto("/dashboard");
 
 		// サインインページにリダイレクトされることを確認
-		await expect(page).toHaveURL(/sign-in/);
+		await expect(page).toHaveURL(/login/);
 	});
 });
