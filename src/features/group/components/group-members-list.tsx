@@ -1,17 +1,33 @@
 "use client";
 
+import type { Preloaded } from "convex/react";
+import { usePreloadedQuery } from "convex/react";
 import { Users } from "lucide-react";
+import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Id } from "../../../../convex/_generated/dataModel";
-import { useGroupMembers } from "../hooks/use-group-members";
+import type { api } from "../../../../convex/_generated/api";
 import { MemberCard } from "./member-card";
 
 interface GroupMembersListProps {
-  groupId: Id<"groups">;
+  preloadedMembers: Preloaded<typeof api.groups.getGroupMembers>;
 }
 
-export function GroupMembersList({ groupId }: GroupMembersListProps) {
-  const { members, isLoading } = useGroupMembers(groupId);
+export function GroupMembersList({ preloadedMembers }: GroupMembersListProps) {
+  const membersData = usePreloadedQuery(preloadedMembers);
+
+  const members = useMemo(() => {
+    if (!membersData) return [];
+
+    return [...membersData].sort((a, b) => {
+      // 患者を先頭に
+      if (a.role === "patient" && b.role !== "patient") return -1;
+      if (a.role !== "patient" && b.role === "patient") return 1;
+      // 同じロールなら参加日時順
+      return a.joinedAt - b.joinedAt;
+    });
+  }, [membersData]);
+
+  const isLoading = membersData === undefined;
 
   if (isLoading) {
     return (

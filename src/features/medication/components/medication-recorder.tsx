@@ -1,19 +1,84 @@
 "use client";
 
+import type { Preloaded } from "convex/react";
+import { useMutation, usePreloadedQuery } from "convex/react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { formatJST, nowJST } from "@/lib/date-fns";
+import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import { MEDICATION_TIMINGS } from "../constants/timings";
-import { useMedicationRecords } from "../hooks/use-medication-records";
+import {
+  MEDICATION_TIMINGS,
+  type MedicationTiming,
+} from "../constants/timings";
 
 interface MedicationRecorderProps {
   groupId: Id<"groups">;
+  preloadedRecords: Preloaded<typeof api.medications.getTodayRecords>;
+  today: string;
 }
 
-export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
-  const today = formatJST(nowJST(), "yyyy-MM-dd");
-  const { record, deleteRecord, getRecordByTiming, records, isLoading } =
-    useMedicationRecords(groupId, today);
+export function MedicationRecorder({
+  groupId,
+  preloadedRecords,
+  today,
+}: MedicationRecorderProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const records = usePreloadedQuery(preloadedRecords);
+
+  const recordMutation = useMutation(api.medications.recordSimpleMedication);
+  const deleteMutation = useMutation(api.medications.deleteMedicationRecord);
+
+  const record = useCallback(
+    async (timing: MedicationTiming, status: "taken" | "skipped") => {
+      setIsLoading(true);
+      try {
+        await recordMutation({
+          groupId,
+          timing,
+          scheduledDate: today,
+          simpleMedicineName: MEDICATION_TIMINGS.find((t) => t.value === timing)
+            ?.label,
+          status,
+        });
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "記録に失敗しました",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [groupId, today, recordMutation],
+  );
+
+  const deleteRecord = useCallback(
+    async (recordId: Id<"medicationRecords">) => {
+      setIsLoading(true);
+      try {
+        await deleteMutation({ recordId });
+        toast.success("記録を取り消しました");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "取消しに失敗しました",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [deleteMutation],
+  );
+
+  const getRecordByTiming = useCallback(
+    (timing: MedicationTiming) => {
+      if (!records) return null;
+      return records.find(
+        (r) => r.timing === timing && r.scheduledDate === today,
+      );
+    },
+    [records, today],
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
