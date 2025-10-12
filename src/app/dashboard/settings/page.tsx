@@ -5,11 +5,11 @@ import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { GroupInvitationManager } from "@/components/group-invitation-manager";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GroupInvitationManager } from "@/features/group";
 import { api } from "../../../../convex/_generated/api";
 
 export default function SettingsPage() {
