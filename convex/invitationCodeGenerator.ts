@@ -1,7 +1,7 @@
 "use node";
 
 import { randomBytes } from "node:crypto";
-import { action } from "../_generated/server";
+import { action } from "./_generated/server";
 
 /**
  * 暗号学的に安全な招待コードを生成するaction
