@@ -290,7 +290,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const t = convexTest(schema);
 
       // セットアップ: 2人のユーザーとグループを作成
-      const { user1Id, user2Id, groupId } = await t.run(async (ctx) => {
+      const setup = await t.run(async (ctx) => {
         const user1Id = await ctx.db.insert("users", {});
         const user2Id = await ctx.db.insert("users", {});
 
@@ -307,15 +307,15 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
           joinedAt: Date.now(),
         });
 
-        return { user1Id, user2Id, groupId };
+        return { user2Id, groupId };
       });
 
-      const asUser2 = t.withIdentity({ subject: user2Id });
+      const asUser2 = t.withIdentity({ subject: setup.user2Id });
 
       // ユーザー2が所属していないグループの招待コードを作成しようとする
       await expect(
         asUser2.mutation(api.invitations.mutations.createInvitationInternal, {
-          groupId,
+          groupId: setup.groupId,
           code: "UNAUTHORIZED",
         }),
       ).rejects.toThrow();

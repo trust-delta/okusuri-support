@@ -45,7 +45,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       const t = convexTest(schema);
 
       // ユーザーとグループを作成
-      const { newUserId, groupId } = await t.run(async (ctx) => {
+      const setup = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {
           displayName: "作成者",
         });
@@ -77,10 +77,10 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
           isUsed: false,
         });
 
-        return { newUserId, groupId };
+        return { newUserId };
       });
 
-      const asNewUser = t.withIdentity({ subject: newUserId });
+      const asNewUser = t.withIdentity({ subject: setup.newUserId });
 
       // 表示名なしで参加を試行
       await expect(
@@ -343,7 +343,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
     it("既にグループに参加している場合はエラーを返す", async () => {
       const t = convexTest(schema);
 
-      const { userId, groupId } = await t.run(async (ctx) => {
+      const { userId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {
           displayName: "$1",
         });
@@ -372,7 +372,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
           isUsed: false,
         });
 
-        return { userId, groupId };
+        return { userId };
       });
 
       const asUser = t.withIdentity({ subject: userId });
