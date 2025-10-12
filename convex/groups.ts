@@ -47,6 +47,11 @@ export const completeOnboardingWithNewGroup = mutation({
       throw new Error("認証が必要です");
     }
 
+    // ユーザー表示名をusersテーブルに保存
+    await ctx.db.patch(userId, {
+      displayName: args.userName,
+    });
+
     // グループを作成
     const groupId = await ctx.db.insert("groups", {
       name: args.groupName,
@@ -55,11 +60,10 @@ export const completeOnboardingWithNewGroup = mutation({
       createdAt: Date.now(),
     });
 
-    // グループに参加（表示名も保存）
+    // グループに参加
     await ctx.db.insert("groupMembers", {
       groupId,
       userId,
-      displayName: args.userName,
       role: args.role,
       joinedAt: Date.now(),
     });
@@ -145,15 +149,9 @@ export const getCurrentUser = query({
     // usersテーブルから基本情報を取得
     const user = await ctx.db.get(userId);
 
-    // ユーザーのグループメンバーシップから表示名を取得
-    const membership = await ctx.db
-      .query("groupMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-
     return {
       userId,
-      displayName: membership?.displayName,
+      displayName: user?.displayName,
       image: user?.image,
       name: user?.name,
       email: user?.email,
@@ -186,8 +184,8 @@ export const getGroupMembers = query({
       .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
       .collect();
 
-    // 各メンバーのusersテーブルからプロフィール画像を取得
-    const membersWithImages = await Promise.all(
+    // 各メンバーのusersテーブルから表示名とプロフィール画像を取得
+    const membersWithInfo = await Promise.all(
       members.map(async (member) => {
         const user = await ctx.db
           .query("users")
@@ -196,7 +194,7 @@ export const getGroupMembers = query({
 
         return {
           userId: member.userId,
-          displayName: member.displayName,
+          displayName: user?.displayName,
           role: member.role,
           joinedAt: member.joinedAt,
           image: user?.image,
@@ -206,7 +204,7 @@ export const getGroupMembers = query({
       }),
     );
 
-    return membersWithImages;
+    return membersWithInfo;
   },
 });
 
@@ -228,24 +226,10 @@ export const updateUserDisplayName = mutation({
       throw new Error("表示名は50文字以内で入力してください");
     }
 
-    // ユーザーの全てのグループメンバーシップを更新
-    const memberships = await ctx.db
-      .query("groupMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
-
-    if (memberships.length === 0) {
-      throw new Error("グループに参加していません");
-    }
-
-    // 全てのメンバーシップの表示名を更新
-    await Promise.all(
-      memberships.map((membership) =>
-        ctx.db.patch(membership._id, {
-          displayName: args.displayName.trim(),
-        }),
-      ),
-    );
+    // usersテーブルのdisplayNameのみ更新
+    await ctx.db.patch(userId, {
+      displayName: args.displayName.trim(),
+    });
 
     return { success: true };
   },
@@ -332,7 +316,7 @@ export const joinGroupWithInvitation = mutation({
   args: {
     invitationCode: v.string(),
     role: v.union(v.literal("patient"), v.literal("supporter")),
-    displayName: v.string(),
+    displayName: v.optional(v.string()), // オプショナル: 既存ユーザーは省略可
   },
   handler: async (ctx, args) => {
     // 1. 認証確認
@@ -341,15 +325,33 @@ export const joinGroupWithInvitation = mutation({
       throw new Error("認証が必要です");
     }
 
-    // 2. 表示名バリデーション
-    if (!args.displayName || args.displayName.trim().length === 0) {
+    // 2. ユーザー情報を取得
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("ユーザーが見つかりません");
+    }
+
+    // 3. 表示名の決定と検証
+    let displayName = user.displayName || args.displayName;
+
+    if (!displayName || displayName.trim().length === 0) {
       throw new Error("表示名を入力してください");
     }
-    if (args.displayName.length > 50) {
+
+    displayName = displayName.trim();
+
+    if (displayName.length > 50) {
       throw new Error("表示名は50文字以内で入力してください");
     }
 
-    // 3. 招待コード検証
+    // 表示名がusersテーブルにない場合は設定
+    if (!user.displayName) {
+      await ctx.db.patch(userId, {
+        displayName,
+      });
+    }
+
+    // 4. 招待コード検証
     const invitation = await ctx.db
       .query("groupInvitations")
       .withIndex("by_code", (q) => q.eq("code", args.invitationCode))
@@ -377,7 +379,7 @@ export const joinGroupWithInvitation = mutation({
       );
     }
 
-    // 4. 既存メンバーシップ確認（重複参加防止）
+    // 5. 既存メンバーシップ確認(重複参加防止)
     const existingMembership = await ctx.db
       .query("groupMembers")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -388,7 +390,7 @@ export const joinGroupWithInvitation = mutation({
       throw new Error("既にこのグループのメンバーです");
     }
 
-    // 5. Patientロール時の既存Patient確認
+    // 6. Patientロール時の既存Patient確認
     if (args.role === "patient") {
       const existingPatient = await ctx.db
         .query("groupMembers")
@@ -401,16 +403,15 @@ export const joinGroupWithInvitation = mutation({
       }
     }
 
-    // 6. グループメンバーシップ作成
+    // 7. グループメンバーシップ作成（displayNameは保存しない）
     const membershipId = await ctx.db.insert("groupMembers", {
       groupId: invitation.groupId,
       userId,
-      displayName: args.displayName.trim(),
       role: args.role,
       joinedAt: now,
     });
 
-    // 7. 招待を使用済みに更新
+    // 8. 招待を使用済みに更新
     await ctx.db.patch(invitation._id, {
       isUsed: true,
       usedBy: userId,

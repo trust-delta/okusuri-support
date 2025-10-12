@@ -12,6 +12,7 @@ export default defineSchema({
     phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
+    displayName: v.optional(v.string()), // ユーザー表示名（全グループ共通）
   }).index("email", ["email"]),
 
   groups: defineTable({
@@ -24,7 +25,6 @@ export default defineSchema({
   groupMembers: defineTable({
     groupId: v.id("groups"),
     userId: v.string(), // Convex AuthのuserIdを文字列として保存
-    displayName: v.optional(v.string()), // ユーザー表示名
     role: v.union(v.literal("patient"), v.literal("supporter")),
     joinedAt: v.number(),
   })

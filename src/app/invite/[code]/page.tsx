@@ -21,12 +21,22 @@ export default function InvitePage({ params }: InvitePageProps) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 現在のユーザー情報を取得
+  const currentUser = useQuery(api.groups.getCurrentUser);
+
   // パラメータから招待コードを取得
   useEffect(() => {
     params.then((p) => {
       setInvitationCode(p.code);
     });
   }, [params]);
+
+  // 既存ユーザーの表示名を自動入力
+  useEffect(() => {
+    if (currentUser?.displayName && !displayName) {
+      setDisplayName(currentUser.displayName);
+    }
+  }, [currentUser, displayName]);
 
   // 招待コードの検証とグループ情報の取得
   const invitationInfo = useQuery(
@@ -44,7 +54,8 @@ export default function InvitePage({ params }: InvitePageProps) {
       return;
     }
 
-    if (displayName.trim().length === 0) {
+    // 表示名の検証（既存ユーザーの場合は省略可能）
+    if (!currentUser?.displayName && displayName.trim().length === 0) {
       toast.error("表示名を入力してください");
       return;
     }
@@ -54,7 +65,7 @@ export default function InvitePage({ params }: InvitePageProps) {
       await joinGroup({
         invitationCode,
         role: selectedRole,
-        displayName: displayName.trim(),
+        displayName: displayName.trim() || undefined,
       });
 
       toast.success("グループに参加しました！");
@@ -139,14 +150,17 @@ export default function InvitePage({ params }: InvitePageProps) {
                 id="displayName"
                 name="displayName"
                 type="text"
-                required
+                required={!currentUser?.displayName}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="山田 太郎"
                 maxLength={50}
+                disabled={!!currentUser?.displayName}
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
-                グループ内で表示される名前です（1-50文字）
+                {currentUser?.displayName
+                  ? "現在の表示名が使用されます（変更する場合は設定ページから変更してください）"
+                  : "グループ内で表示される名前です（1-50文字）"}
               </p>
             </div>
 
