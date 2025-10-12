@@ -11,17 +11,13 @@ import {
 export function useMedicationRecords(groupId: Id<"groups">, date: string) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const records = useQuery(api.medicationRecords.getTodayRecords, {
+  const records = useQuery(api.medications.getTodayRecords, {
     groupId,
     scheduledDate: date,
   });
 
-  const recordMutation = useMutation(
-    api.medicationRecords.recordSimpleMedication,
-  );
-  const deleteMutation = useMutation(
-    api.medicationRecords.deleteMedicationRecord,
-  );
+  const recordMutation = useMutation(api.medications.recordSimpleMedication);
+  const deleteMutation = useMutation(api.medications.deleteMedicationRecord);
 
   const record = useCallback(
     async (timing: MedicationTiming, status: "taken" | "skipped") => {

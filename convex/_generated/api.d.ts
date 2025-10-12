@@ -25,11 +25,10 @@ import type * as http from "../http.js";
 import type * as invitationCodeGenerator from "../invitationCodeGenerator.js";
 import type * as invitations_actions from "../invitations/actions.js";
 import type * as invitations_index from "../invitations/index.js";
+import type * as invitations_invitationCodeGenerator from "../invitations/invitationCodeGenerator.js";
 import type * as invitations_mutations from "../invitations/mutations.js";
 import type * as invitations_queries from "../invitations/queries.js";
 import type * as invitations from "../invitations.js";
-import type * as medicationHistory from "../medicationHistory.js";
-import type * as medicationRecords from "../medicationRecords.js";
 import type * as medications_history_index from "../medications/history/index.js";
 import type * as medications_history_mutations from "../medications/history/mutations.js";
 import type * as medications_history_queries from "../medications/history/queries.js";
@@ -37,6 +36,10 @@ import type * as medications_index from "../medications/index.js";
 import type * as medications_records_index from "../medications/records/index.js";
 import type * as medications_records_mutations from "../medications/records/mutations.js";
 import type * as medications_records_queries from "../medications/records/queries.js";
+import type * as medications from "../medications.js";
+import type * as resend_index from "../resend/index.js";
+import type * as resend_otp from "../resend/otp.js";
+import type * as resend_password_reset from "../resend/password-reset.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -59,11 +62,10 @@ declare const fullApi: ApiFromModules<{
   invitationCodeGenerator: typeof invitationCodeGenerator;
   "invitations/actions": typeof invitations_actions;
   "invitations/index": typeof invitations_index;
+  "invitations/invitationCodeGenerator": typeof invitations_invitationCodeGenerator;
   "invitations/mutations": typeof invitations_mutations;
   "invitations/queries": typeof invitations_queries;
   invitations: typeof invitations;
-  medicationHistory: typeof medicationHistory;
-  medicationRecords: typeof medicationRecords;
   "medications/history/index": typeof medications_history_index;
   "medications/history/mutations": typeof medications_history_mutations;
   "medications/history/queries": typeof medications_history_queries;
@@ -71,6 +73,10 @@ declare const fullApi: ApiFromModules<{
   "medications/records/index": typeof medications_records_index;
   "medications/records/mutations": typeof medications_records_mutations;
   "medications/records/queries": typeof medications_records_queries;
+  medications: typeof medications;
+  "resend/index": typeof resend_index;
+  "resend/otp": typeof resend_otp;
+  "resend/password-reset": typeof resend_password_reset;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
