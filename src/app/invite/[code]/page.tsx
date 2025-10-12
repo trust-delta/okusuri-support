@@ -1,12 +1,38 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { api } from "../../../../convex/_generated/api";
+
+// フォームスキーマの定義
+const formSchema = z.object({
+  displayName: z
+    .string()
+    .min(1, { message: "表示名を入力してください" })
+    .max(50, { message: "表示名は50文字以内で入力してください" }),
+  role: z.enum(["patient", "supporter"], {
+    message: "役割を選択してください",
+  }),
+});
+
+type FormSchema = z.infer<typeof formSchema>;
 
 interface InvitePageProps {
   params: Promise<{ code: string }>;
@@ -15,14 +41,18 @@ interface InvitePageProps {
 export default function InvitePage({ params }: InvitePageProps) {
   const router = useRouter();
   const [invitationCode, setInvitationCode] = useState<string>("");
-  const [displayName, setDisplayName] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"patient" | "supporter">(
-    "supporter",
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 現在のユーザー情報を取得
   const currentUser = useQuery(api.groups.getCurrentUser);
+
+  // フォームの初期化
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      displayName: "",
+      role: "supporter",
+    },
+  });
 
   // パラメータから招待コードを取得
   useEffect(() => {
@@ -33,10 +63,10 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   // 既存ユーザーの表示名を自動入力
   useEffect(() => {
-    if (currentUser?.displayName && !displayName) {
-      setDisplayName(currentUser.displayName);
+    if (currentUser?.displayName) {
+      form.setValue("displayName", currentUser.displayName);
     }
-  }, [currentUser, displayName]);
+  }, [currentUser, form]);
 
   // 招待コードの検証とグループ情報の取得
   const invitationInfo = useQuery(
@@ -46,26 +76,19 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   const joinGroup = useMutation(api.groups.joinGroupWithInvitation);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (values: FormSchema) => {
     if (!invitationCode) {
       toast.error("招待コードが見つかりません");
       return;
     }
 
-    // 表示名の検証（既存ユーザーの場合は省略可能）
-    if (!currentUser?.displayName && displayName.trim().length === 0) {
-      toast.error("表示名を入力してください");
-      return;
-    }
-
-    setIsSubmitting(true);
     try {
       await joinGroup({
         invitationCode,
-        role: selectedRole,
-        displayName: displayName.trim() || undefined,
+        role: values.role,
+        displayName: currentUser?.displayName
+          ? undefined
+          : values.displayName.trim(),
       });
 
       toast.success("グループに参加しました！");
@@ -76,8 +99,6 @@ export default function InvitePage({ params }: InvitePageProps) {
           ? error.message
           : "エラーが発生しました。もう一度お試しください。",
       );
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -137,87 +158,95 @@ export default function InvitePage({ params }: InvitePageProps) {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label
-                htmlFor="displayName"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                表示名
-              </label>
-              <Input
-                id="displayName"
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="mt-8 space-y-6"
+          >
+            <div className="rounded-md shadow-sm space-y-4">
+              <FormField
+                control={form.control}
                 name="displayName"
-                type="text"
-                required={!currentUser?.displayName}
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="山田 太郎"
-                maxLength={50}
-                disabled={!!currentUser?.displayName}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>表示名</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="山田 太郎"
+                        maxLength={50}
+                        disabled={!!currentUser?.displayName}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {currentUser?.displayName
+                        ? "現在の表示名が使用されます（変更する場合は設定ページから変更してください）"
+                        : "グループ内で表示される名前です（1-50文字）"}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
-                {currentUser?.displayName
-                  ? "現在の表示名が使用されます（変更する場合は設定ページから変更してください）"
-                  : "グループ内で表示される名前です（1-50文字）"}
-              </p>
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>あなたの役割</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        {allowedRoles.includes("patient") && (
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="patient" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              服薬する人（患者）
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                        {allowedRoles.includes("supporter") && (
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="supporter" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              サポートする人
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      </RadioGroup>
+                    </FormControl>
+                    {allowedRoles.length === 1 &&
+                      allowedRoles[0] === "supporter" && (
+                        <FormDescription className="text-amber-600 dark:text-amber-400">
+                          このグループには既に患者が登録されているため、サポーター役割でのみ参加できます。
+                        </FormDescription>
+                      )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div>
-              <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                あなたの役割
-              </p>
-              <div className="space-y-2">
-                {allowedRoles.includes("patient") && (
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="role"
-                      value="patient"
-                      checked={selectedRole === "patient"}
-                      onChange={(e) =>
-                        setSelectedRole(e.target.value as "patient")
-                      }
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      服薬する人（患者）
-                    </span>
-                  </label>
-                )}
-                {allowedRoles.includes("supporter") && (
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="role"
-                      value="supporter"
-                      checked={selectedRole === "supporter"}
-                      onChange={(e) =>
-                        setSelectedRole(e.target.value as "supporter")
-                      }
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      サポートする人
-                    </span>
-                  </label>
-                )}
-              </div>
-              {allowedRoles.length === 1 && allowedRoles[0] === "supporter" && (
-                <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                  このグループには既に患者が登録されているため、サポーター役割でのみ参加できます。
-                </p>
-              )}
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="w-full"
+              >
+                {form.formState.isSubmitting
+                  ? "参加中..."
+                  : "グループに参加する"}
+              </Button>
             </div>
-          </div>
-
-          <div>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? "参加中..." : "グループに参加する"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </div>
     </div>
   );

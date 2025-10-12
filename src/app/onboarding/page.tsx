@@ -1,12 +1,45 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "../../../convex/_generated/api";
+
+// グループ作成フォームスキーマ
+const createGroupFormSchema = z.object({
+  userName: z
+    .string()
+    .min(1, { message: "お名前を入力してください" })
+    .max(50, { message: "お名前は50文字以内で入力してください" }),
+  groupName: z
+    .string()
+    .min(1, { message: "グループ名を入力してください" })
+    .max(100, { message: "グループ名は100文字以内で入力してください" }),
+  groupDescription: z.string().max(500, {
+    message: "グループの説明は500文字以内で入力してください",
+  }),
+  role: z.enum(["patient", "supporter"], {
+    message: "役割を選択してください",
+  }),
+});
+
+type CreateGroupFormSchema = z.infer<typeof createGroupFormSchema>;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -15,23 +48,26 @@ export default function OnboardingPage() {
   );
 
   const [mode, setMode] = useState<"select" | "create" | "join">("select");
-  const [userName, setUserName] = useState("");
-  const [groupName, setGroupName] = useState("");
-  const [groupDescription, setGroupDescription] = useState("");
-  const [role, setRole] = useState<"patient" | "supporter">("patient");
   const [invitationCode, setInvitationCode] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // グループ作成フォーム
+  const form = useForm<CreateGroupFormSchema>({
+    resolver: zodResolver(createGroupFormSchema),
+    defaultValues: {
+      userName: "",
+      groupName: "",
+      groupDescription: "",
+      role: "patient",
+    },
+  });
 
-    setIsSubmitting(true);
+  const handleSubmit = async (values: CreateGroupFormSchema) => {
     try {
       await completeOnboarding({
-        userName,
-        groupName,
-        groupDescription: groupDescription || undefined,
-        role,
+        userName: values.userName,
+        groupName: values.groupName,
+        groupDescription: values.groupDescription || undefined,
+        role: values.role,
       });
 
       router.push("/dashboard");
@@ -41,8 +77,6 @@ export default function OnboardingPage() {
           ? error.message
           : "エラーが発生しました。もう一度お試しください。",
       );
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -170,111 +204,113 @@ export default function OnboardingPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="mb-4">
-              <label
-                htmlFor="userName"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                お名前
-              </label>
-              <Input
-                id="userName"
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="mt-8 space-y-6"
+          >
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
                 name="userName"
-                type="text"
-                required
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="山田 太郎"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>お名前</FormLabel>
+                    <FormControl>
+                      <Input placeholder="山田 太郎" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="mb-4">
-              <label
-                htmlFor="groupName"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                グループ名
-              </label>
-              <Input
-                id="groupName"
+              <FormField
+                control={form.control}
                 name="groupName"
-                type="text"
-                required
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                placeholder="山田家"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>グループ名</FormLabel>
+                    <FormControl>
+                      <Input placeholder="山田家" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="mb-4">
-              <label
-                htmlFor="groupDescription"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                グループの説明（任意）
-              </label>
-              <textarea
-                id="groupDescription"
+              <FormField
+                control={form.control}
                 name="groupDescription"
-                value={groupDescription}
-                onChange={(e) => setGroupDescription(e.target.value)}
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="家族でお薬を管理するグループです"
-                rows={3}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>グループの説明（任意）</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="家族でお薬を管理するグループです"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>あなたの役割</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="patient" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            服薬する人
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="supporter" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            サポートする人
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div className="mb-4">
-              <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                あなたの役割
-              </p>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="patient"
-                    checked={role === "patient"}
-                    onChange={(e) => setRole(e.target.value as "patient")}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    服薬する人
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="supporter"
-                    checked={role === "supporter"}
-                    onChange={(e) => setRole(e.target.value as "supporter")}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    サポートする人
-                  </span>
-                </label>
-              </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={() => setMode("select")}
+                variant="outline"
+                className="flex-1"
+              >
+                戻る
+              </Button>
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="flex-1"
+              >
+                {form.formState.isSubmitting ? "設定中..." : "設定を完了する"}
+              </Button>
             </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={() => setMode("select")}
-              variant="outline"
-              className="flex-1"
-            >
-              戻る
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
-              {isSubmitting ? "設定中..." : "設定を完了する"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </div>
     </div>
   );
