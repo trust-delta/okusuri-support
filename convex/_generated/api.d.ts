@@ -13,8 +13,6 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as ResendOTP from "../ResendOTP.js";
-import type * as ResendOTPPasswordReset from "../ResendOTPPasswordReset.js";
 import type * as auth from "../auth.js";
 import type * as groups_index from "../groups/index.js";
 import type * as groups_mutations from "../groups/mutations.js";
@@ -39,6 +37,7 @@ import type * as medications from "../medications.js";
 import type * as resend_index from "../resend/index.js";
 import type * as resend_otp from "../resend/otp.js";
 import type * as resend_password_reset from "../resend/password-reset.js";
+import type * as resend from "../resend.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -49,8 +48,6 @@ import type * as resend_password_reset from "../resend/password-reset.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  ResendOTP: typeof ResendOTP;
-  ResendOTPPasswordReset: typeof ResendOTPPasswordReset;
   auth: typeof auth;
   "groups/index": typeof groups_index;
   "groups/mutations": typeof groups_mutations;
@@ -75,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   "resend/index": typeof resend_index;
   "resend/otp": typeof resend_otp;
   "resend/password-reset": typeof resend_password_reset;
+  resend: typeof resend;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
