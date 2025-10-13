@@ -19,7 +19,7 @@ import { api } from "../../../../convex/_generated/api";
  *   const { isLoading, groupStatus } = useRedirectAfterAuth();
  *
  *   if (isLoading) {
- *     return <LoadingSpinner />;
+ *     return <Spinner />;
  *   }
  *
  *   if (!groupStatus?.hasGroup) {

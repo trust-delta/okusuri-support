@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Divider } from "@/components/common";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
   AuthPageLayout,
@@ -26,7 +26,16 @@ export default function LoginPage() {
             <OAuthButton provider="google" redirectTo="/dashboard" />
           </div>
 
-          <Divider text="または" />
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <Separator />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-background px-2 text-muted-foreground">
+                または
+              </span>
+            </div>
+          </div>
 
           <Button
             type="button"
