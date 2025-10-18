@@ -1,11 +1,9 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
-import { GroupMembersList, GroupSwitcher } from "@/features/group";
-import { MedicationRecorder } from "@/features/medication";
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { api } from "@/shared/lib/convex";
-import { DashboardHeader } from "./dashboard-header";
+import { DashboardClient } from "./dashboard-client";
+
 export default async function DashboardPage() {
   const token = await convexAuthNextjsToken();
   const groupStatus = await preloadQuery(
@@ -63,40 +61,11 @@ export default async function DashboardPage() {
     { token },
   );
 
-  const groupMembersResult = preloadedQueryResult(groupMembers);
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 space-y-4">
-          <DashboardHeader currentUser={currentUserResult} />
-          <div className="flex justify-end">
-            <GroupSwitcher
-              groups={groupStatusResult.groups}
-              activeGroupId={groupStatusResult.activeGroupId}
-            />
-          </div>
-        </div>
-
-        <Card>
-          <CardContent>
-            <p className="text-gray-700 dark:text-gray-300">
-              グループ: {activeGroup.groupName || "未設定"}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              役割: {activeGroup.role === "patient" ? "服薬者" : "サポーター"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <div className="mt-6">
-          <GroupMembersList members={groupMembersResult} />
-        </div>
-
-        <div className="mt-6">
-          <MedicationRecorder groupId={activeGroup.groupId} />
-        </div>
-      </div>
-    </div>
+    <DashboardClient
+      preloadedCurrentUser={currentUser}
+      preloadedGroupStatus={groupStatus}
+      preloadedGroupMembers={groupMembers}
+    />
   );
 }
