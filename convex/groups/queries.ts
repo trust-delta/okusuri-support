@@ -13,6 +13,12 @@ export const getUserGroupStatus = query({
       return null;
     }
 
+    // ユーザー情報を取得
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      return null;
+    }
+
     const memberships = await ctx.db
       .query("groupMembers")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -35,7 +41,7 @@ export const getUserGroupStatus = query({
       }),
     );
 
-    return { hasGroup: true, groups };
+    return { hasGroup: true, groups, activeGroupId: user.activeGroupId };
   },
 });
 

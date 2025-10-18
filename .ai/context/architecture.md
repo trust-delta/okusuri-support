@@ -1,6 +1,6 @@
 # アーキテクチャ
 
-**最終更新**: 2025年10月16日
+**最終更新**: 2025年10月19日
 
 ## 概要
 
@@ -42,6 +42,7 @@ src/features/
 ```
 
 **原則**:
+
 - 各機能は他機能に依存しない
 - `index.ts`でPublic APIを管理
 - 内部関数は`_`プレフィックス
@@ -52,7 +53,7 @@ Convex Reactive Queriesによる自動同期。
 
 ```typescript
 // フロントエンド
-const groups = useQuery(api.groups.queries.list)
+const groups = useQuery(api.groups.queries.list);
 // データ変更が即座に全クライアントに反映される
 ```
 
@@ -66,8 +67,8 @@ export default defineSchema({
   groups: defineTable({
     name: v.string(),
     ownerId: v.id("users"),
-  }).index("by_owner", ["ownerId"])
-})
+  }).index("by_owner", ["ownerId"]),
+});
 ```
 
 ### 4. Progressive Enhancement
@@ -81,16 +82,19 @@ export default defineSchema({
 ## レイヤードアーキテクチャ
 
 ### プレゼンテーション層
+
 - **場所**: `src/app/`, `src/features/*/components/`
 - **責務**: UI、ルーティング、ユーザー入力
 - **技術**: Next.js App Router、React Server/Client Components
 
 ### ビジネスロジック層
+
 - **場所**: `src/features/*/hooks/`, `convex/*/`
 - **責務**: ビジネスルール、データ操作、バリデーション
 - **技術**: カスタムReact Hooks、Convex Functions
 
 ### データアクセス層
+
 - **場所**: `convex/schema.ts`, `convex/*/queries.ts`, `convex/*/mutations.ts`
 - **責務**: データベース操作、永続化、トランザクション
 - **技術**: Convex Database（NoSQL）
@@ -102,18 +106,33 @@ export default defineSchema({
 ### 主要エンティティ
 
 ```
-users (1) ─── (n) groups (1) ─── (n) group_users
-  │                  │
-  │ (1)              │ (1)
-  │                  │
-  │ (n)              │ (n)
-  ▼                  ▼
-medications      invitations
+users (1) ─── (n) groupMembers (n) ─── (1) groups
+  │                                        │
+  │ (1)                                    │ (1)
+  │                                        │
+  │ (activeGroupId)                        │
+  │                                        │
+  │ (n)                                    │ (n)
+  ▼                                        ▼
+medicines (1) ─── (n) medicationSchedules  invitations
+  │
+  │ (1)
+  │
+  │ (n)
+  ▼
+medicationRecords ─── (n) medicationRecordsHistory
 ```
+
+**複数グループ対応**:
+
+- ユーザーは複数のグループに所属可能（`groupMembers`を介して多対多関係）
+- `users.activeGroupId`で現在アクティブなグループを管理
+- アクティブグループ未設定時は最初のグループをフォールバック
 
 ### 主要テーブル
 
 **users** (Convex Auth管理 + カスタムフィールド)
+
 ```typescript
 {
   _id,
@@ -124,12 +143,14 @@ medications      invitations
   phone?: string,
   phoneVerificationTime?: number,
   isAnonymous?: boolean,
-  displayName?: string,              // ユーザー表示名（全グループ共通）
-  customImageStorageId?: Id<"_storage"> // カスタムアップロード画像
+  displayName?: string,                // ユーザー表示名（全グループ共通）
+  customImageStorageId?: Id<"_storage">, // カスタムアップロード画像
+  activeGroupId?: Id<"groups">         // アクティブなグループID（複数グループ対応）
 }
 ```
 
 **groups**
+
 ```typescript
 {
   _id,
@@ -141,6 +162,7 @@ medications      invitations
 ```
 
 **groupMembers**
+
 ```typescript
 {
   _id,
@@ -153,6 +175,7 @@ medications      invitations
 ```
 
 **groupInvitations**
+
 ```typescript
 {
   _id,
@@ -170,6 +193,7 @@ medications      invitations
 ```
 
 **medicines**
+
 ```typescript
 {
   _id,
@@ -184,6 +208,7 @@ medications      invitations
 ```
 
 **medicationSchedules**
+
 ```typescript
 {
   _id,
@@ -200,6 +225,7 @@ medications      invitations
 ```
 
 **medicationRecords** (最新状態のみ)
+
 ```typescript
 {
   _id,
@@ -223,6 +249,7 @@ medications      invitations
 ```
 
 **medicationRecordsHistory** (削除・編集履歴)
+
 ```typescript
 {
   _id,
@@ -247,13 +274,13 @@ Client → Convex Auth → Resend (OTP Email) → JWT Token
 
 ### 認可（RBAC）
 
-| 操作 | patient | supporter | admin | owner |
-|------|---------|-----------|-------|-------|
-| 自分の服薬記録作成 | ✅ | ✅ | ✅ | ✅ |
-| 他人の記録閲覧 | ❌ | ✅ | ✅ | ✅ |
-| メンバー追加 | ❌ | ❌ | ✅ | ✅ |
-| グループ設定変更 | ❌ | ❌ | ✅ | ✅ |
-| グループ削除 | ❌ | ❌ | ❌ | ✅ |
+| 操作               | patient | supporter |
+| ------------------ | ------- | --------- |
+| 自分の服薬記録作成 | ✅      | ✅        |
+| 他人の記録閲覧     | ❌      | ✅        |
+| メンバー追加       | ✅      | ✅        |
+| グループ設定変更   | ✅      | ✅        |
+| グループ削除       | ✅      | ✅        |
 
 ---
 
@@ -262,16 +289,19 @@ Client → Convex Auth → Resend (OTP Email) → JWT Token
 ### Convex Functions
 
 **Query**（読み取り専用）
+
 - 副作用なし
 - リアクティブ（自動更新）
 - キャッシュ可能
 
 **Mutation**（データ更新）
+
 - データの作成・更新・削除
 - トランザクション保証
 - 楽観的UI対応
 
 **Action**（外部API連携）
+
 - 外部APIコール可能
 - 非決定的処理
 
@@ -280,19 +310,22 @@ Client → Convex Auth → Resend (OTP Email) → JWT Token
 ## 状態管理
 
 ### グローバル状態（Convex）
+
 ```typescript
-const groups = useQuery(api.groups.queries.list)
-const createGroup = useMutation(api.groups.mutations.create)
+const groups = useQuery(api.groups.queries.list);
+const createGroup = useMutation(api.groups.mutations.create);
 ```
 
 ### ローカル状態（React Hooks）
+
 ```typescript
-const [isOpen, setIsOpen] = useState(false)
+const [isOpen, setIsOpen] = useState(false);
 ```
 
 ### フォーム状態（React Hook Form）
+
 ```typescript
-const form = useForm({ resolver: zodResolver(schema) })
+const form = useForm({ resolver: zodResolver(schema) });
 ```
 
 ---
@@ -300,11 +333,13 @@ const form = useForm({ resolver: zodResolver(schema) })
 ## セキュリティ
 
 ### 多層防御
+
 1. **クライアント側**: バリデーション、XSS対策
 2. **API層**: 認証・認可チェック
 3. **データ層**: スキーマバリデーション
 
 ### データ暗号化
+
 - **通信**: HTTPS強制
 - **パスワード**: bcryptハッシング
 - **JWT**: HS256署名
@@ -314,12 +349,14 @@ const form = useForm({ resolver: zodResolver(schema) })
 ## パフォーマンス最適化
 
 ### フロントエンド
+
 - React Server Components
 - Dynamic Import
 - Image Optimization（Next.js Image）
 - Memoization（useMemo/useCallback）
 
 ### バックエンド
+
 - インデックス設定
 - ページネーション
 - Convex自動キャッシング

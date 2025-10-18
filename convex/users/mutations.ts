@@ -105,3 +105,31 @@ export const updateUserImageFromStorage = mutation({
     return { success: true, imageUrl };
   },
 });
+
+/**
+ * アクティブなグループを設定
+ */
+export const setActiveGroup = mutation({
+  args: { groupId: v.id("groups") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    // メンバーシップ確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    await ctx.db.patch(userId, { activeGroupId: args.groupId });
+
+    return { success: true };
+  },
+});

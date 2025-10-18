@@ -33,6 +33,9 @@ export const createGroup = mutation({
       joinedAt: Date.now(),
     });
 
+    // アクティブグループとして設定
+    await ctx.db.patch(userId, { activeGroupId: groupId });
+
     return groupId;
   },
 });
@@ -73,6 +76,9 @@ export const completeOnboardingWithNewGroup = mutation({
       role: args.role,
       joinedAt: Date.now(),
     });
+
+    // アクティブグループとして設定
+    await ctx.db.patch(userId, { activeGroupId: groupId });
 
     return { success: true, groupId };
   },
@@ -221,6 +227,9 @@ export const joinGroupWithInvitation = mutation({
       usedBy: userId,
       usedAt: now,
     });
+
+    // 9. アクティブグループとして設定
+    await ctx.db.patch(userId, { activeGroupId: invitation.groupId });
 
     return {
       success: true,

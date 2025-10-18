@@ -1,7 +1,7 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
-import { GroupMembersList } from "@/features/group";
+import { GroupMembersList, GroupSwitcher } from "@/features/group";
 import { MedicationRecorder } from "@/features/medication";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { api } from "@/shared/lib/convex";
@@ -37,9 +37,14 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const firstGroup = groupStatusResult.groups[0];
+  // アクティブなグループを取得（未設定の場合は最初のグループ）
+  const activeGroupId =
+    groupStatusResult.activeGroupId || groupStatusResult.groups[0]?.groupId;
+  const activeGroup = groupStatusResult.groups.find(
+    (g) => g.groupId === activeGroupId,
+  );
 
-  if (!firstGroup) {
+  if (!activeGroup) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg text-gray-900 dark:text-gray-100">
@@ -53,7 +58,7 @@ export default async function DashboardPage() {
   const groupMembers = await preloadQuery(
     api.groups.getGroupMembers,
     {
-      groupId: firstGroup.groupId,
+      groupId: activeGroup.groupId,
     },
     { token },
   );
@@ -63,17 +68,23 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
           <DashboardHeader currentUser={currentUserResult} />
+          <div className="flex justify-end">
+            <GroupSwitcher
+              groups={groupStatusResult.groups}
+              activeGroupId={groupStatusResult.activeGroupId}
+            />
+          </div>
         </div>
 
         <Card>
           <CardContent>
             <p className="text-gray-700 dark:text-gray-300">
-              グループ: {firstGroup.groupName || "未設定"}
+              グループ: {activeGroup.groupName || "未設定"}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              役割: {firstGroup.role === "patient" ? "服薬者" : "サポーター"}
+              役割: {activeGroup.role === "patient" ? "服薬者" : "サポーター"}
             </p>
           </CardContent>
         </Card>
@@ -83,7 +94,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="mt-6">
-          <MedicationRecorder groupId={firstGroup.groupId} />
+          <MedicationRecorder groupId={activeGroup.groupId} />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 # オンボーディング機能仕様
 
-**最終更新**: 2025年10月16日
+**最終更新**: 2025年10月19日
 
 ## 概要
 
@@ -105,6 +105,11 @@ await ctx.db.insert("groupMembers", {
   userId,
   role: "patient",
   joinedAt: Date.now(),
+})
+
+// アクティブグループとして設定
+await ctx.db.patch(userId, {
+  activeGroupId: groupId
 })
 ```
 

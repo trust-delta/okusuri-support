@@ -1,10 +1,12 @@
 # グループ管理機能仕様
 
-**最終更新**: 2025年10月16日
+**最終更新**: 2025年10月19日
 
 ## 概要
 
 患者と支援者が協働で服薬管理を行うためのグループ機能。招待コード/リンクによるメンバー追加に対応。
+
+**複数グループ対応**: ユーザーは複数のグループに所属でき、アクティブグループを切り替えて使用可能。
 
 ---
 
@@ -62,46 +64,85 @@
 
 ---
 
+## 複数グループ管理
+
+### アクティブグループの概念
+
+- **activeGroupId**: `users`テーブルに保存され、現在アクティブなグループを管理
+- **自動設定**: グループ作成・参加時に自動的に新しいグループがアクティブに設定
+- **フォールバック**: 未設定の場合、所属グループの最初のものを使用
+
+### グループ切り替え
+
+**UI**: ダッシュボードヘッダーのドロップダウン
+
+**フロー**:
+```
+1. ユーザーがドロップダウンから別グループを選択
+2. setActiveGroup mutationを呼び出し
+3. users.activeGroupIdを更新
+4. ページをリロードして新グループのデータを表示
+```
+
+**API**: `users.setActiveGroup`
+```typescript
+{
+  args: { groupId: Id<"groups"> },
+  returns: { success: boolean }
+}
+```
+
+---
+
 ## 機能
 
 ### 1. グループ作成
 
 **フロー**:
 ```
-1. ユーザーがグループ名・説明を入力
+1. ユーザーがグループ名・説明・役割を入力
 2. groupsテーブルに新規作成
-3. groupMembersに作成者を追加（role: 最初の選択による）
-4. グループIDを返却
+3. groupMembersに作成者を追加（role: 入力された役割）
+4. users.activeGroupIdを新グループに設定
+5. グループIDを返却
 ```
 
 **API**: `groups.mutations.create`
 ```typescript
 {
-  args: { name: string, description?: string, initialRole: "patient" | "supporter" },
+  args: { 
+    name: string, 
+    description?: string, 
+    creatorRole: "patient" | "supporter" 
+  },
   returns: Id<"groups">
 }
 ```
 
-### 2. グループ一覧取得
+### 2. グループ状態取得
 
 **フロー**:
 ```
 1. 認証ユーザーのuserIdを取得
-2. groupMembersから所属グループを検索
-3. グループ情報を返却
+2. usersテーブルからactiveGroupIdを取得
+3. groupMembersから所属グループ一覧を検索
+4. グループ情報とactiveGroupIdを返却
 ```
 
-**API**: `groups.queries.list`
+**API**: `groups.queries.getUserGroupStatus`
 ```typescript
 {
   args: {},
-  returns: Array<{
-    _id: Id<"groups">,
-    name: string,
-    description?: string,
-    role: "patient" | "supporter",
-    memberCount: number,
-  }>
+  returns: {
+    hasGroup: boolean,
+    groups: Array<{
+      groupId: Id<"groups">,
+      groupName?: string,
+      role: "patient" | "supporter",
+      joinedAt: number,
+    }>,
+    activeGroupId?: Id<"groups">
+  }
 }
 ```
 
@@ -195,7 +236,8 @@
 2. ユーザー認証確認
 3. ロール選択（allowedRolesから）
 4. groupMembersに追加
-5. groupInvitationsのisUsedをtrueに更新
+5. users.activeGroupIdを新グループに設定
+6. groupInvitationsのisUsedをtrueに更新
 ```
 
 **API**: `invitations.mutations.accept`
@@ -238,17 +280,15 @@
 
 ## UI実装
 
-### グループ一覧 (`/dashboard`)
-- 所属グループのカード表示
-- グループ作成ボタン
+### ダッシュボード (`/dashboard`)
+- **グループ切り替え**: ヘッダーのドロップダウンで所属グループを切り替え
+- **グループ作成**: ドロップダウン横の「＋」ボタンからグループ作成ダイアログを表示
+- **アクティブグループ情報**: 選択中のグループ名と役割を表示
 
-### グループ作成 (`/groups/new`)
-- グループ名・説明入力フォーム
-
-### グループ詳細 (`/groups/[id]`)
-- グループ情報表示
-- メンバー一覧
-- 招待ボタン
+### グループ作成ダイアログ
+- グループ名・説明・役割入力フォーム
+- ダイアログ形式（モーダル）
+- 作成後に自動的に新グループに切り替え
 
 ### 招待モーダル
 - 招待コード表示
@@ -264,10 +304,12 @@
 
 ## 制限事項
 
+- **所属グループ数上限**: なし
 - **メンバー数上限**: なし（将来的に検討）
 - **招待コード有効期限**: 7日間（固定）
 - **招待コード再利用**: 不可（使用後は無効化）
 - **権限管理**: 未実装（全メンバー同等権限）
+- **Patient role制約**: 1グループに1人のPatientのみ（既存仕様を維持）
 
 ---
 
