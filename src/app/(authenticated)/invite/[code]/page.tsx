@@ -44,7 +44,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   const [invitationCode, setInvitationCode] = useState<string>("");
 
   // 現在のユーザー情報を取得
-  const currentUser = useQuery(api.groups.getCurrentUser);
+  const currentUser = useQuery(api.users.getCurrentUser);
 
   // フォームの初期化
   const form = useForm<FormSchema>({

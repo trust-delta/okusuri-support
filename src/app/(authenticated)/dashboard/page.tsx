@@ -14,7 +14,7 @@ export default async function DashboardPage() {
     { token },
   );
   const currentUser = await preloadQuery(
-    api.groups.getCurrentUser,
+    api.users.getCurrentUser,
     {},
     { token },
   );

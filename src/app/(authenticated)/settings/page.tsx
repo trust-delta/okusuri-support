@@ -24,7 +24,7 @@ import { api } from "@/shared/lib/convex";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const currentUser = useQuery(api.groups.getCurrentUser);
+  const currentUser = useQuery(api.users.getCurrentUser);
   const groupStatus = useQuery(api.groups.getUserGroupStatus);
   const updateDisplayName = useMutation(api.users.updateUserDisplayName);
   const generateUploadUrl = useMutation(api.users.generateUploadUrl);
