@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { useRedirectAfterAuth } from "../use-redirect-after-auth";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useRedirectAfterAuth } from "./use-redirect-after-auth";
 
 // Next.jsのrouterをモック
 const mockPush = vi.fn();

@@ -27,7 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/lib/auth0.ts"
+    "src/shared/lib/auth0.ts"
   ],
   "exclude": ["node_modules"]
 }

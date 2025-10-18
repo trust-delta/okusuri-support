@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { GroupMembersList } from "../group-members-list";
 import type { Id } from "../../../../../convex/_generated/dataModel";
+import { GroupMembersList } from "../group-members-list";
 
 describe("GroupMembersList", () => {
   const mockMembers = [
@@ -39,7 +39,7 @@ describe("GroupMembersList", () => {
 
     expect(screen.getByText("グループメンバー")).toBeInTheDocument();
     expect(
-      screen.getByText("メンバー情報を読み込めませんでした")
+      screen.getByText("メンバー情報を読み込めませんでした"),
     ).toBeInTheDocument();
   });
 

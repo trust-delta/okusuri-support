@@ -1,6 +1,6 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { useOnboardingFlow } from "../use-onboarding-flow";
+import { useOnboardingFlow } from "./use-onboarding-flow";
 
 describe("useOnboardingFlow", () => {
   it("初期状態はselectモード", () => {

@@ -2,8 +2,12 @@
 
 import { Settings } from "lucide-react";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
+import { Button } from "@/shared/components/ui/button";
 
 interface DashboardHeaderProps {
   currentUser: {
@@ -42,7 +46,7 @@ export function DashboardHeader({ currentUser }: DashboardHeaderProps) {
           )}
         </div>
       </div>
-      <Link href="/dashboard/settings">
+      <Link href="/settings">
         <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />
           <span className="sr-only">設定</span>

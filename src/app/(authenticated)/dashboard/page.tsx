@@ -1,10 +1,10 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { GroupMembersList } from "@/features/group";
 import { MedicationRecorder } from "@/features/medication";
-import { api } from "../../../convex/_generated/api";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { api } from "../../../../convex/_generated/api";
 import { DashboardHeader } from "./dashboard-header";
 export default async function DashboardPage() {
   const token = await convexAuthNextjsToken();

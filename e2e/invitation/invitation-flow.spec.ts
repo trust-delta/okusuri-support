@@ -37,7 +37,7 @@ import { expect, test } from "@playwright/test";
  * - convex/invitations/__tests__/integration.test.ts - フルフロー統合テスト
  */
 test.describe("招待機能のE2Eフロー", () => {
-  test.skip("招待コードを生成して共有できる", async ({ page }) => {
+  test.skip("招待コードを生成して共有できる", async ({ page: _page }) => {
     // NOTE: このテストは認証システム（メールOTP）の実装が必要なためスキップ
     // 代わりに convex/invitations/__tests__/integration.test.ts で統合テストを実施
     // TODO: Playwright Auth Setup (storageState) を実装後に有効化
@@ -57,7 +57,10 @@ test.describe("招待機能のE2Eフロー", () => {
     // await expect(page.locator('text=コピーしました')).toBeVisible();
   });
 
-  test.skip("招待リンクから参加できる", async ({ page, context }) => {
+  test.skip("招待リンクから参加できる", async ({
+    page: _page,
+    context: _context,
+  }) => {
     // NOTE: このテストは認証システムと有効な招待コードのセットアップが必要なためスキップ
     // 代わりに convex/invitations/__tests__/joinGroupWithInvitation.test.ts で統合テストを実施
     // TODO: Playwright Auth Setup + テストデータセットアップ実装後に有効化
@@ -88,8 +91,8 @@ test.describe("招待機能のE2Eフロー", () => {
 
   test.describe("フルフロー統合テスト", () => {
     test.skip("招待コード生成→共有→新規ユーザー参加のフルフロー", async ({
-      page,
-      context,
+      page: _page,
+      context: _context,
     }) => {
       // NOTE: このテストは認証システムとマルチユーザーセットアップが必要なためスキップ
       // 代わりに convex/invitations/__tests__/integration.test.ts で統合テストを実施
@@ -115,7 +118,7 @@ test.describe("招待機能のE2Eフロー", () => {
     });
 
     test.skip("招待一覧にリアルタイムで新規招待が表示される", async ({
-      page,
+      page: _page,
     }) => {
       // NOTE: このテストは認証とグループセットアップが必要なためスキップ
       // TODO: Playwright Auth Setup実装後に有効化
@@ -132,7 +135,7 @@ test.describe("招待機能のE2Eフロー", () => {
 
   test.describe("Patient制約のUI表示", () => {
     test.skip("Patient存在グループでの招待生成はSupporterのみ表示", async ({
-      page,
+      page: _page,
     }) => {
       // NOTE: このテストは認証とPatient存在グループのセットアップが必要なためスキップ
       // Patient制約のロジックは convex/invitations/__tests__/createInvitation.test.ts で統合テスト済み
@@ -149,7 +152,9 @@ test.describe("招待機能のE2Eフロー", () => {
       // await expect(page.locator("text=このグループには既に患者が登録されているため")).toBeVisible();
     });
 
-    test.skip("Patient不在グループでは両ロール選択可能", async ({ page }) => {
+    test.skip("Patient不在グループでは両ロール選択可能", async ({
+      page: _page,
+    }) => {
       // NOTE: このテストは認証とPatient不在グループのセットアップが必要なためスキップ
       // Patient制約のロジックは convex/invitations/__tests__/createInvitation.test.ts で統合テスト済み
       // TODO: テストデータセットアップ実装後に有効化
@@ -164,7 +169,7 @@ test.describe("招待機能のE2Eフロー", () => {
     });
 
     test.skip("グループメンバー一覧でPatientバッジが表示される", async ({
-      page,
+      page: _page,
     }) => {
       // NOTE: このテストは認証とメンバー管理ページの実装が必要なためスキップ
       // TODO: メンバー一覧ページの実装 + 認証セットアップ後に有効化
@@ -191,7 +196,7 @@ test.describe("招待機能のE2Eフロー", () => {
     });
 
     test.skip("重複参加時にエラーメッセージとリダイレクトが発生する", async ({
-      page,
+      page: _page,
     }) => {
       // NOTE: このテストは認証と既参加グループのセットアップが必要なためスキップ
       // 重複参加のエラーハンドリングは convex/invitations/__tests__/joinGroupWithInvitation.test.ts で統合テスト済み
@@ -207,7 +212,7 @@ test.describe("招待機能のE2Eフロー", () => {
     });
 
     test.skip("Patient重複エラーでロール変更ガイダンスが表示される", async ({
-      page,
+      page: _page,
     }) => {
       // NOTE: このテストは認証とPatient存在グループのセットアップが必要なためスキップ
       // Patient重複のエラーハンドリングは convex/invitations/__tests__/joinGroupWithInvitation.test.ts で統合テスト済み
@@ -222,7 +227,9 @@ test.describe("招待機能のE2Eフロー", () => {
       // await expect(page.locator("text=このグループには既に患者が登録されています")).toBeVisible();
     });
 
-    test.skip("表示名バリデーションエラーが表示される", async ({ page }) => {
+    test.skip("表示名バリデーションエラーが表示される", async ({
+      page: _page,
+    }) => {
       // NOTE: このテストは有効な招待コードのセットアップが必要なためスキップ
       // バリデーションロジック自体は convex/groups.ts の joinGroupWithInvitation で実装済み
       // TODO: テストデータ準備後に有効化
@@ -245,8 +252,8 @@ test.describe("招待機能のE2Eフロー", () => {
 
   test.describe("招待リンク共有機能", () => {
     test.skip("クリップボードコピー機能が動作する", async ({
-      page,
-      context,
+      page: _page,
+      context: _context,
     }) => {
       // NOTE: このテストは認証とグループセットアップが必要なためスキップ
       // TODO: 認証セットアップ実装後に有効化
@@ -266,7 +273,7 @@ test.describe("招待機能のE2Eフロー", () => {
 
     // モバイル共有機能はE2Eでのテストが困難なため、手動テストまたはモバイルエミュレータで実施
     test.skip("モバイル環境でWeb Share APIボタンが表示される", async ({
-      page,
+      page: _page,
     }) => {
       // NOTE: このテストは認証とモバイルエミュレーション設定が必要なためスキップ
       // Web Share API機能は実装済み（手動テストまたは実デバイスでの確認推奨）

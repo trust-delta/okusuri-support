@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach, beforeAll, type Mock } from "vitest";
-import { GroupInvitationManager } from "../group-invitation-manager";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Id } from "../../../../../convex/_generated/dataModel";
+import { GroupInvitationManager } from "../group-invitation-manager";
 
 // Convexのモック
 vi.mock("convex/react", () => ({
@@ -72,14 +72,14 @@ describe("GroupInvitationManager", () => {
     render(<GroupInvitationManager groupId={mockGroupId} />);
 
     expect(
-      screen.getByText("有効な招待コードがありません")
+      screen.getByText("有効な招待コードがありません"),
     ).toBeInTheDocument();
   });
 
   it("有効な招待コードが表示される", () => {
     const mockInvitations = [
       {
-        _id: "inv-1" as Id<"invitations">,
+        _id: "inv-1" as Id<"groupInvitations">,
         code: "ABC123",
         invitationLink: "https://example.com/invite/ABC123",
         expiresAt: Date.now() + 86400000, // 1日後
@@ -94,13 +94,15 @@ describe("GroupInvitationManager", () => {
 
     expect(screen.getByText("ABC123")).toBeInTheDocument();
     expect(screen.getByText(/有効期限:/)).toBeInTheDocument();
-    expect(screen.getByText(/許可ロール: 患者, サポーター/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/許可ロール: 患者, サポーター/),
+    ).toBeInTheDocument();
   });
 
   it("期限切れの招待コードに期限切れバッジが表示される", () => {
     const mockInvitations = [
       {
-        _id: "inv-1" as Id<"invitations">,
+        _id: "inv-1" as Id<"groupInvitations">,
         code: "EXPIRED",
         invitationLink: "https://example.com/invite/EXPIRED",
         expiresAt: Date.now() - 86400000, // 1日前（期限切れ）
@@ -119,7 +121,7 @@ describe("GroupInvitationManager", () => {
   it("使用済みの招待コードは別セクションに表示される", () => {
     const mockInvitations = [
       {
-        _id: "inv-1" as Id<"invitations">,
+        _id: "inv-1" as Id<"groupInvitations">,
         code: "ACTIVE",
         invitationLink: "https://example.com/invite/ACTIVE",
         expiresAt: Date.now() + 86400000,
@@ -127,7 +129,7 @@ describe("GroupInvitationManager", () => {
         isUsed: false,
       },
       {
-        _id: "inv-2" as Id<"invitations">,
+        _id: "inv-2" as Id<"groupInvitations">,
         code: "USED",
         invitationLink: "https://example.com/invite/USED",
         expiresAt: Date.now() + 86400000,
@@ -161,10 +163,12 @@ describe("GroupInvitationManager", () => {
     await user.click(createButton);
 
     await waitFor(() => {
-      expect(mockCreateInvitation).toHaveBeenCalledWith({ groupId: mockGroupId });
+      expect(mockCreateInvitation).toHaveBeenCalledWith({
+        groupId: mockGroupId,
+      });
       expect(toast.success).toHaveBeenCalledWith("招待コードを作成しました");
     });
-    
+
     // クリップボードへのコピーの確認はスキップ（JSDOM環境では正しく動作しないため）
   });
 
@@ -181,9 +185,9 @@ describe("GroupInvitationManager", () => {
               resolve({
                 invitationLink: "https://example.com/invite/NEW123",
               }),
-            100
-          )
-        )
+            100,
+          ),
+        ),
     );
 
     render(<GroupInvitationManager groupId={mockGroupId} />);
@@ -195,10 +199,10 @@ describe("GroupInvitationManager", () => {
   });
 
   it("リンクをコピーボタンをクリックするとクリップボードにコピーされる", async () => {
-    const user = userEvent.setup();
+    const _user = userEvent.setup();
     const mockInvitations = [
       {
-        _id: "inv-1" as Id<"invitations">,
+        _id: "inv-1" as Id<"groupInvitations">,
         code: "ABC123",
         invitationLink: "https://example.com/invite/ABC123",
         expiresAt: Date.now() + 86400000,
@@ -213,7 +217,7 @@ describe("GroupInvitationManager", () => {
 
     const copyButton = screen.getByTitle("リンクをコピー");
     expect(copyButton).toBeInTheDocument();
-    
+
     // クリップボード操作のテストはJSDOM環境では制限があるため、UIの確認のみ行う
   });
 
@@ -221,7 +225,7 @@ describe("GroupInvitationManager", () => {
     const user = userEvent.setup();
     const mockInvitations = [
       {
-        _id: "inv-1" as Id<"invitations">,
+        _id: "inv-1" as Id<"groupInvitations">,
         code: "ABC123",
         invitationLink: "https://example.com/invite/ABC123",
         expiresAt: Date.now() + 86400000,
@@ -263,10 +267,10 @@ describe("GroupInvitationManager", () => {
   });
 
   it("コピーがエラーの場合、エラーメッセージを表示", async () => {
-    const user = userEvent.setup();
+    const _user = userEvent.setup();
     const mockInvitations = [
       {
-        _id: "inv-1" as Id<"invitations">,
+        _id: "inv-1" as Id<"groupInvitations">,
         code: "ABC123",
         invitationLink: "https://example.com/invite/ABC123",
         expiresAt: Date.now() + 86400000,
@@ -282,7 +286,7 @@ describe("GroupInvitationManager", () => {
 
     const copyButton = screen.getByTitle("リンクをコピー");
     expect(copyButton).toBeInTheDocument();
-    
+
     // クリップボード操作のエラーテストはJSDOM環境では制限があるため、UIの確認のみ行う
   });
 });

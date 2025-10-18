@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AuthPageLayout } from "@/features/auth";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { AuthPageLayout } from "@/features/auth";
 
 interface JoinWithCodeFormProps {
   onBack: () => void;

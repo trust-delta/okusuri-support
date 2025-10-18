@@ -1,5 +1,5 @@
-import { Button } from "@/shared/components/ui/button";
 import { AuthPageLayout } from "@/features/auth";
+import { Button } from "@/shared/components/ui/button";
 
 interface ModeSelectionProps {
   onSelectCreate: () => void;

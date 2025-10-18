@@ -2,7 +2,7 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/shared/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 type OAuthProvider = "github" | "google";
 
@@ -75,7 +75,7 @@ const PROVIDER_CONFIG = {
  * <OAuthButton provider="google" redirectTo="/dashboard" />
  * ```
  */
-export function OAuthButton({
+export function OAuthSignIn({
   provider,
   redirectTo = "/dashboard",
   className,

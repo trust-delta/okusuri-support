@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Separator } from "@/shared/components/ui/separator";
-import { Button } from "@/shared/components/ui/button";
 import {
   AuthPageLayout,
-  OAuthButton,
+  OAuthSignIn,
   PasswordReset,
   PasswordSignIn,
 } from "@/features/auth";
+import { Button } from "@/shared/components/ui/button";
+import { Separator } from "@/shared/components/ui/separator";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"oauth" | "password" | "reset">("oauth");
@@ -22,8 +22,8 @@ export default function LoginPage() {
       {mode === "oauth" ? (
         <>
           <div className="space-y-4">
-            <OAuthButton provider="github" redirectTo="/dashboard" />
-            <OAuthButton provider="google" redirectTo="/dashboard" />
+            <OAuthSignIn provider="github" redirectTo="/dashboard" />
+            <OAuthSignIn provider="google" redirectTo="/dashboard" />
           </div>
 
           <div className="relative my-6">

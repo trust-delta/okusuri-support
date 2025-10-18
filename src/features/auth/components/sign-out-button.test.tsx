@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { SignOutButton } from "../sign-out-button";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SignOutButton } from "./sign-out-button";
 
 // Convex Authのモック
 const mockSignOut = vi.fn();

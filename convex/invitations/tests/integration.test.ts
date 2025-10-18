@@ -307,7 +307,7 @@ describe("招待機能 - 統合テスト", () => {
       const t = convexTest(schema);
 
       // Patient存在グループと招待を作成
-      await t.run(async (ctx) => {
+      const { groupId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
         const patientId = await ctx.db.insert("users", {});
 
@@ -340,6 +340,8 @@ describe("招待機能 - 統合テスト", () => {
           allowedRoles: ["supporter"],
           isUsed: false,
         });
+
+        return { groupId };
       });
 
       // 新規ユーザーがSupporterロールで参加
@@ -464,6 +466,8 @@ describe("招待機能 - 統合テスト", () => {
           allowedRoles: ["patient", "supporter"],
           isUsed: false,
         });
+
+        return { groupId };
       });
 
       // 検証が成功する
@@ -529,6 +533,8 @@ describe("招待機能 - 統合テスト", () => {
           allowedRoles: ["patient", "supporter"],
           isUsed: false,
         });
+
+        return { groupId };
       });
 
       // 2人のユーザーを作成
@@ -621,6 +627,8 @@ describe("招待機能 - 統合テスト", () => {
           allowedRoles: ["patient", "supporter"],
           isUsed: false,
         });
+
+        return { groupId };
       });
 
       // 2人のユーザーを作成

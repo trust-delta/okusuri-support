@@ -1,7 +1,7 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { useGroupMembers } from "../use-group-members";
-import type { Id } from "../../../../../convex/_generated/dataModel";
+import { renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Id } from "../../../../convex/_generated/dataModel";
+import { useGroupMembers } from "./use-group-members";
 
 // Convexのモック
 vi.mock("convex/react", () => ({

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { OAuthButton } from "../oauth-button";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { OAuthSignIn } from "./oauth-sign-in";
 
 // Convex Authのモック
 const mockSignIn = vi.fn();
@@ -11,20 +11,20 @@ vi.mock("@convex-dev/auth/react", () => ({
   }),
 }));
 
-describe("OAuthButton", () => {
+describe("OAuthSignIn", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("GitHubボタンが正しく表示される", () => {
-    render(<OAuthButton provider="github" />);
+    render(<OAuthSignIn provider="github" />);
 
     expect(screen.getByText("GitHubでログイン")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "GitHub" })).toBeInTheDocument();
   });
 
   it("Googleボタンが正しく表示される", () => {
-    render(<OAuthButton provider="google" />);
+    render(<OAuthSignIn provider="google" />);
 
     expect(screen.getByText("Googleでログイン")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Google" })).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe("OAuthButton", () => {
 
   it("GitHubボタンをクリックするとsignInが呼ばれる", async () => {
     const user = userEvent.setup();
-    render(<OAuthButton provider="github" redirectTo="/custom-path" />);
+    render(<OAuthSignIn provider="github" redirectTo="/custom-path" />);
 
     const button = screen.getByText("GitHubでログイン");
     await user.click(button);
@@ -44,7 +44,7 @@ describe("OAuthButton", () => {
 
   it("GoogleボタンをクリックするとsignInが呼ばれる", async () => {
     const user = userEvent.setup();
-    render(<OAuthButton provider="google" />);
+    render(<OAuthSignIn provider="google" />);
 
     const button = screen.getByText("Googleでログイン");
     await user.click(button);
@@ -56,7 +56,7 @@ describe("OAuthButton", () => {
 
   it("デフォルトのredirectToは/dashboard", async () => {
     const user = userEvent.setup();
-    render(<OAuthButton provider="github" />);
+    render(<OAuthSignIn provider="github" />);
 
     const button = screen.getByText("GitHubでログイン");
     await user.click(button);
@@ -67,7 +67,7 @@ describe("OAuthButton", () => {
   });
 
   it("カスタムclassNameが適用される", () => {
-    render(<OAuthButton provider="github" className="custom-class" />);
+    render(<OAuthSignIn provider="github" className="custom-class" />);
 
     const button = screen.getByText("GitHubでログイン");
     expect(button).toHaveClass("custom-class");

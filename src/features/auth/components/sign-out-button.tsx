@@ -6,12 +6,12 @@ import { Button } from "@/shared/components/ui/button";
 
 interface SignOutButtonProps {
   variant?:
-  | "default"
-  | "destructive"
-  | "outline"
-  | "secondary"
-  | "ghost"
-  | "link";
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
   size?: "default" | "sm" | "lg" | "icon";
   redirectTo?: string;
   children?: React.ReactNode;

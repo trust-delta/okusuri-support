@@ -1,7 +1,7 @@
 // Components
 export {
   AuthPageLayout,
-  OAuthButton,
+  OAuthSignIn,
   PasswordReset,
   PasswordSignIn,
   SignOutButton,

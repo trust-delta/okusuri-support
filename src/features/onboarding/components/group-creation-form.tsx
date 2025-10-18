@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AuthPageLayout } from "@/features/auth";
 import { Button } from "@/shared/components/ui/button";
 import {
   Form,
@@ -18,7 +19,6 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { AuthPageLayout } from "@/features/auth";
 import { api } from "../../../../convex/_generated/api";
 
 const createGroupFormSchema = z.object({

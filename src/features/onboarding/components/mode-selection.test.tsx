@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { ModeSelection } from "../mode-selection";
+import { ModeSelection } from "./mode-selection";
 
 describe("ModeSelection", () => {
   it("タイトルと説明が表示される", () => {
@@ -12,13 +12,11 @@ describe("ModeSelection", () => {
       <ModeSelection
         onSelectCreate={mockOnSelectCreate}
         onSelectJoin={mockOnSelectJoin}
-      />
+      />,
     );
 
     expect(screen.getByText("初期設定")).toBeInTheDocument();
-    expect(
-      screen.getByText("お薬サポートを始めましょう")
-    ).toBeInTheDocument();
+    expect(screen.getByText("お薬サポートを始めましょう")).toBeInTheDocument();
   });
 
   it("グループ作成ボタンが表示される", () => {
@@ -29,12 +27,12 @@ describe("ModeSelection", () => {
       <ModeSelection
         onSelectCreate={mockOnSelectCreate}
         onSelectJoin={mockOnSelectJoin}
-      />
+      />,
     );
 
     expect(screen.getByText("新しいグループを作成")).toBeInTheDocument();
     expect(
-      screen.getByText("家族やケアチームのグループを作ります")
+      screen.getByText("家族やケアチームのグループを作ります"),
     ).toBeInTheDocument();
   });
 
@@ -46,7 +44,7 @@ describe("ModeSelection", () => {
       <ModeSelection
         onSelectCreate={mockOnSelectCreate}
         onSelectJoin={mockOnSelectJoin}
-      />
+      />,
     );
 
     expect(screen.getByText("招待コードで参加")).toBeInTheDocument();
@@ -62,7 +60,7 @@ describe("ModeSelection", () => {
       <ModeSelection
         onSelectCreate={mockOnSelectCreate}
         onSelectJoin={mockOnSelectJoin}
-      />
+      />,
     );
 
     const createButton = screen.getByText("新しいグループを作成");
@@ -81,7 +79,7 @@ describe("ModeSelection", () => {
       <ModeSelection
         onSelectCreate={mockOnSelectCreate}
         onSelectJoin={mockOnSelectJoin}
-      />
+      />,
     );
 
     const joinButton = screen.getByText("招待コードで参加");
