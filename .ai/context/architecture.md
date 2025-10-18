@@ -113,24 +113,126 @@ medications      invitations
 
 ### 主要テーブル
 
-**users**
+**users** (Convex Auth管理 + カスタムフィールド)
 ```typescript
-{ _id, email, name?, role: "patient" | "supporter", createdAt }
+{
+  _id,
+  name?: string,
+  image?: string,
+  email?: string,
+  emailVerificationTime?: number,
+  phone?: string,
+  phoneVerificationTime?: number,
+  isAnonymous?: boolean,
+  displayName?: string,              // ユーザー表示名（全グループ共通）
+  customImageStorageId?: Id<"_storage"> // カスタムアップロード画像
+}
 ```
 
 **groups**
 ```typescript
-{ _id, name, ownerId, createdAt }
+{
+  _id,
+  name: string,
+  description?: string,
+  createdBy: string,  // Convex AuthのuserId
+  createdAt: number
+}
 ```
 
-**group_users**
+**groupMembers**
 ```typescript
-{ _id, groupId, userId, role: "owner" | "admin" | "member", joinedAt }
+{
+  _id,
+  groupId: Id<"groups">,
+  userId: string,  // Convex AuthのuserId
+  role: "patient" | "supporter",
+  joinedAt: number
+}
+// Indexes: by_userId, by_groupId
 ```
 
-**invitations**
+**groupInvitations**
 ```typescript
-{ _id, groupId, code, expiresAt, createdBy, maxUses?, usedCount }
+{
+  _id,
+  code: string,  // 8文字英数字（一意）
+  groupId: Id<"groups">,
+  createdBy: string,
+  createdAt: number,
+  expiresAt: number,  // 作成から7日後
+  allowedRoles: ("patient" | "supporter")[],
+  isUsed: boolean,
+  usedBy?: string,
+  usedAt?: number
+}
+// Indexes: by_code, by_groupId, by_groupId_isUsed
+```
+
+**medicines**
+```typescript
+{
+  _id,
+  groupId: Id<"groups">,
+  name: string,
+  description?: string,
+  createdBy: string,
+  createdAt: number,
+  isActive: boolean  // 服用中かどうか
+}
+// Indexes: by_groupId, by_groupId_isActive
+```
+
+**medicationSchedules**
+```typescript
+{
+  _id,
+  medicineId: Id<"medicines">,
+  groupId: Id<"groups">,
+  timings: ("morning" | "noon" | "evening" | "bedtime" | "asNeeded")[],
+  dosage?: string,
+  notes?: string,
+  createdBy: string,
+  createdAt: number,
+  updatedAt: number
+}
+// Indexes: by_medicineId, by_groupId
+```
+
+**medicationRecords** (最新状態のみ)
+```typescript
+{
+  _id,
+  medicineId?: Id<"medicines">,
+  scheduleId?: Id<"medicationSchedules">,
+  simpleMedicineName?: string,  // 薬剤未登録時の表示名
+  groupId: Id<"groups">,
+  patientId: string,
+  timing: "morning" | "noon" | "evening" | "bedtime" | "asNeeded",
+  scheduledDate: string,  // YYYY-MM-DD
+  takenAt?: number,
+  status: "pending" | "taken" | "skipped",
+  recordedBy: string,
+  notes?: string,
+  createdAt: number,
+  updatedAt: number
+}
+// Indexes: by_groupId, by_patientId, by_scheduleId, by_scheduledDate,
+//          by_groupId_scheduledDate, by_patientId_scheduledDate,
+//          by_status, by_patientId_timing_scheduledDate
+```
+
+**medicationRecordsHistory** (削除・編集履歴)
+```typescript
+{
+  _id,
+  originalRecordId: Id<"medicationRecords">,
+  // ... medicationRecordsと同じフィールド
+  historyType: "deleted" | "updated",
+  archivedAt: number,
+  archivedBy: string
+}
+// Indexes: by_originalRecordId, by_groupId, by_patientId, by_archivedAt
 ```
 
 ---
