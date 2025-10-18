@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import type { api } from "../../../../convex/_generated/api";
+import type { api } from "@/shared/lib/convex";
 import { MemberCard } from "./member-card";
 
 interface GroupMembersListProps {

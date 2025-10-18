@@ -1,1 +1,2 @@
-export { MEDICATION_TIMINGS, type MedicationTiming } from "./timings";
+export type { MedicationTiming } from "../types/timing";
+export { MEDICATION_TIMINGS } from "./timings";

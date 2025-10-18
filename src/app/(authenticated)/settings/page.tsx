@@ -20,7 +20,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { ThemeToggle } from "@/shared/components/ui/theme-toggle";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "@/shared/lib/convex";
 
 export default function SettingsPage() {
   const router = useRouter();

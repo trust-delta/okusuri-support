@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { GroupMembersList } from "@/features/group";
 import { MedicationRecorder } from "@/features/medication";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "@/shared/lib/convex";
 import { DashboardHeader } from "./dashboard-header";
 export default async function DashboardPage() {
   const token = await convexAuthNextjsToken();

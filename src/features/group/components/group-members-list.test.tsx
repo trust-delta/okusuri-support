@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { Id } from "../../../../../convex/_generated/dataModel";
-import { GroupMembersList } from "../group-members-list";
+import type { Id } from "@/shared/lib/convex";
+import { GroupMembersList } from "./group-members-list";
 
 describe("GroupMembersList", () => {
   const mockMembers = [

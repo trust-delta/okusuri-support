@@ -8,9 +8,9 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import type { Id } from "@/shared/lib/convex";
+import { api } from "@/shared/lib/convex";
 import { formatJST, nowJST } from "@/shared/lib/date-fns";
-import { api } from "../../../../convex/_generated/api";
-import type { Id } from "../../../../convex/_generated/dataModel";
 import { MEDICATION_TIMINGS } from "../constants/timings";
 import { MedicationRecordActions } from "./medication-record-actions";
 

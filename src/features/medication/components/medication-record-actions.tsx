@@ -4,8 +4,8 @@ import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
-import { api } from "../../../../convex/_generated/api";
-import type { Id } from "../../../../convex/_generated/dataModel";
+import type { Id } from "@/shared/lib/convex";
+import { api } from "@/shared/lib/convex";
 import type { MedicationTiming } from "../types/timing";
 
 interface MedicationRecordActionsProps {

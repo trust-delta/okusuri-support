@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "@/shared/lib/convex";
 
 /**
  * 認証後のリダイレクトを管理するフック

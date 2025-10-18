@@ -20,7 +20,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { api } from "../../../../../convex/_generated/api";
+import { api } from "@/shared/lib/convex";
 
 // フォームスキーマの定義
 const formSchema = z.object({

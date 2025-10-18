@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Id } from "../../../../convex/_generated/dataModel";
+import type { Id } from "@/shared/lib/convex";
 import { useGroupMembers } from "./use-group-members";
 
 // Convexのモック
