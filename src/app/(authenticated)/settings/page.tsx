@@ -26,10 +26,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const currentUser = useQuery(api.groups.getCurrentUser);
   const groupStatus = useQuery(api.groups.getUserGroupStatus);
-  const updateDisplayName = useMutation(api.groups.updateUserDisplayName);
-  const generateUploadUrl = useMutation(api.groups.generateUploadUrl);
+  const updateDisplayName = useMutation(api.users.updateUserDisplayName);
+  const generateUploadUrl = useMutation(api.users.generateUploadUrl);
   const updateUserImageFromStorage = useMutation(
-    api.groups.updateUserImageFromStorage,
+    api.users.updateUserImageFromStorage,
   );
 
   const [displayName, setDisplayName] = useState("");

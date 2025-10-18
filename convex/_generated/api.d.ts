@@ -17,7 +17,6 @@ import type * as auth from "../auth.js";
 import type * as groups_index from "../groups/index.js";
 import type * as groups_mutations from "../groups/mutations.js";
 import type * as groups_queries from "../groups/queries.js";
-import type * as groups_users from "../groups/users.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as invitationCodeGenerator from "../invitationCodeGenerator.js";
@@ -38,6 +37,8 @@ import type * as resend_index from "../resend/index.js";
 import type * as resend_otp from "../resend/otp.js";
 import type * as resend_passwordReset from "../resend/passwordReset.js";
 import type * as resend from "../resend.js";
+import type * as users_mutations from "../users/mutations.js";
+import type * as users from "../users.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -52,7 +53,6 @@ declare const fullApi: ApiFromModules<{
   "groups/index": typeof groups_index;
   "groups/mutations": typeof groups_mutations;
   "groups/queries": typeof groups_queries;
-  "groups/users": typeof groups_users;
   groups: typeof groups;
   http: typeof http;
   invitationCodeGenerator: typeof invitationCodeGenerator;
@@ -73,6 +73,8 @@ declare const fullApi: ApiFromModules<{
   "resend/otp": typeof resend_otp;
   "resend/passwordReset": typeof resend_passwordReset;
   resend: typeof resend;
+  "users/mutations": typeof users_mutations;
+  users: typeof users;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
