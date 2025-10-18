@@ -3,7 +3,7 @@
 import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/components/ui/button";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { MedicationTiming } from "../constants/timings";
@@ -67,11 +67,10 @@ export function MedicationRecordActions({
     return (
       <>
         <span
-          className={`px-3 py-1 rounded-full text-sm ${
-            recordStatus === "taken"
+          className={`px-3 py-1 rounded-full text-sm ${recordStatus === "taken"
               ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
               : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-          }`}
+            }`}
         >
           {recordStatus === "taken" ? "服用済み" : "スキップ"}
         </span>

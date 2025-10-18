@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { Separator } from "@/shared/components/ui/separator";
+import { Button } from "@/shared/components/ui/button";
 import {
   AuthPageLayout,
   OAuthButton,

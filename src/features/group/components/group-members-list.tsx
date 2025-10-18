@@ -2,7 +2,7 @@
 
 import type { FunctionReturnType } from "convex/server";
 import { Users } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import type { api } from "../../../../convex/_generated/api";
 import { MemberCard } from "./member-card";
 
@@ -16,12 +16,12 @@ export function GroupMembersList({
   const members = !membersData
     ? []
     : [...membersData].sort((a, b) => {
-        // 患者を先頭に
-        if (a.role === "patient" && b.role !== "patient") return -1;
-        if (a.role !== "patient" && b.role === "patient") return 1;
-        // 同じロールなら参加日時順
-        return a.joinedAt - b.joinedAt;
-      });
+      // 患者を先頭に
+      if (a.role === "patient" && b.role !== "patient") return -1;
+      if (a.role !== "patient" && b.role === "patient") return 1;
+      // 同じロールなら参加日時順
+      return a.joinedAt - b.joinedAt;
+    });
 
   if (!membersData) {
     return (

@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/components/ui/button";
 import { AuthPageLayout } from "@/features/auth";
 
 interface ModeSelectionProps {
