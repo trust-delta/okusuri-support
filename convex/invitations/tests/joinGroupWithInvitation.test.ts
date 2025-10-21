@@ -30,13 +30,18 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       });
 
       // 認証なしで参加を試行
-      await expect(
-        t.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await t.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "TEST1234",
           role: "supporter",
           displayName: "テストユーザー",
-        }),
-      ).rejects.toThrow("認証が必要です");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("認証が必要です");
+      }
     });
   });
 
@@ -83,12 +88,17 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       const asNewUser = t.withIdentity({ subject: setup.newUserId });
 
       // 表示名なしで参加を試行
-      await expect(
-        asNewUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asNewUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "TEST1234",
           role: "supporter",
-        }),
-      ).rejects.toThrow("表示名を入力してください");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("表示名を入力してください");
+      }
     });
 
     it("表示名が50文字を超える場合はエラーを返す", async () => {
@@ -128,13 +138,20 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       const asNewUser = t.withIdentity({ subject: newUserId });
 
       // 51文字の表示名で参加を試行
-      await expect(
-        asNewUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asNewUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "TEST1234",
           role: "supporter",
           displayName: "あ".repeat(51),
-        }),
-      ).rejects.toThrow("表示名は50文字以内で入力してください");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe(
+          "表示名は50文字以内で入力してください",
+        );
+      }
     });
 
     it("既存のdisplayNameがある場合は引数を省略可能", async () => {
@@ -184,8 +201,9 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
         },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.groupId).toBe(groupId);
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
+      expect(result.data.groupId).toBe(groupId);
     });
   });
 
@@ -201,13 +219,18 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
       const asUser = t.withIdentity({ subject: userId });
 
-      await expect(
-        asUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "NOTEXIST",
           role: "supporter",
           displayName: "テストユーザー",
-        }),
-      ).rejects.toThrow("招待コードが無効です");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("招待コードが無効です");
+      }
     });
 
     it("有効期限切れの招待コードの場合はエラーを返す", async () => {
@@ -242,13 +265,18 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
       const asNewUser = t.withIdentity({ subject: newUserId });
 
-      await expect(
-        asNewUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asNewUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "EXPIRED",
           role: "supporter",
           displayName: "新規ユーザー",
-        }),
-      ).rejects.toThrow("招待コードが無効です");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("招待コードが無効です");
+      }
     });
 
     it("使用済みの招待コードの場合はエラーを返す", async () => {
@@ -285,13 +313,18 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
       const asNewUser = t.withIdentity({ subject: newUserId });
 
-      await expect(
-        asNewUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asNewUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "USED",
           role: "supporter",
           displayName: "新規ユーザー",
-        }),
-      ).rejects.toThrow("招待コードが無効です");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("招待コードが無効です");
+      }
     });
   });
 
@@ -329,13 +362,20 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       const asNewUser = t.withIdentity({ subject: newUserId });
 
       // Patientロールで参加を試行
-      await expect(
-        asNewUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asNewUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "SUPPORTER_ONLY",
           role: "patient",
           displayName: "新規ユーザー",
-        }),
-      ).rejects.toThrow("この招待ではsupporterとして参加できます");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe(
+          "この招待ではsupporterとして参加できます",
+        );
+      }
     });
   });
 
@@ -378,13 +418,18 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       const asUser = t.withIdentity({ subject: userId });
 
       // 既に参加しているグループに再度参加を試行
-      await expect(
-        asUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "TEST1234",
           role: "supporter",
           displayName: "テストユーザー",
-        }),
-      ).rejects.toThrow("既にこのグループのメンバーです");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("既にこのグループのメンバーです");
+      }
     });
   });
 
@@ -440,13 +485,20 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       const asNewUser = t.withIdentity({ subject: newUserId });
 
       // Patientロールで参加を試行
-      await expect(
-        asNewUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asNewUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "TEST1234",
           role: "patient",
           displayName: "新規ユーザー",
-        }),
-      ).rejects.toThrow("このグループには既に患者が登録されています");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe(
+          "このグループには既に患者が登録されています",
+        );
+      }
     });
 
     it("Patient不在の場合、Patientロールでの参加を許可", async () => {
@@ -498,12 +550,13 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
         },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.groupId).toBe(groupId);
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
+      expect(result.data.groupId).toBe(groupId);
 
       // Patientとして参加できたことを確認
       const membership = await t.run(async (ctx) => {
-        return await ctx.db.get(result.membershipId);
+        return await ctx.db.get(result.data.membershipId);
       });
 
       expect(membership?.role).toBe("patient");
@@ -568,8 +621,9 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
         },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.groupId).toBe(groupId);
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
+      expect(result.data.groupId).toBe(groupId);
     });
   });
 
@@ -624,13 +678,14 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
       const afterJoin = Date.now();
 
       // 返却値の検証
-      expect(result.success).toBe(true);
-      expect(result.groupId).toBe(groupId);
-      expect(result.membershipId).toBeDefined();
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
+      expect(result.data.groupId).toBe(groupId);
+      expect(result.data.membershipId).toBeDefined();
 
       // メンバーシップの検証
       const membership = await t.run(async (ctx) => {
-        return await ctx.db.get(result.membershipId);
+        return await ctx.db.get(result.data.membershipId);
       });
 
       expect(membership).toBeDefined();

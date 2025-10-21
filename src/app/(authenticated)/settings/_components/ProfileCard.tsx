@@ -51,17 +51,16 @@ export function ProfileCard({ preloadedCurrentUser }: ProfileCardProps) {
     }
 
     setIsSubmitting(true);
-    try {
-      await updateDisplayName({ displayName: displayName.trim() });
+    const result = await updateDisplayName({ displayName: displayName.trim() });
+
+    if (!result.isSuccess) {
+      toast.error(result.errorMessage);
+    } else {
       toast.success("表示名を更新しました");
       setIsEditing(false);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "更新に失敗しました",
-      );
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
   const handleCancel = () => {
@@ -93,15 +92,20 @@ export function ProfileCard({ preloadedCurrentUser }: ProfileCardProps) {
       const postUrl = await generateUploadUrl();
 
       // Step 2: ファイルをアップロード
-      const result = await fetch(postUrl, {
+      const uploadResult = await fetch(postUrl, {
         method: "POST",
         headers: { "Content-Type": file.type },
         body: file,
       });
-      const { storageId } = await result.json();
+      const { storageId } = await uploadResult.json();
 
       // Step 3: ストレージIDを使ってプロフィール画像を更新
-      await updateUserImageFromStorage({ storageId });
+      const result = await updateUserImageFromStorage({ storageId });
+
+      if (!result.isSuccess) {
+        toast.error(result.errorMessage);
+        return;
+      }
 
       toast.success("プロフィール画像を更新しました");
 

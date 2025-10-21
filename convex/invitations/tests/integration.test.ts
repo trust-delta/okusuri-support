@@ -42,10 +42,13 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(invitation.invitationId).toBeDefined();
-      expect(invitation.code).toBe("INTEGRATION");
-      expect(invitation.allowedRoles).toEqual(["patient", "supporter"]);
-      expect(invitation.invitationLink).toContain("/invite/INTEGRATION");
+      expect(invitation.isSuccess).toBe(true);
+      if (!invitation.isSuccess) return;
+
+      expect(invitation.data.invitationId).toBeDefined();
+      expect(invitation.data.code).toBe("INTEGRATION");
+      expect(invitation.data.allowedRoles).toEqual(["patient", "supporter"]);
+      expect(invitation.data.invitationLink).toContain("/invite/INTEGRATION");
 
       // === ステップ2: ユーザーBが招待コードを検証 ===
       const validation = await t.query(
@@ -80,8 +83,10 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(joinResult.success).toBe(true);
-      expect(joinResult.groupId).toBe(groupId);
+      expect(joinResult.isSuccess).toBe(true);
+      if (!joinResult.isSuccess) return;
+
+      expect(joinResult.data.groupId).toBe(groupId);
 
       // === ステップ4: グループメンバー一覧にユーザーBが追加されたことを確認 ===
       const members = await t.run(async (ctx) => {
@@ -100,7 +105,7 @@ describe("招待機能 - 統合テスト", () => {
 
       // === ステップ5: 招待が使用済みとしてマークされたことを確認 ===
       const usedInvitation = await t.run(async (ctx) => {
-        return await ctx.db.get(invitation.invitationId);
+        return await ctx.db.get(invitation.data.invitationId);
       });
 
       expect(usedInvitation?.isUsed).toBe(true);
@@ -228,8 +233,11 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
+      expect(invitation.isSuccess).toBe(true);
+      if (!invitation.isSuccess) return;
+
       // 許可ロールがSupporterのみ
-      expect(invitation.allowedRoles).toEqual(["supporter"]);
+      expect(invitation.data.allowedRoles).toEqual(["supporter"]);
 
       // 招待コードを検証
       const validation = await t.query(
@@ -362,8 +370,9 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.groupId).toBe(groupId);
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
+      expect(result.data.groupId).toBe(groupId);
 
       // グループメンバーが3人（作成者、patient、新規supporter）になったことを確認
       const members = await t.run(async (ctx) => {
@@ -498,8 +507,9 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.groupId).toBe(groupId);
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
+      expect(result.data.groupId).toBe(groupId);
     });
   });
 
@@ -563,16 +573,22 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(result1.success).toBe(true);
+      expect(result1.isSuccess).toBe(true);
+      if (!result1.isSuccess) return;
 
       // 2人目が参加を試行（使用済みエラー）
-      await expect(
-        asUser2.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result2 = await asUser2.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "CONCURRENT",
           role: "supporter",
           displayName: "ユーザー2",
-        }),
-      ).rejects.toThrow("招待コードが無効です");
+        },
+      );
+      expect(result2.isSuccess).toBe(false);
+      if (!result2.isSuccess) {
+        expect(result2.errorMessage).toBe("招待コードが無効です");
+      }
 
       // グループメンバーが2人（作成者とユーザー1）のみであることを確認
       const members = await t.run(async (ctx) => {
@@ -666,8 +682,10 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(result1.success).toBe(true);
-      expect(result2.success).toBe(true);
+      expect(result1.isSuccess).toBe(true);
+      if (!result1.isSuccess) return;
+      expect(result2.isSuccess).toBe(true);
+      if (!result2.isSuccess) return;
 
       // グループメンバーが3人（作成者、ユーザー1、ユーザー2）であることを確認
       const members = await t.run(async (ctx) => {

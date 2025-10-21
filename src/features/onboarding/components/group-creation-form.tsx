@@ -61,21 +61,20 @@ export function GroupCreationForm({ onBack }: GroupCreationFormProps) {
   });
 
   const handleSubmit = async (data: CreateGroupFormSchema) => {
-    try {
-      await completeOnboarding({
-        userName: data.userName,
-        groupName: data.groupName,
-        groupDescription: data.groupDescription,
-        role: data.role,
-      });
+    const result = await completeOnboarding({
+      userName: data.userName,
+      groupName: data.groupName,
+      groupDescription: data.groupDescription,
+      role: data.role,
+    });
 
-      toast.success("グループを作成しました");
-      router.push("/dashboard");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "エラーが発生しました",
-      );
+    if (!result.isSuccess) {
+      toast.error(result.errorMessage);
+      return;
     }
+
+    toast.success("グループを作成しました");
+    router.push("/dashboard");
   };
 
   return (

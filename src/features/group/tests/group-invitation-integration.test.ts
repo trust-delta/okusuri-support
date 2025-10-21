@@ -32,12 +32,13 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
         },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.groupId).toBeDefined();
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
+      expect(result.data.groupId).toBeDefined();
 
       // グループが作成されたことを確認
       const group = await t.run(async (ctx) => {
-        return await ctx.db.get(result.groupId);
+        return await ctx.db.get(result.data.groupId);
       });
 
       expect(group).toBeDefined();
@@ -48,7 +49,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const members = await t.run(async (ctx) => {
         return await ctx.db
           .query("groupMembers")
-          .filter((q) => q.eq(q.field("groupId"), result.groupId))
+          .filter((q) => q.eq(q.field("groupId"), result.data.groupId))
           .collect();
       });
 
@@ -76,12 +77,13 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
         },
       );
 
-      expect(result.success).toBe(true);
+      expect(result.isSuccess).toBe(true);
+      if (!result.isSuccess) return;
 
       const members = await t.run(async (ctx) => {
         return await ctx.db
           .query("groupMembers")
-          .filter((q) => q.eq(q.field("groupId"), result.groupId))
+          .filter((q) => q.eq(q.field("groupId"), result.data.groupId))
           .collect();
       });
 
@@ -166,12 +168,14 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const asUser = t.withIdentity({ subject: userId });
 
       // 同じユーザーが再度参加を試みる（失敗するはず）
-      await expect(
-        asUser.mutation(api.groups.mutations.joinGroup, {
-          groupId,
-          role: "supporter",
-        }),
-      ).rejects.toThrow("既にグループに参加しています");
+      const result = await asUser.mutation(api.groups.mutations.joinGroup, {
+        groupId,
+        role: "supporter",
+      });
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("既にグループに参加しています");
+      }
     });
   });
 
@@ -243,13 +247,15 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       });
 
       // 未認証での参加試行（認証情報なしで実行）
-      await expect(
-        t.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await t.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "AUTH0002",
           role: "supporter",
           displayName: "未認証ユーザー",
-        }),
-      ).rejects.toThrow();
+        },
+      );
+      expect(result.isSuccess).toBe(false);
     });
 
     it("認証済みユーザーは自身が作成したグループを取得できる", async () => {
@@ -313,12 +319,14 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       const asUser2 = t.withIdentity({ subject: setup.user2Id });
 
       // ユーザー2が所属していないグループの招待コードを作成しようとする
-      await expect(
-        asUser2.mutation(api.invitations.mutations.createInvitationInternal, {
+      const result = await asUser2.mutation(
+        api.invitations.mutations.createInvitationInternal,
+        {
           groupId: setup.groupId,
           code: "UNAUTHORIZED",
-        }),
-      ).rejects.toThrow();
+        },
+      );
+      expect(result.isSuccess).toBe(false);
     });
 
     it("グループメンバーのみがグループの招待一覧を取得できる", async () => {

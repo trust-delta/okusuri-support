@@ -31,36 +31,34 @@ export function MedicationRecordActions({
 
   const handleRecord = async (status: "taken" | "skipped") => {
     setIsLoading(true);
-    try {
-      await recordMutation({
-        groupId,
-        timing,
-        scheduledDate,
-        simpleMedicineName,
-        status,
-      });
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "記録に失敗しました",
-      );
-    } finally {
-      setIsLoading(false);
+    const result = await recordMutation({
+      groupId,
+      timing,
+      scheduledDate,
+      simpleMedicineName,
+      status,
+    });
+
+    if (!result.isSuccess) {
+      toast.error(result.errorMessage);
     }
+
+    setIsLoading(false);
   };
 
   const handleDelete = async () => {
     if (!recordId) return;
     setIsLoading(true);
-    try {
-      await deleteMutation({ recordId });
+
+    const result = await deleteMutation({ recordId });
+
+    if (!result.isSuccess) {
+      toast.error(result.errorMessage);
+    } else {
       toast.success("記録を取り消しました");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "取消しに失敗しました",
-      );
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
   if (recordStatus && recordId) {

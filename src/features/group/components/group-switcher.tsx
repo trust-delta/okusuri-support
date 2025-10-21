@@ -36,18 +36,16 @@ export function GroupSwitcher({ groups, activeGroupId }: GroupSwitcherProps) {
   const currentGroupId = activeGroupId || groups[0]?.groupId;
 
   const handleGroupChange = async (groupId: string) => {
-    try {
-      await setActiveGroup({ groupId: groupId as Id<"groups"> });
-      toast.success("グループを切り替えました");
-      // ページをリロードしてデータを更新
-      window.location.reload();
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "グループの切り替えに失敗しました",
-      );
+    const result = await setActiveGroup({ groupId: groupId as Id<"groups"> });
+
+    if (!result.isSuccess) {
+      toast.error(result.errorMessage);
+      return;
     }
+
+    toast.success("グループを切り替えました");
+    // ページをリロードしてデータを更新
+    window.location.reload();
   };
 
   return (
