@@ -14,11 +14,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
   const token = await convexAuthNextjsToken();
 
   // 現在のユーザー情報を取得
-  const currentUser = await fetchQuery(
-    api.users.getCurrentUser,
-    {},
-    { token },
-  );
+  const currentUser = await fetchQuery(api.users.getCurrentUser, {}, { token });
 
   // 招待コードの検証とグループ情報の取得
   const invitationInfo = await fetchQuery(

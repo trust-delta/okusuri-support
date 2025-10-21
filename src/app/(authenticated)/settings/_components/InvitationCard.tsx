@@ -1,6 +1,5 @@
 "use client";
 
-import type { Id } from "@/shared/lib/convex";
 import { GroupInvitationManager } from "@/features/group";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import type { Id } from "@/shared/lib/convex";
 
 interface InvitationCardProps {
   groupId: Id<"groups">;

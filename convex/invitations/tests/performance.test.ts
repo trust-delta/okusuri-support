@@ -347,7 +347,7 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       // 全員が正常に参加できたことを確認
       results.forEach((result, index) => {
-        expect(result.success).toBe(true);
+        expect(result.isSuccess).toBe(true);
         console.log(`ユーザー${index + 1}が参加完了`);
       });
 
@@ -425,7 +425,7 @@ describe("パフォーマンステスト - 招待機能", () => {
       const results = await Promise.all(joinPromises);
 
       // 成功は1人のみ
-      const successCount = results.filter((r) => r.success).length;
+      const successCount = results.filter((r) => r.success && r.result?.isSuccess).length;
       expect(successCount).toBe(1);
       console.log(
         `成功: ${successCount}人, 失敗: ${results.length - successCount}人`,
@@ -517,7 +517,7 @@ describe("パフォーマンステスト - 招待機能", () => {
       const results = await Promise.all(joinPromises);
 
       // 成功は1人のみ（Patient制約により）
-      const successCount = results.filter((r) => r.success).length;
+      const successCount = results.filter((r) => r.success && r.result?.isSuccess).length;
       expect(successCount).toBe(1);
       console.log(
         `Patient参加成功: ${successCount}人, 失敗: ${results.length - successCount}人`,

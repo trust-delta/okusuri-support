@@ -1,7 +1,7 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { Settings } from "lucide-react";
 import Link from "next/link";
-import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
 import {
   Avatar,

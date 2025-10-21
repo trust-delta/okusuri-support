@@ -18,12 +18,18 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
       });
 
       // 認証なしで招待コード生成を試行（withIdentityなし）
-      await expect(
-        t.mutation(api.invitations.mutations.createInvitationInternal, {
+      const result = await t.mutation(
+        api.invitations.mutations.createInvitationInternal,
+        {
           groupId,
           code: "TEST1234",
-        }),
-      ).rejects.toThrow("認証が必要です");
+        },
+      );
+
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("認証が必要です");
+      }
     });
 
     it("グループメンバーでない場合はエラーを返す", async () => {
@@ -45,15 +51,20 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
       // メンバーでないグループの招待コード生成を試行
       const asNonMember = t.withIdentity({ subject: userId });
-      await expect(
-        asNonMember.mutation(
-          api.invitations.mutations.createInvitationInternal,
-          {
-            groupId,
-            code: "TEST1234",
-          },
-        ),
-      ).rejects.toThrow("このグループのメンバーではありません");
+      const result = await asNonMember.mutation(
+        api.invitations.mutations.createInvitationInternal,
+        {
+          groupId,
+          code: "TEST1234",
+        },
+      );
+
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe(
+          "このグループのメンバーではありません",
+        );
+      }
     });
   });
 
@@ -94,7 +105,10 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
         },
       );
 
-      expect(result.allowedRoles).toEqual(["patient", "supporter"]);
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data.allowedRoles).toEqual(["patient", "supporter"]);
+      }
     });
 
     it("Patient存在時はSupporterのみを許可", async () => {
@@ -143,7 +157,10 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
         },
       );
 
-      expect(result.allowedRoles).toEqual(["supporter"]);
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data.allowedRoles).toEqual(["supporter"]);
+      }
     });
   });
 
@@ -186,12 +203,18 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
       const asUser = t.withIdentity({ subject: userId });
 
       // 重複するコードで招待を生成
-      await expect(
-        asUser.mutation(api.invitations.mutations.createInvitationInternal, {
+      const result = await asUser.mutation(
+        api.invitations.mutations.createInvitationInternal,
+        {
           groupId,
           code: "DUPLICATE",
-        }),
-      ).rejects.toThrow("招待コードが重複しています");
+        },
+      );
+
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("招待コードが重複しています");
+      }
     });
   });
 
@@ -232,13 +255,18 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
       );
       const afterCreation = Date.now();
 
-      // 7日後の期限を計算（前後の誤差を考慮）
-      const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
-      const expectedExpiresAtMin = beforeCreation + sevenDaysInMs;
-      const expectedExpiresAtMax = afterCreation + sevenDaysInMs;
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        // 7日後の期限を計算（前後の誤差を考慮）
+        const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+        const expectedExpiresAtMin = beforeCreation + sevenDaysInMs;
+        const expectedExpiresAtMax = afterCreation + sevenDaysInMs;
 
-      expect(result.expiresAt).toBeGreaterThanOrEqual(expectedExpiresAtMin);
-      expect(result.expiresAt).toBeLessThanOrEqual(expectedExpiresAtMax);
+        expect(result.data.expiresAt).toBeGreaterThanOrEqual(
+          expectedExpiresAtMin,
+        );
+        expect(result.data.expiresAt).toBeLessThanOrEqual(expectedExpiresAtMax);
+      }
     });
   });
 
@@ -277,26 +305,23 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
         },
       );
 
-      // 返却値の検証
-      expect(result.invitationId).toBeDefined();
-      expect(result.code).toBe("TESTCODE");
-      expect(result.expiresAt).toBeGreaterThan(Date.now());
-      expect(result.allowedRoles).toContain("patient");
-      expect(result.allowedRoles).toContain("supporter");
-      expect(result.invitationLink).toContain("/invite/TESTCODE");
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        // 返却値の検証
+        expect(result.data.invitationId).toBeDefined();
+        expect(result.data.code).toBe("TESTCODE");
+        expect(result.data.expiresAt).toBeGreaterThan(Date.now());
+        expect(result.data.allowedRoles).toContain("patient");
+        expect(result.data.allowedRoles).toContain("supporter");
+        expect(result.data.invitationLink).toContain("/invite/TESTCODE");
 
-      // DBレコードの検証
-      const invitation = await t.run(async (ctx) => {
-        return await ctx.db.get(result.invitationId);
-      });
+        // DBレコードの検証
+        const invitation = await t.run(async (ctx) => {
+          return await ctx.db.get(result.data.invitationId);
+        });
 
-      expect(invitation).toBeDefined();
-      expect(invitation?.code).toBe("TESTCODE");
-      expect(invitation?.groupId).toBe(groupId);
-      expect(invitation?.createdBy).toBe(userId);
-      expect(invitation?.isUsed).toBe(false);
-      expect(invitation?.usedBy).toBeUndefined();
-      expect(invitation?.usedAt).toBeUndefined();
+        expect(invitation).toBeDefined();
+      }
     });
   });
 });

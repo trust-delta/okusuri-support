@@ -11,18 +11,16 @@ Feature-Based Architecture（機能ベース）を採用したフルスタック
 ## システムアーキテクチャ
 
 ```
-┌─────────────────────────────────┐
-│      クライアント (Next.js)      │
-│   Pages → Features → Components │
-└────────────┬────────────────────┘
-             │ WebSocket
-             ▼
-┌─────────────────────────────────┐
-│        Convex (Backend)         │
-│  Queries / Mutations / Actions  │
-│              ↓                  │
-│     Convex Database (NoSQL)     │
-└─────────────────────────────────┘
+┌─────────────┐     ┌──────────────┐
+│  Next.js 15 │────▶│ Convex Auth  │
+│  (Frontend) │     │(authenticate)│
+└──────┬──────┘     └──────────────┘
+       │ WebSocket
+       ▼
+┌─────────────┐     ┌─────────────┐
+│   Convex    │────▶│   Resend    │
+│ (Backend)   │     │   (Email)   │
+└─────────────┘     └─────────────┘
 ```
 
 ---

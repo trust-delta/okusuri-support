@@ -9,9 +9,7 @@ interface MembersSectionProps {
   preloadedGroupMembers: Preloaded<typeof api.groups.getGroupMembers>;
 }
 
-export function MembersSection({
-  preloadedGroupMembers,
-}: MembersSectionProps) {
+export function MembersSection({ preloadedGroupMembers }: MembersSectionProps) {
   const groupMembers = usePreloadedQuery(preloadedGroupMembers);
 
   return <GroupMembersList members={groupMembers} />;
