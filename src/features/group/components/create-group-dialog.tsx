@@ -70,11 +70,17 @@ export function CreateGroupDialog({
   const handleSubmit = async (values: FormSchema) => {
     setIsSubmitting(true);
     try {
-      await createGroup({
+      const result = await createGroup({
         name: values.groupName.trim(),
         description: values.groupDescription?.trim() || undefined,
         creatorRole: values.role,
       });
+
+      // Result型のハンドリング
+      if (!result.isSuccess) {
+        toast.error(result.errorMessage);
+        return;
+      }
 
       toast.success("グループを作成しました！");
       form.reset();

@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
+import { error, type Result, success } from "../shared/types/result";
 
 /**
  * 招待コードを生成（内部mutation）
@@ -10,11 +12,22 @@ export const createInvitationInternal = mutation({
     groupId: v.id("groups"),
     code: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<
+    Result<{
+      invitationId: Id<"groupInvitations">;
+      code: string;
+      expiresAt: number;
+      allowedRoles: ("patient" | "supporter")[];
+      invitationLink: string;
+    }>
+  > => {
     // 1. 認証確認
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 2. グループメンバーシップ確認
@@ -25,7 +38,7 @@ export const createInvitationInternal = mutation({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 3. Patient在籍状況確認
@@ -47,7 +60,7 @@ export const createInvitationInternal = mutation({
       .first();
 
     if (existing) {
-      throw new Error("招待コードが重複しています");
+      return error("招待コードが重複しています");
     }
 
     // 6. 有効期限設定（7日後）
@@ -68,12 +81,12 @@ export const createInvitationInternal = mutation({
 
     const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${args.code}`;
 
-    return {
+    return success({
       invitationId,
       code: args.code,
       expiresAt,
       allowedRoles,
       invitationLink,
-    };
+    });
   },
 });

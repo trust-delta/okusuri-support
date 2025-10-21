@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { error, type Result, success } from "../shared/types/result";
 
 /**
  * ユーザー表示名を更新
@@ -9,18 +10,18 @@ export const updateUserDisplayName = mutation({
   args: {
     displayName: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Record<string, never>>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     if (!args.displayName || args.displayName.trim().length === 0) {
-      throw new Error("表示名を入力してください");
+      return error("表示名を入力してください");
     }
 
     if (args.displayName.length > 50) {
-      throw new Error("表示名は50文字以内で入力してください");
+      return error("表示名は50文字以内で入力してください");
     }
 
     // usersテーブルのdisplayNameのみ更新
@@ -28,7 +29,7 @@ export const updateUserDisplayName = mutation({
       displayName: args.displayName.trim(),
     });
 
-    return { success: true };
+    return success({});
   },
 });
 
@@ -39,15 +40,15 @@ export const updateUserImage = mutation({
   args: {
     imageUrl: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Record<string, never>>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 画像URLの簡易バリデーション
     if (!args.imageUrl || args.imageUrl.trim().length === 0) {
-      throw new Error("画像URLを入力してください");
+      return error("画像URLを入力してください");
     }
 
     // URLの形式チェック（httpまたはhttpsで始まるか、Convex storageのURLか）
@@ -57,7 +58,7 @@ export const updateUserImage = mutation({
       !url.startsWith("https://") &&
       !url.startsWith("/_storage/")
     ) {
-      throw new Error("有効な画像URLを入力してください");
+      return error("有効な画像URLを入力してください");
     }
 
     // usersテーブルを更新
@@ -65,7 +66,7 @@ export const updateUserImage = mutation({
       image: url,
     });
 
-    return { success: true };
+    return success({});
   },
 });
 
@@ -85,16 +86,16 @@ export const updateUserImageFromStorage = mutation({
   args: {
     storageId: v.id("_storage"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<{ imageUrl: string }>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // ストレージIDが有効か確認
     const imageUrl = await ctx.storage.getUrl(args.storageId);
     if (!imageUrl) {
-      throw new Error("画像が見つかりません");
+      return error("画像が見つかりません");
     }
 
     // usersテーブルにストレージIDを保存（URLではなく）
@@ -102,7 +103,7 @@ export const updateUserImageFromStorage = mutation({
       customImageStorageId: args.storageId,
     });
 
-    return { success: true, imageUrl };
+    return success({ imageUrl });
   },
 });
 
@@ -111,10 +112,10 @@ export const updateUserImageFromStorage = mutation({
  */
 export const setActiveGroup = mutation({
   args: { groupId: v.id("groups") },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Record<string, never>>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // メンバーシップ確認
@@ -125,11 +126,11 @@ export const setActiveGroup = mutation({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     await ctx.db.patch(userId, { activeGroupId: args.groupId });
 
-    return { success: true };
+    return success({});
   },
 });

@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
+import { error, type Result, success } from "../../shared/types/result";
 
 /**
  * 簡易服薬記録を作成（薬剤マスタ不要）
@@ -20,10 +22,10 @@ export const recordSimpleMedication = mutation({
     status: v.union(v.literal("taken"), v.literal("skipped")),
     notes: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"medicationRecords">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -34,7 +36,7 @@ export const recordSimpleMedication = mutation({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 服薬者のIDを取得(患者本人または患者がいない場合は記録者)
@@ -48,13 +50,13 @@ export const recordSimpleMedication = mutation({
 
     // 薬剤情報のバリデーション（薬剤名が必要）
     if (!args.simpleMedicineName) {
-      throw new Error("薬剤名が必要です");
+      return error("薬剤名が必要です");
     }
 
     const now = Date.now();
 
     // 新規レコード作成
-    return await ctx.db.insert("medicationRecords", {
+    const recordId = await ctx.db.insert("medicationRecords", {
       medicineId: undefined,
       scheduleId: undefined,
       simpleMedicineName: args.simpleMedicineName,
@@ -69,6 +71,8 @@ export const recordSimpleMedication = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    return success(recordId);
   },
 });
 
@@ -82,16 +86,16 @@ export const updateMedicationRecord = mutation({
     notes: v.optional(v.string()),
     simpleMedicineName: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Record<string, never>>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 記録を取得
     const record = await ctx.db.get(args.recordId);
     if (!record) {
-      throw new Error("記録が見つかりません");
+      return error("記録が見つかりません");
     }
 
     // グループメンバーか確認
@@ -102,7 +106,7 @@ export const updateMedicationRecord = mutation({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     const now = Date.now();
@@ -152,7 +156,7 @@ export const updateMedicationRecord = mutation({
 
     await ctx.db.patch(args.recordId, updateData);
 
-    return { success: true };
+    return success({});
   },
 });
 
@@ -163,16 +167,16 @@ export const deleteMedicationRecord = mutation({
   args: {
     recordId: v.id("medicationRecords"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Record<string, never>>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 記録を取得
     const record = await ctx.db.get(args.recordId);
     if (!record) {
-      throw new Error("記録が見つかりません");
+      return error("記録が見つかりません");
     }
 
     // グループメンバーか確認
@@ -183,7 +187,7 @@ export const deleteMedicationRecord = mutation({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     const now = Date.now();
@@ -212,6 +216,6 @@ export const deleteMedicationRecord = mutation({
     // 元のレコードを削除
     await ctx.db.delete(args.recordId);
 
-    return { success: true };
+    return success({});
   },
 });

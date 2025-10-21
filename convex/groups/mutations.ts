@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
+import { error, type Result, success } from "../shared/types/result";
 
 /**
  * 新しいグループを作成
@@ -11,10 +13,10 @@ export const createGroup = mutation({
     description: v.optional(v.string()),
     creatorRole: v.union(v.literal("patient"), v.literal("supporter")),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"groups">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループを作成
@@ -36,7 +38,7 @@ export const createGroup = mutation({
     // アクティブグループとして設定
     await ctx.db.patch(userId, { activeGroupId: groupId });
 
-    return groupId;
+    return success(groupId);
   },
 });
 
@@ -50,10 +52,10 @@ export const completeOnboardingWithNewGroup = mutation({
     groupDescription: v.optional(v.string()),
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<{ groupId: Id<"groups"> }>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // ユーザー表示名をusersテーブルに保存
@@ -80,7 +82,7 @@ export const completeOnboardingWithNewGroup = mutation({
     // アクティブグループとして設定
     await ctx.db.patch(userId, { activeGroupId: groupId });
 
-    return { success: true, groupId };
+    return success({ groupId });
   },
 });
 
@@ -92,10 +94,10 @@ export const joinGroup = mutation({
     groupId: v.id("groups"),
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"groupMembers">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 既に参加済みかチェック
@@ -106,16 +108,18 @@ export const joinGroup = mutation({
       .first();
 
     if (existing) {
-      throw new Error("既にグループに参加しています");
+      return error("既にグループに参加しています");
     }
 
     // グループに参加
-    return await ctx.db.insert("groupMembers", {
+    const membershipId = await ctx.db.insert("groupMembers", {
       groupId: args.groupId,
       userId,
       role: args.role,
       joinedAt: Date.now(),
     });
+
+    return success(membershipId);
   },
 });
 
@@ -128,30 +132,38 @@ export const joinGroupWithInvitation = mutation({
     role: v.union(v.literal("patient"), v.literal("supporter")),
     displayName: v.optional(v.string()), // オプショナル: 既存ユーザーは省略可
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<
+    Result<{
+      groupId: Id<"groups">;
+      membershipId: Id<"groupMembers">;
+    }>
+  > => {
     // 1. 認証確認
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 2. ユーザー情報を取得
     const user = await ctx.db.get(userId);
     if (!user) {
-      throw new Error("ユーザーが見つかりません");
+      return error("ユーザーが見つかりません");
     }
 
     // 3. 表示名の決定と検証
     let displayName = user.displayName || args.displayName;
 
     if (!displayName || displayName.trim().length === 0) {
-      throw new Error("表示名を入力してください");
+      return error("表示名を入力してください");
     }
 
     displayName = displayName.trim();
 
     if (displayName.length > 50) {
-      throw new Error("表示名は50文字以内で入力してください");
+      return error("表示名は50文字以内で入力してください");
     }
 
     // 表示名がusersテーブルにない場合は設定
@@ -168,23 +180,23 @@ export const joinGroupWithInvitation = mutation({
       .first();
 
     if (!invitation) {
-      throw new Error("招待コードが無効です");
+      return error("招待コードが無効です");
     }
 
     // 有効期限チェック
     const now = Date.now();
     if (invitation.expiresAt < now) {
-      throw new Error("招待コードが無効です");
+      return error("招待コードが無効です");
     }
 
     // 使用済みチェック
     if (invitation.isUsed) {
-      throw new Error("招待コードが無効です");
+      return error("招待コードが無効です");
     }
 
     // 許可ロールチェック
     if (!invitation.allowedRoles.includes(args.role)) {
-      throw new Error(
+      return error(
         `この招待では${invitation.allowedRoles.join("、")}として参加できます`,
       );
     }
@@ -197,7 +209,7 @@ export const joinGroupWithInvitation = mutation({
       .first();
 
     if (existingMembership) {
-      throw new Error("既にこのグループのメンバーです");
+      return error("既にこのグループのメンバーです");
     }
 
     // 6. Patientロール時の既存Patient確認
@@ -209,7 +221,7 @@ export const joinGroupWithInvitation = mutation({
         .first();
 
       if (existingPatient) {
-        throw new Error("このグループには既に患者が登録されています");
+        return error("このグループには既に患者が登録されています");
       }
     }
 
@@ -231,10 +243,9 @@ export const joinGroupWithInvitation = mutation({
     // 9. アクティブグループとして設定
     await ctx.db.patch(userId, { activeGroupId: invitation.groupId });
 
-    return {
-      success: true,
+    return success({
       groupId: invitation.groupId,
       membershipId,
-    };
+    });
   },
 });

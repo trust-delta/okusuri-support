@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { action } from "../_generated/server";
+import { error, type Result } from "../shared/types/result";
 
 /**
  * 招待コードを生成
@@ -13,13 +14,15 @@ export const createInvitation = action({
   handler: async (
     ctx,
     args,
-  ): Promise<{
-    invitationId: Id<"groupInvitations">;
-    code: string;
-    expiresAt: number;
-    allowedRoles: ("patient" | "supporter")[];
-    invitationLink: string;
-  }> => {
+  ): Promise<
+    Result<{
+      invitationId: Id<"groupInvitations">;
+      code: string;
+      expiresAt: number;
+      allowedRoles: ("patient" | "supporter")[];
+      invitationLink: string;
+    }>
+  > => {
     // 最大3回試行
     const maxAttempts = 3;
 
@@ -29,27 +32,30 @@ export const createInvitation = action({
         api.invitationCodeGenerator.generateInvitationCodeAction,
       );
 
-      try {
-        // 2. 招待レコード作成
-        const result = await ctx.runMutation(
-          api.invitations.createInvitationInternal,
-          {
-            groupId: args.groupId,
-            code,
-          },
-        );
+      // 2. 招待レコード作成
+      const result = await ctx.runMutation(
+        api.invitations.createInvitationInternal,
+        {
+          groupId: args.groupId,
+          code,
+        },
+      );
 
-        return result;
-      } catch (error) {
+      // Result型のハンドリング
+      if (!result.isSuccess) {
         // コード重複の場合は再試行
-        if (error instanceof Error && error.message.includes("重複")) {
+        if (result.errorMessage.includes("重複")) {
           continue;
         }
-        throw error;
+        // それ以外のエラーはそのまま返す
+        return result;
       }
+
+      // 成功したら結果を返す
+      return result;
     }
 
-    throw new Error(
+    return error(
       "招待コードの生成に失敗しました。3回試行しても一意なコードを生成できませんでした。",
     );
   },

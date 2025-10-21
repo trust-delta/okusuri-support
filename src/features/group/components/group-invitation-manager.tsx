@@ -26,11 +26,18 @@ export function GroupInvitationManager({
     setIsCreating(true);
     try {
       const result = await createInvitation({ groupId });
+
+      // Result型のハンドリング
+      if (!result.isSuccess) {
+        toast.error(result.errorMessage);
+        return;
+      }
+
       toast.success("招待コードを作成しました");
 
       // 招待リンクをクリップボードにコピー
       if (navigator.clipboard) {
-        await navigator.clipboard.writeText(result.invitationLink);
+        await navigator.clipboard.writeText(result.data.invitationLink);
         toast.success("招待リンクをクリップボードにコピーしました");
       }
     } catch (error) {

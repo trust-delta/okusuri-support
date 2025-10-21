@@ -71,13 +71,19 @@ export function InviteForm({
 
   const handleSubmit = async (values: FormSchema) => {
     try {
-      await joinGroup({
+      const result = await joinGroup({
         invitationCode,
         role: values.role,
         displayName: currentUserDisplayName
           ? undefined
           : values.displayName.trim(),
       });
+
+      // Result型のハンドリング
+      if (!result.isSuccess) {
+        toast.error(result.errorMessage);
+        return;
+      }
 
       toast.success("グループに参加しました！");
       router.push("/dashboard");
