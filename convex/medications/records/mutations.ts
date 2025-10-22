@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
-import { error, type Result, success } from "../../shared/types/result";
+import { error, type Result, success } from "../../types/result";
 
 /**
  * 簡易服薬記録を作成（薬剤マスタ不要）

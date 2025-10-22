@@ -33,6 +33,7 @@ import type * as medications from "../medications.js";
 import type * as resend_otp from "../resend/otp.js";
 import type * as resend_passwordReset from "../resend/passwordReset.js";
 import type * as resend from "../resend.js";
+import type * as types_result from "../types/result.js";
 import type * as users_mutations from "../users/mutations.js";
 import type * as users_queries from "../users/queries.js";
 import type * as users from "../users.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   "resend/otp": typeof resend_otp;
   "resend/passwordReset": typeof resend_passwordReset;
   resend: typeof resend;
+  "types/result": typeof types_result;
   "users/mutations": typeof users_mutations;
   "users/queries": typeof users_queries;
   users: typeof users;

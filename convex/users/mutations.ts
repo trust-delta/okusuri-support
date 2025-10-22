@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { error, type Result, success } from "../shared/types/result";
+import { error, type Result, success } from "../types/result";
 
 /**
  * ユーザー表示名を更新
