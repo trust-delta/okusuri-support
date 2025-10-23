@@ -97,8 +97,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // Convex API
-import { api } from "@/lib/convex";
-import type { Id } from "@/lib/convex";
+import { api } from "@/api";
+import type { Id } from "@/schema";
 
 // 機能コンポーネント
 import { SignOutButton } from "@/features/auth";

@@ -3,7 +3,7 @@
 import type { FunctionReturnType } from "convex/server";
 import { Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { api } from "@/lib/convex";
+import type { api } from "@/api";
 import { MemberCard } from "./member-card";
 
 interface GroupMembersListProps {

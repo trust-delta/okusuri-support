@@ -3,7 +3,7 @@
 import type { Preloaded } from "convex/react";
 import { usePreloadedQuery } from "convex/react";
 import { GroupMembersList } from "@/features/group";
-import type { api } from "@/lib/convex";
+import type { api } from "@/api";
 
 interface MembersSectionProps {
   preloadedGroupMembers: Preloaded<typeof api.groups.getGroupMembers>;

@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Id } from "@/lib/convex";
-import { api } from "@/lib/convex";
+import type { Id } from "@/schema";
+import { api } from "@/api";
 import { CreateGroupDialog } from "./create-group-dialog";
 
 interface GroupInfo {

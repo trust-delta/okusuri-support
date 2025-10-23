@@ -5,7 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/convex";
+import { api } from "@/api";
 import { GroupInfoCard } from "./_components/GroupInfoCard";
 import { GroupSwitcherSection } from "./_components/GroupSwitcherSection";
 import { MedicationSection } from "./_components/MedicationSection";

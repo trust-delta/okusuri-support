@@ -3,7 +3,7 @@
 import type { Preloaded } from "convex/react";
 import { usePreloadedQuery } from "convex/react";
 import { GroupSwitcher } from "@/features/group";
-import type { api } from "@/lib/convex";
+import type { api } from "@/api";
 
 interface GroupSwitcherSectionProps {
   preloadedGroupStatus: Preloaded<typeof api.groups.getUserGroupStatus>;

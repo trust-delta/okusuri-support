@@ -6,7 +6,7 @@
 
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "@/lib/convex";
+import { api } from "@/api";
 import schema from "../../../../../convex/schema";
 
 describe("Phase 5: Task 18 - 既存機能との統合確認", () => {

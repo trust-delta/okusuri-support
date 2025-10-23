@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { AuthPageLayout } from "@/features/auth";
-import { api } from "@/lib/convex";
+import { api } from "@/api";
 
 const createGroupFormSchema = z.object({
   userName: z

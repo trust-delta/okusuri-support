@@ -1,7 +1,7 @@
 "use client";
 
 import { MedicationRecorder } from "@/features/medication";
-import type { Id } from "@/lib/convex";
+import type { Id } from "@/schema";
 
 interface MedicationSectionProps {
   groupId: Id<"groups">;

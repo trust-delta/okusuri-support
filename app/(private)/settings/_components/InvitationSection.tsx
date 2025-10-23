@@ -2,7 +2,7 @@
 
 import type { Preloaded } from "convex/react";
 import { usePreloadedQuery } from "convex/react";
-import type { api } from "@/lib/convex";
+import type { api } from "@/api";
 import { InvitationCard } from "./InvitationCard";
 
 interface InvitationSectionProps {

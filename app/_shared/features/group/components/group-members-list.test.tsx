@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { Id } from "@/lib/convex";
+import type { Id } from "@/schema";
 import { GroupMembersList } from "./group-members-list";
 
 describe("GroupMembersList", () => {

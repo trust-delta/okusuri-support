@@ -6,8 +6,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Id } from "@/lib/convex";
-import { api } from "@/lib/convex";
+import type { Id } from "@/schema";
+import { api } from "@/api";
 
 interface GroupInvitationManagerProps {
   groupId: Id<"groups">;

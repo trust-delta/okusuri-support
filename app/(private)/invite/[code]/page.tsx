@@ -2,7 +2,7 @@ import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/convex";
+import { api } from "@/api";
 import { InviteForm } from "./_components/InviteForm";
 
 interface InvitePageProps {

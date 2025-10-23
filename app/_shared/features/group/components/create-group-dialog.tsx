@@ -26,7 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/lib/convex";
+import { api } from "@/api";
 
 const formSchema = z.object({
   groupName: z

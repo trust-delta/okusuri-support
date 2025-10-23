@@ -1,7 +1,7 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
-import { api } from "@/lib/convex";
+import { api } from "@/api";
 import { AccountCard } from "./_components/AccountCard";
 import { BackButton } from "./_components/BackButton";
 import { InvitationSection } from "./_components/InvitationSection";

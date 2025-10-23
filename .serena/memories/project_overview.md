@@ -25,3 +25,22 @@
 - 服薬記録の作成・追跡
 - GitHub OAuth認証
 - オンボーディングフロー
+
+## 共有モジュール構造
+プロジェクトは `app/_shared/` 配下に役割ごとに分離された共有モジュールを持つ：
+
+### バックエンドアクセス層
+- `app/_shared/api/`: Convex API エンドポイント (`api`) の再エクスポート
+- `app/_shared/schema/`: データモデル型定義 (`Doc`, `Id`) の再エクスポート
+
+### 型定義
+- `app/_shared/types/`: 型定義（例: Result型）
+
+### ユーティリティ
+- `app/_shared/lib/`: ユーティリティ関数（date-fns、logger、utils等）
+
+### UIとビジネスロジック
+- `app/_shared/components/`: 共有UIコンポーネント
+- `app/_shared/features/`: 機能別のコンポーネント・ロジック
+
+この構造により、将来的なバックエンド差し替え（Convex → Supabase/Prisma等）が容易になる。

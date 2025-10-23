@@ -3,8 +3,8 @@
 import { useQuery } from "convex/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Id } from "@/lib/convex";
-import { api } from "@/lib/convex";
+import type { Id } from "@/schema";
+import { api } from "@/api";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import { MEDICATION_TIMINGS } from "../constants/timings";
 import { MedicationRecordActions } from "./medication-record-actions";
