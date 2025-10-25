@@ -127,6 +127,77 @@ export const getMonthlyRecords = query({
 /**
  * 指定月の統計情報を取得
  */
+/**
+ * 指定した日付に有効な処方箋を取得する
+ * @param ctx Convex context
+ * @param groupId グループID
+ * @param date YYYY-MM-DD形式の日付
+ * @returns 有効な処方箋の配列
+ */
+async function getActivePrescriptionsForDate(
+  ctx: any,
+  groupId: string,
+  date: string,
+) {
+  const allPrescriptions = await ctx.db
+    .query("prescriptions")
+    .withIndex("by_groupId", (q: any) => q.eq("groupId", groupId))
+    .collect();
+
+  return allPrescriptions.filter((prescription: any) => {
+    const startDate = prescription.startDate;
+    const endDate = prescription.endDate;
+
+    // 開始日 <= date
+    const isAfterStart = date >= startDate;
+    // 終了日が未設定、または date <= 終了日
+    const isBeforeEnd = !endDate || date <= endDate;
+
+    return isAfterStart && isBeforeEnd;
+  });
+}
+
+/**
+ * 指定した日付に有効な処方箋から期待される服薬回数を計算
+ * @param ctx Convex context
+ * @param prescriptions 有効な処方箋の配列
+ * @returns 期待される服薬回数（定期服用のみ、頓服除く）
+ */
+async function calculateExpectedCountForPrescriptions(
+  ctx: any,
+  prescriptions: any[],
+) {
+  let expectedCount = 0;
+
+  for (const prescription of prescriptions) {
+    // この処方箋に含まれる薬を取得
+    const medicines = await ctx.db
+      .query("medicines")
+      .withIndex("by_prescriptionId", (q: any) =>
+        q.eq("prescriptionId", prescription._id),
+      )
+      .collect();
+
+    // 各薬のスケジュールを取得
+    for (const medicine of medicines) {
+      if (!medicine.isActive) continue; // 非アクティブな薬は除外
+
+      const schedule = await ctx.db
+        .query("medicationSchedules")
+        .withIndex("by_medicineId", (q: any) => q.eq("medicineId", medicine._id))
+        .first();
+
+      if (schedule && schedule.timings) {
+        // 頓服を除いた定期服用のタイミング数をカウント
+        const regularTimings = schedule.timings.filter((t: string) => t !== "asNeeded");
+        expectedCount += regularTimings.length;
+      }
+    }
+  }
+
+  return expectedCount;
+}
+
 export const getMonthlyStats = query({
   args: {
     groupId: v.id("groups"),
@@ -186,33 +257,6 @@ export const getMonthlyStats = query({
         )
         .collect();
     }
-
-    // 現在アクティブな薬のスケジュールから期待値を計算
-    const activeMedicines = await ctx.db
-      .query("medicines")
-      .withIndex("by_groupId_isActive", (q) =>
-        q.eq("groupId", args.groupId).eq("isActive", true),
-      )
-      .collect();
-
-    let expectedDailyCount = 0; // 1日あたりの期待される服薬回数（定期服用のみ）
-
-    for (const medicine of activeMedicines) {
-      const schedule = await ctx.db
-        .query("medicationSchedules")
-        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-        .first();
-
-      if (schedule && schedule.timings) {
-        // 頓服を除いた定期服用のタイミング数をカウント
-        const regularTimings = schedule.timings.filter((t) => t !== "asNeeded");
-        expectedDailyCount += regularTimings.length;
-      }
-    }
-
-    // 期待される総服薬回数 = 1日の回数 × 月の日数
-    const daysInMonth = endDay;
-    const expectedTotalCount = expectedDailyCount * daysInMonth;
 
     // 統計を計算（頓服は別枠で集計）
     let totalTaken = 0;
@@ -274,10 +318,54 @@ export const getMonthlyStats = query({
       }
     }
 
-    // 月の全ての日に対して期待値を反映
-    // レコードがない日は期待値分をpendingとして追加
+    // 処方箋なしの薬（フォールバック：isActiveな薬）からも期待値を計算
+    const medicinesWithoutPrescription = await ctx.db
+      .query("medicines")
+      .withIndex("by_groupId_isActive", (q) =>
+        q.eq("groupId", args.groupId).eq("isActive", true),
+      )
+      .collect();
+
+    const fallbackMedicines = medicinesWithoutPrescription.filter(
+      (m) => !m.prescriptionId,
+    );
+    let fallbackExpectedDailyCount = 0;
+
+    for (const medicine of fallbackMedicines) {
+      const schedule = await ctx.db
+        .query("medicationSchedules")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+        .first();
+
+      if (schedule && schedule.timings) {
+        const regularTimings = schedule.timings.filter((t) => t !== "asNeeded");
+        fallbackExpectedDailyCount += regularTimings.length;
+      }
+    }
+
+    // 月の全ての日に対して、その日の処方箋から期待値を計算
+    const daysInMonth = endDay;
+    let expectedTotalCount = 0;
+
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${args.year}-${String(args.month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+      // この日に有効な処方箋を取得
+      const activePrescriptions = await getActivePrescriptionsForDate(
+        ctx,
+        args.groupId,
+        dateStr,
+      );
+
+      // 処方箋から期待値を計算
+      const prescriptionExpectedCount =
+        await calculateExpectedCountForPrescriptions(ctx, activePrescriptions);
+
+      // 処方箋ベースの期待値 + フォールバック（処方箋なしの薬）
+      const expectedDailyCount =
+        prescriptionExpectedCount + fallbackExpectedDailyCount;
+
+      expectedTotalCount += expectedDailyCount;
 
       if (!dailyStats[dateStr]) {
         // レコードが1件もない日: 期待値分をpendingとして追加
@@ -341,4 +429,4 @@ export const getMonthlyStats = query({
       },
     };
   },
-});;;;
+});;;;;

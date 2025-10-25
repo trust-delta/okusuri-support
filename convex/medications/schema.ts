@@ -5,9 +5,24 @@ import { v } from "convex/values";
  * 薬剤・服薬記録関連のスキーマ定義
  */
 export const medicinesSchema = {
+  // 処方箋: 薬の有効期間を管理
+  prescriptions: defineTable({
+    groupId: v.id("groups"),
+    name: v.string(), // 処方箋名（例: "10月分の処方箋"、"内科の風邪薬"）
+    startDate: v.string(), // YYYY-MM-DD形式
+    endDate: v.optional(v.string()), // YYYY-MM-DD形式（未指定 = 継続中）
+    notes: v.optional(v.string()), // メモ（医療機関名、処方目的など）
+    createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_groupId", ["groupId"])
+    .index("by_groupId_startDate", ["groupId", "startDate"]),
+
   // 薬剤マスタ: グループ内で管理する薬剤情報
   medicines: defineTable({
     groupId: v.id("groups"),
+    prescriptionId: v.optional(v.id("prescriptions")), // 処方箋ID（移行期間中はoptional）
     name: v.string(), // 薬剤名
     description: v.optional(v.string()), // 備考・説明
     createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
@@ -15,7 +30,8 @@ export const medicinesSchema = {
     isActive: v.boolean(), // 服用中かどうか
   })
     .index("by_groupId", ["groupId"])
-    .index("by_groupId_isActive", ["groupId", "isActive"]),
+    .index("by_groupId_isActive", ["groupId", "isActive"])
+    .index("by_prescriptionId", ["prescriptionId"]),
 
   // 服薬スケジュール: 各薬剤の服用タイミング設定
   medicationSchedules: defineTable({
