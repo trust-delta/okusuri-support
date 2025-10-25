@@ -4,6 +4,7 @@ import { useMutation } from "convex/react";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Id } from "@/schema";
-import { api } from "@/api";
 import { CreateGroupDialog } from "./create-group-dialog";
 
 interface GroupInfo {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ThemeToggle } from "./theme-toggle";
 
 export function ThemeCard() {
   return (

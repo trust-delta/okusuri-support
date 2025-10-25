@@ -1,11 +1,11 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
-import { Settings } from "lucide-react";
+import { History, Settings } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { api } from "@/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { api } from "@/api";
 import { GroupInfoCard } from "./_components/GroupInfoCard";
 import { GroupSwitcherSection } from "./_components/GroupSwitcherSection";
 import { MedicationSection } from "./_components/MedicationSection";
@@ -99,12 +99,20 @@ export default async function DashboardPage() {
                 )}
               </div>
             </div>
-            <Link href="/settings">
-              <Button variant="ghost" size="icon">
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">設定</span>
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/history">
+                <Button variant="ghost" size="icon">
+                  <History className="h-5 w-5" />
+                  <span className="sr-only">記録履歴</span>
+                </Button>
+              </Link>
+              <Link href="/settings">
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-5 w-5" />
+                  <span className="sr-only">設定</span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* グループスイッチャー */}

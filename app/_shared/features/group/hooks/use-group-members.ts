@@ -2,8 +2,8 @@
 
 import { useQuery } from "convex/react";
 import { useMemo } from "react";
-import type { Id } from "@/schema";
 import { api } from "@/api";
+import type { Id } from "@/schema";
 
 export function useGroupMembers(groupId: Id<"groups">) {
   const members = useQuery(api.groups.getGroupMembers, { groupId });

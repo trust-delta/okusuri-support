@@ -2,8 +2,8 @@
 
 import type { Preloaded } from "convex/react";
 import { usePreloadedQuery } from "convex/react";
-import { GroupMembersList } from "@/features/group";
 import type { api } from "@/api";
+import { GroupMembersList } from "@/features/group";
 
 interface MembersSectionProps {
   preloadedGroupMembers: Preloaded<typeof api.groups.getGroupMembers>;

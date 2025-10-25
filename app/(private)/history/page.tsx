@@ -1,0 +1,119 @@
+"use client";
+
+import { useQuery } from "convex/react";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { api } from "@/api";
+import { Button } from "@/components/ui/button";
+import {
+  CalendarView,
+  DailyRecordDetail,
+  MonthlyStatsCard,
+} from "./_components";
+
+export default function HistoryPage() {
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth() + 1);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+
+  // グループステータスを取得
+  const groupStatus = useQuery(api.groups.getUserGroupStatus, {});
+
+  // アクティブなグループIDを取得
+  const activeGroupId =
+    groupStatus?.activeGroupId || groupStatus?.groups[0]?.groupId;
+
+  // 月別統計を取得
+  const stats = useQuery(
+    api.medications.getMonthlyStats,
+    activeGroupId
+      ? {
+          groupId: activeGroupId,
+          year,
+          month,
+        }
+      : "skip",
+  );
+
+  const handleMonthChange = (newYear: number, newMonth: number) => {
+    setYear(newYear);
+    setMonth(newMonth);
+    setSelectedDate(undefined); // 月が変わったら選択をクリア
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+
+  // ローディング中
+  if (groupStatus === undefined) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // グループに参加していない
+  if (!groupStatus?.hasGroup || !activeGroupId) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-gray-900 dark:text-gray-100 mb-4">
+                グループに参加していません
+              </p>
+              <Link href="/onboarding">
+                <Button>グループを作成</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* ヘッダー */}
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">ダッシュボードに戻る</span>
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            記録履歴
+          </h1>
+        </div>
+
+        {/* 月別統計 */}
+        <MonthlyStatsCard stats={stats} />
+
+        {/* カレンダービュー */}
+        <CalendarView
+          year={year}
+          month={month}
+          dailyStats={stats?.dailyStats || {}}
+          onDateSelect={handleDateSelect}
+          onMonthChange={handleMonthChange}
+        />
+
+        {/* 日別詳細 */}
+        <DailyRecordDetail
+          groupId={activeGroupId}
+          selectedDate={selectedDate}
+        />
+      </div>
+    </div>
+  );
+}

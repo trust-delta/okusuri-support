@@ -4,10 +4,10 @@ import { useAction, useQuery } from "convex/react";
 import { Copy, Share2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Id } from "@/schema";
-import { api } from "@/api";
 
 interface GroupInvitationManagerProps {
   groupId: Id<"groups">;
