@@ -241,3 +241,119 @@ medicines: {
 4. ⏳ 統計計算ロジックの変更
 5. ⏳ UI実装
 6. ⏳ テストデータの再作成
+
+---
+
+## 更新履歴
+
+### 2025年10月26日 - 論理削除・復元機能の実装完了
+
+#### 実装内容
+
+**1. 論理削除フィールドの追加**
+
+全ての medication 関連テーブルに以下のフィールドを追加：
+```typescript
+deletedAt?: number,    // 論理削除日時
+deletedBy?: string,    // 削除者のユーザーID
+```
+
+対象テーブル：
+- `prescriptions`
+- `medicines`
+- `medicationSchedules`
+- `medicationRecords`
+
+**2. 削除機能の実装**
+
+`deletePrescription` mutation：
+- 紐付く服薬記録が存在する場合：論理削除（削除日時を記録）
+- 紐付く服薬記録が存在しない場合：物理削除
+- 論理削除時は関連データ（medicines, schedules, records）も全て論理削除
+- 既に削除済みの処方箋の再削除を防止
+
+**3. クエリフィルタの追加**
+
+全てのクエリに論理削除フィルタを追加：
+```typescript
+.filter((q) => q.eq(q.field("deletedAt"), undefined))
+```
+
+対象ファイル：
+- `convex/medications/prescriptions/queries.ts`
+- `convex/medications/prescriptions/helpers.ts`
+- `convex/medications/records/queries.ts`
+
+**4. 復元機能の実装**
+
+`restorePrescription` mutation：
+- `deletedAt`, `deletedBy` を `undefined` に戻す
+- 関連データ（medicines, schedules, records）も全て復元
+- 既に復元済みの処方箋の再復元を防止
+
+**5. ゴミ箱UI の実装**
+
+処方箋管理画面にタブUIを追加：
+- 「有効な処方箋」タブ：通常の処方箋一覧
+- 「ゴミ箱」タブ：削除された処方箋一覧
+
+`DeletedPrescriptionList` コンポーネント：
+- 削除された処方箋を一覧表示
+- 削除日時の表示
+- 復元ボタン（緑色の回転矢印アイコン）
+- 削除済みバッジ（赤色）
+
+**6. クエリAPI の追加**
+
+```typescript
+// 削除された処方箋を取得
+getDeletedPrescriptions: query({
+  args: { groupId: Id<"groups"> },
+  returns: Array<Prescription>
+})
+```
+
+#### 実装ファイル
+
+- `convex/medications/prescriptions/queries.ts` - クエリにフィルタ追加、削除済み処方箋取得追加
+- `convex/medications/prescriptions/helpers.ts` - ヘルパー関数にフィルタ追加
+- `convex/medications/prescriptions/mutations.ts` - 削除チェック追加、復元mutation追加
+- `convex/medications/records/queries.ts` - クエリにフィルタ追加
+- `app/(private)/prescriptions/page.tsx` - タブUI追加
+- `app/(private)/prescriptions/_components/DeletedPrescriptionList.tsx` - ゴミ箱UI新規作成
+- `app/_shared/components/ui/tabs.tsx` - shadcn/ui tabs コンポーネント追加
+
+#### データ整合性の保証
+
+- 論理削除されたデータは通常のクエリから除外
+- 削除された処方箋に紐付く記録も全て非表示
+- 復元時は関連データも全て同時に復元
+- 過去の統計は論理削除の影響を受けず正確に保持
+
+#### ユーザー体験
+
+- 誤って削除した処方箋を簡単に復元可能
+- ゴミ箱から復元ボタンをクリックするだけ
+- 削除日時を確認できる
+- データを完全に失うリスクが低減
+
+#### 実装状況
+
+✅ フェーズ1: 最小限のスキーマ実装
+✅ フェーズ2: 薬との紐付け
+✅ フェーズ3: 統計計算ロジックの変更
+✅ フェーズ4: UI実装
+✅ フェーズ5: 論理削除・復元機能の実装 ← **NEW**
+
+---
+
+## 結論
+
+処方箋管理機能の導入により、服薬記録の統計計算が正確になり、データの整合性が向上しました。論理削除・復元機能により、ユーザーの誤操作からのリカバリーが可能になり、安心して使えるシステムとなりました。
+
+今後は、以下の機能拡張が考えられます：
+- 処方箋の編集機能
+- 処方箋の画像アップロード機能
+- 薬局・医療機関との連携
+- 薬の在庫管理
+- 処方箋の更新通知
