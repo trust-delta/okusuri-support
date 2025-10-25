@@ -3,9 +3,11 @@
 import { useQuery } from "convex/react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
+import type { Id } from "@/schema";
 import {
   CalendarView,
   DailyRecordDetail,
@@ -17,13 +19,17 @@ export default function HistoryPage() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const searchParams = useSearchParams();
 
   // グループステータスを取得
   const groupStatus = useQuery(api.groups.getUserGroupStatus, {});
 
-  // アクティブなグループIDを取得
+  // URLパラメータからgroupIdを取得、なければDBのactiveGroupIdまたは最初のグループ
+  const urlGroupId = searchParams.get("groupId") as Id<"groups"> | null;
   const activeGroupId =
-    groupStatus?.activeGroupId || groupStatus?.groups[0]?.groupId;
+    urlGroupId ||
+    groupStatus?.activeGroupId ||
+    groupStatus?.groups[0]?.groupId;
 
   // 月別統計を取得
   const stats = useQuery(
@@ -85,7 +91,9 @@ export default function HistoryPage() {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* ヘッダー */}
         <div className="flex items-center gap-4">
-          <Link href="/dashboard">
+          <Link
+            href={`/dashboard${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
+          >
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only">ダッシュボードに戻る</span>

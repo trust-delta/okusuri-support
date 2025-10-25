@@ -6,12 +6,20 @@ import { redirect } from "next/navigation";
 import { api } from "@/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import type { Id } from "@/schema";
 import { GroupInfoCard } from "./_components/GroupInfoCard";
 import { GroupSwitcherSection } from "./_components/GroupSwitcherSection";
 import { MedicationSection } from "./_components/MedicationSection";
 import { MembersSection } from "./_components/MembersSection";
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: Promise<{ groupId?: string }>;
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: DashboardPageProps) {
+  const params = await searchParams;
   const token = await convexAuthNextjsToken();
   const groupStatus = await preloadQuery(
     api.groups.getUserGroupStatus,
@@ -42,9 +50,12 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  // アクティブなグループを取得（未設定の場合は最初のグループ）
+  // URLパラメータからgroupIdを取得、なければDBのactiveGroupIdまたは最初のグループ
+  const urlGroupId = params.groupId as Id<"groups"> | undefined;
   const activeGroupId =
-    groupStatusResult.activeGroupId || groupStatusResult.groups[0]?.groupId;
+    urlGroupId ||
+    groupStatusResult.activeGroupId ||
+    groupStatusResult.groups[0]?.groupId;
   const activeGroup = groupStatusResult.groups.find(
     (g) => g.groupId === activeGroupId,
   );
@@ -100,13 +111,17 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/history">
+              <Link
+                href={`/history${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
+              >
                 <Button variant="ghost" size="icon">
                   <History className="h-5 w-5" />
                   <span className="sr-only">記録履歴</span>
                 </Button>
               </Link>
-              <Link href="/settings">
+              <Link
+                href={`/settings${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
+              >
                 <Button variant="ghost" size="icon">
                   <Settings className="h-5 w-5" />
                   <span className="sr-only">設定</span>

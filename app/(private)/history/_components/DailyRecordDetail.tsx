@@ -106,63 +106,82 @@ export function DailyRecordDetail({
     );
   }
 
+  // 定期服用と頓服を分ける
+  const regularRecords = records.filter((r) => r.timing !== "asNeeded");
+  const asNeededRecords = records.filter((r) => r.timing === "asNeeded");
+
+  const renderRecord = (record: (typeof records)[0]) => {
+    const statusConfig = STATUS_CONFIG[record.status];
+    const StatusIcon = statusConfig.icon;
+
+    return (
+      <div
+        key={record._id}
+        className={`p-4 rounded-lg border ${statusConfig.bgColor} border-gray-200 dark:border-gray-700`}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {TIMING_LABELS[record.timing as keyof typeof TIMING_LABELS]}
+              </span>
+              <div className={`flex items-center gap-1 ${statusConfig.color}`}>
+                <StatusIcon className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  {statusConfig.label}
+                </span>
+              </div>
+            </div>
+
+            {record.simpleMedicineName && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                {record.simpleMedicineName}
+              </p>
+            )}
+
+            {record.takenAt && (
+              <p className="text-xs text-gray-500 dark:text-gray-500">
+                服用時刻: {formatJST(new Date(record.takenAt), "HH:mm")}
+              </p>
+            )}
+
+            {record.notes && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-white dark:bg-gray-800 rounded">
+                {record.notes}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {records.map((record) => {
-          const statusConfig = STATUS_CONFIG[record.status];
-          const StatusIcon = statusConfig.icon;
+      <CardContent className="space-y-4">
+        {/* 定期服用 */}
+        {regularRecords.length > 0 && (
+          <div className="space-y-3">{regularRecords.map(renderRecord)}</div>
+        )}
 
-          return (
-            <div
-              key={record._id}
-              className={`p-4 rounded-lg border ${statusConfig.bgColor} border-gray-200 dark:border-gray-700`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {
-                        TIMING_LABELS[
-                          record.timing as keyof typeof TIMING_LABELS
-                        ]
-                      }
-                    </span>
-                    <div
-                      className={`flex items-center gap-1 ${statusConfig.color}`}
-                    >
-                      <StatusIcon className="h-4 w-4" />
-                      <span className="text-sm font-medium">
-                        {statusConfig.label}
-                      </span>
-                    </div>
-                  </div>
+        {/* 頓服（参考） */}
+        {asNeededRecords.length > 0 && (
+          <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              頓服（参考）
+            </h4>
+            {asNeededRecords.map(renderRecord)}
+          </div>
+        )}
 
-                  {record.simpleMedicineName && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                      {record.simpleMedicineName}
-                    </p>
-                  )}
-
-                  {record.takenAt && (
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
-                      服用時刻: {formatJST(new Date(record.takenAt), "HH:mm")}
-                    </p>
-                  )}
-
-                  {record.notes && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-white dark:bg-gray-800 rounded">
-                      {record.notes}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {regularRecords.length === 0 && asNeededRecords.length === 0 && (
+          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+            この日の記録はありません
+          </p>
+        )}
       </CardContent>
     </Card>
   );

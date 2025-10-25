@@ -2,6 +2,7 @@
 
 import { useMutation } from "convex/react";
 import { PlusIcon } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
@@ -31,9 +32,13 @@ interface GroupSwitcherProps {
 export function GroupSwitcher({ groups, activeGroupId }: GroupSwitcherProps) {
   const setActiveGroup = useMutation(api.users.setActiveGroup);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // activeGroupIdが未設定の場合、最初のグループをフォールバック
-  const currentGroupId = activeGroupId || groups[0]?.groupId;
+  // URLパラメータからgroupIdを取得、なければactiveGroupIdまたは最初のグループ
+  const urlGroupId = searchParams.get("groupId") as Id<"groups"> | null;
+  const currentGroupId = urlGroupId || activeGroupId || groups[0]?.groupId;
 
   const handleGroupChange = async (groupId: string) => {
     const result = await setActiveGroup({ groupId: groupId as Id<"groups"> });
@@ -44,8 +49,11 @@ export function GroupSwitcher({ groups, activeGroupId }: GroupSwitcherProps) {
     }
 
     toast.success("グループを切り替えました");
-    // ページをリロードしてデータを更新
-    window.location.reload();
+
+    // URLパラメータを更新（リロードせずに遷移）
+    const params = new URLSearchParams(searchParams);
+    params.set("groupId", groupId);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
