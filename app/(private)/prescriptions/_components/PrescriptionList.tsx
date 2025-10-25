@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { Calendar, Edit, Pill, Plus, Trash2 } from "lucide-react";
+import { Calendar, Pill, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Id } from "@/schema";
-import { PrescriptionForm } from "./PrescriptionForm";
+import { PrescriptionFormWithMedicines } from "./PrescriptionFormWithMedicines";
 
 interface PrescriptionListProps {
   groupId: Id<"groups">;
@@ -30,19 +30,10 @@ interface PrescriptionListProps {
 
 export function PrescriptionList({ groupId }: PrescriptionListProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingPrescriptionId, setEditingPrescriptionId] = useState<
-    Id<"prescriptions"> | null
-  >(null);
 
   const prescriptions = useQuery(
     api.medications.prescriptions.queries.getPrescriptions,
     { groupId },
-  );
-  const editingPrescription = useQuery(
-    editingPrescriptionId
-      ? api.medications.prescriptions.queries.getPrescription
-      : "skip",
-    editingPrescriptionId ? { prescriptionId: editingPrescriptionId } : "skip",
   );
   const deletePrescription = useMutation(
     api.medications.prescriptions.mutations.deletePrescription,
@@ -51,7 +42,7 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
   const handleDelete = async (prescriptionId: Id<"prescriptions">) => {
     if (
       !confirm(
-        "この処方箋を削除しますか？\n（紐付く薬がある場合は削除できません）",
+        "この処方箋を削除しますか？\n（紐付く薬も一緒に削除されます）",
       )
     ) {
       return;
@@ -140,13 +131,6 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setEditingPrescriptionId(prescription._id)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
                       onClick={() => handleDelete(prescription._id)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -168,47 +152,18 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
 
       {/* 新規作成ダイアログ */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>処方箋を登録</DialogTitle>
             <DialogDescription>
-              処方箋の情報を入力してください
+              処方箋の情報と薬を入力してください
             </DialogDescription>
           </DialogHeader>
-          <PrescriptionForm
+          <PrescriptionFormWithMedicines
             groupId={groupId}
             onSuccess={() => setIsCreateDialogOpen(false)}
             onCancel={() => setIsCreateDialogOpen(false)}
           />
-        </DialogContent>
-      </Dialog>
-
-      {/* 編集ダイアログ */}
-      <Dialog
-        open={!!editingPrescriptionId}
-        onOpenChange={(open) => !open && setEditingPrescriptionId(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>処方箋を編集</DialogTitle>
-            <DialogDescription>
-              処方箋の情報を更新してください
-            </DialogDescription>
-          </DialogHeader>
-          {editingPrescription && (
-            <PrescriptionForm
-              groupId={groupId}
-              prescriptionId={editingPrescriptionId!}
-              initialData={{
-                name: editingPrescription.name,
-                startDate: editingPrescription.startDate,
-                endDate: editingPrescription.endDate,
-                notes: editingPrescription.notes,
-              }}
-              onSuccess={() => setEditingPrescriptionId(null)}
-              onCancel={() => setEditingPrescriptionId(null)}
-            />
-          )}
         </DialogContent>
       </Dialog>
     </div>
