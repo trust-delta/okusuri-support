@@ -141,7 +141,9 @@ async function getActivePrescriptionsForDate(
 ) {
   const allPrescriptions = await ctx.db
     .query("prescriptions")
-    .withIndex("by_groupId", (q: any) => q.eq("groupId", groupId))
+    .withIndex("by_groupId_isActive", (q: any) =>
+      q.eq("groupId", groupId).eq("isActive", true)
+    )
     .collect();
 
   return allPrescriptions.filter((prescription: any) => {
@@ -180,8 +182,6 @@ async function calculateExpectedCountForPrescriptions(
 
     // 各薬のスケジュールを取得
     for (const medicine of medicines) {
-      if (!medicine.isActive) continue; // 非アクティブな薬は除外
-
       const schedule = await ctx.db
         .query("medicationSchedules")
         .withIndex("by_medicineId", (q: any) => q.eq("medicineId", medicine._id))
@@ -318,31 +318,6 @@ export const getMonthlyStats = query({
       }
     }
 
-    // 処方箋なしの薬（フォールバック：isActiveな薬）からも期待値を計算
-    const medicinesWithoutPrescription = await ctx.db
-      .query("medicines")
-      .withIndex("by_groupId_isActive", (q) =>
-        q.eq("groupId", args.groupId).eq("isActive", true),
-      )
-      .collect();
-
-    const fallbackMedicines = medicinesWithoutPrescription.filter(
-      (m) => !m.prescriptionId,
-    );
-    let fallbackExpectedDailyCount = 0;
-
-    for (const medicine of fallbackMedicines) {
-      const schedule = await ctx.db
-        .query("medicationSchedules")
-        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-        .first();
-
-      if (schedule && schedule.timings) {
-        const regularTimings = schedule.timings.filter((t) => t !== "asNeeded");
-        fallbackExpectedDailyCount += regularTimings.length;
-      }
-    }
-
     // 月の全ての日に対して、その日の処方箋から期待値を計算
     const daysInMonth = endDay;
     let expectedTotalCount = 0;
@@ -358,12 +333,8 @@ export const getMonthlyStats = query({
       );
 
       // 処方箋から期待値を計算
-      const prescriptionExpectedCount =
-        await calculateExpectedCountForPrescriptions(ctx, activePrescriptions);
-
-      // 処方箋ベースの期待値 + フォールバック（処方箋なしの薬）
       const expectedDailyCount =
-        prescriptionExpectedCount + fallbackExpectedDailyCount;
+        await calculateExpectedCountForPrescriptions(ctx, activePrescriptions);
 
       expectedTotalCount += expectedDailyCount;
 

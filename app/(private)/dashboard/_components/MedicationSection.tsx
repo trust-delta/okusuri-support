@@ -1,6 +1,6 @@
 "use client";
 
-import { MedicationRecorder } from "@/features/medication";
+import { PrescriptionBasedRecorder } from "@/features/medication";
 import type { Id } from "@/schema";
 
 interface MedicationSectionProps {
@@ -8,5 +8,5 @@ interface MedicationSectionProps {
 }
 
 export function MedicationSection({ groupId }: MedicationSectionProps) {
-  return <MedicationRecorder groupId={groupId} />;
+  return <PrescriptionBasedRecorder groupId={groupId} />;
 }

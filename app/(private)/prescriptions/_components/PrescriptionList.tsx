@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { Calendar, Pill, Plus, Trash2 } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp, Pill, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
@@ -28,8 +28,92 @@ interface PrescriptionListProps {
   groupId: Id<"groups">;
 }
 
+const TIMING_LABELS: Record<string, string> = {
+  morning: "朝",
+  noon: "昼",
+  evening: "晩",
+  bedtime: "就寝前",
+  asNeeded: "頓服",
+};
+
+// 処方箋に含まれる薬の一覧を表示するコンポーネント
+function PrescriptionMedicinesList({
+  prescriptionId,
+}: {
+  prescriptionId: Id<"prescriptions">;
+}) {
+  const medicines = useQuery(
+    api.medications.prescriptions.queries.getPrescriptionMedicines,
+    { prescriptionId },
+  );
+
+  if (medicines === undefined) {
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    );
+  }
+
+  if (medicines.length === 0) {
+    return (
+      <div className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+        この処方箋には薬が登録されていません
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-t pt-4">
+      <h4 className="text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300">
+        含まれる薬
+      </h4>
+      <div className="space-y-2">
+        {medicines.map((medicine) => (
+          <div
+            key={medicine._id}
+            className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="font-medium text-gray-900 dark:text-gray-100">
+                  {medicine.name}
+                </div>
+                {medicine.schedule && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {medicine.schedule.timings.map((timing) => (
+                      <span
+                        key={timing}
+                        className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
+                      >
+                        {TIMING_LABELS[timing] || timing}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {medicine.schedule?.dosage && (
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    用量: {medicine.schedule.dosage}
+                  </div>
+                )}
+                {medicine.description && (
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {medicine.description}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function PrescriptionList({ groupId }: PrescriptionListProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [expandedPrescriptions, setExpandedPrescriptions] = useState<Set<string>>(new Set());
 
   const prescriptions = useQuery(
     api.medications.prescriptions.queries.getPrescriptions,
@@ -38,6 +122,18 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
   const deletePrescription = useMutation(
     api.medications.prescriptions.mutations.deletePrescription,
   );
+
+  const toggleExpanded = (prescriptionId: string) => {
+    setExpandedPrescriptions((prev) => {
+      const next = new Set(prev);
+      if (next.has(prescriptionId)) {
+        next.delete(prescriptionId);
+      } else {
+        next.add(prescriptionId);
+      }
+      return next;
+    });
+  };
 
   const handleDelete = async (prescriptionId: Id<"prescriptions">) => {
     if (
@@ -107,46 +203,71 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {prescriptions.map((prescription) => (
-            <Card key={prescription._id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle>{prescription.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(prescription.startDate)}
-                        {prescription.endDate && (
+          {prescriptions.map((prescription) => {
+            const isExpanded = expandedPrescriptions.has(prescription._id);
+            return (
+              <Card key={prescription._id}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle>{prescription.name}</CardTitle>
+                      <CardDescription className="flex items-center gap-4 mt-2">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(prescription.startDate)}
+                          {prescription.endDate && (
+                            <>
+                              {" "}
+                              〜 {formatDate(prescription.endDate)}
+                            </>
+                          )}
+                          {!prescription.endDate && <> 〜 継続中</>}
+                        </span>
+                      </CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleExpanded(prescription._id)}
+                      >
+                        {isExpanded ? (
                           <>
-                            {" "}
-                            〜 {formatDate(prescription.endDate)}
+                            <ChevronUp className="h-4 w-4 mr-1" />
+                            閉じる
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4 mr-1" />
+                            詳細
                           </>
                         )}
-                        {!prescription.endDate && <> 〜 継続中</>}
-                      </span>
-                    </CardDescription>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDelete(prescription._id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDelete(prescription._id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              {prescription.notes && (
-                <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {prescription.notes}
-                  </p>
-                </CardContent>
-              )}
-            </Card>
-          ))}
+                </CardHeader>
+                {(prescription.notes || isExpanded) && (
+                  <CardContent className="space-y-4">
+                    {prescription.notes && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {prescription.notes}
+                      </p>
+                    )}
+                    {isExpanded && (
+                      <PrescriptionMedicinesList prescriptionId={prescription._id} />
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 

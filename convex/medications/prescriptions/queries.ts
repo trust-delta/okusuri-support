@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { getActiveMedicationsForDate } from "./helpers";
 
 /**
  * グループの処方箋一覧を取得
@@ -123,5 +124,34 @@ export const getPrescriptionMedicines = query({
     );
 
     return medicinesWithSchedules;
+  },
+});
+
+/**
+ * 指定日に有効な薬剤を取得（処方箋ベース）
+ */
+export const getActiveMedicationsForDateQuery = query({
+  args: {
+    groupId: v.id("groups"),
+    date: v.string(), // YYYY-MM-DD
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    return await getActiveMedicationsForDate(ctx, args.groupId, args.date);
   },
 });

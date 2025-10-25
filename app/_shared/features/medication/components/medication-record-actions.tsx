@@ -12,7 +12,9 @@ interface MedicationRecordActionsProps {
   groupId: Id<"groups">;
   timing: MedicationTiming;
   scheduledDate: string;
-  simpleMedicineName?: string;
+  medicineId?: Id<"medicines">; // 処方箋ベースの場合に使用
+  scheduleId?: Id<"medicationSchedules">; // 処方箋ベースの場合に使用
+  simpleMedicineName?: string; // 簡易記録の場合に使用
   recordId?: Id<"medicationRecords">;
   recordStatus?: "taken" | "skipped" | "pending";
 }
@@ -21,6 +23,8 @@ export function MedicationRecordActions({
   groupId,
   timing,
   scheduledDate,
+  medicineId,
+  scheduleId,
   simpleMedicineName,
   recordId,
   recordStatus,
@@ -35,6 +39,8 @@ export function MedicationRecordActions({
       groupId,
       timing,
       scheduledDate,
+      medicineId,
+      scheduleId,
       simpleMedicineName,
       status,
     });

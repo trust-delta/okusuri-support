@@ -8,11 +8,6 @@
  * @module
  */
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
 import type * as auth from "../auth.js";
 import type * as groups_mutations from "../groups/mutations.js";
 import type * as groups_queries from "../groups/queries.js";
@@ -26,6 +21,7 @@ import type * as invitations from "../invitations.js";
 import type * as medications_history_index from "../medications/history/index.js";
 import type * as medications_history_mutations from "../medications/history/mutations.js";
 import type * as medications_history_queries from "../medications/history/queries.js";
+import type * as medications_prescriptions_helpers from "../medications/prescriptions/helpers.js";
 import type * as medications_prescriptions_mutations from "../medications/prescriptions/mutations.js";
 import type * as medications_prescriptions_queries from "../medications/prescriptions/queries.js";
 import type * as medications_records_index from "../medications/records/index.js";
@@ -39,6 +35,12 @@ import type * as types_result from "../types/result.js";
 import type * as users_mutations from "../users/mutations.js";
 import type * as users_queries from "../users/queries.js";
 import type * as users from "../users.js";
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -62,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   "medications/history/index": typeof medications_history_index;
   "medications/history/mutations": typeof medications_history_mutations;
   "medications/history/queries": typeof medications_history_queries;
+  "medications/prescriptions/helpers": typeof medications_prescriptions_helpers;
   "medications/prescriptions/mutations": typeof medications_prescriptions_mutations;
   "medications/prescriptions/queries": typeof medications_prescriptions_queries;
   "medications/records/index": typeof medications_records_index;
@@ -76,11 +79,15 @@ declare const fullApi: ApiFromModules<{
   "users/queries": typeof users_queries;
   users: typeof users;
 }>;
+declare const fullApiWithMounts: typeof fullApi;
+
 export declare const api: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "public">
 >;
 export declare const internal: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "internal">
 >;
+
+export declare const components: {};

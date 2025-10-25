@@ -11,13 +11,18 @@ export const medicinesSchema = {
     name: v.string(), // 処方箋名（例: "10月分の処方箋"、"内科の風邪薬"）
     startDate: v.string(), // YYYY-MM-DD形式
     endDate: v.optional(v.string()), // YYYY-MM-DD形式（未指定 = 継続中）
+    isActive: v.boolean(), // 処方箋が有効かどうか（期間外でも手動で無効化可能）
     notes: v.optional(v.string()), // メモ（医療機関名、処方目的など）
     createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
     updatedAt: v.number(),
+    deletedAt: v.optional(v.number()), // 論理削除日時
+    deletedBy: v.optional(v.string()), // 削除者のConvex AuthユーザーID
   })
     .index("by_groupId", ["groupId"])
-    .index("by_groupId_startDate", ["groupId", "startDate"]),
+    .index("by_groupId_isActive", ["groupId", "isActive"])
+    .index("by_groupId_startDate", ["groupId", "startDate"])
+    .index("by_groupId_deletedAt", ["groupId", "deletedAt"]),
 
   // 薬剤マスタ: グループ内で管理する薬剤情報
   medicines: defineTable({
@@ -27,10 +32,10 @@ export const medicinesSchema = {
     description: v.optional(v.string()), // 備考・説明
     createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
-    isActive: v.boolean(), // 服用中かどうか
+    deletedAt: v.optional(v.number()), // 論理削除日時
+    deletedBy: v.optional(v.string()), // 削除者のConvex AuthユーザーID
   })
     .index("by_groupId", ["groupId"])
-    .index("by_groupId_isActive", ["groupId", "isActive"])
     .index("by_prescriptionId", ["prescriptionId"]),
 
   // 服薬スケジュール: 各薬剤の服用タイミング設定
@@ -52,6 +57,8 @@ export const medicinesSchema = {
     createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
     updatedAt: v.number(),
+    deletedAt: v.optional(v.number()), // 論理削除日時
+    deletedBy: v.optional(v.string()), // 削除者のConvex AuthユーザーID
   })
     .index("by_medicineId", ["medicineId"])
     .index("by_groupId", ["groupId"]),
@@ -81,6 +88,8 @@ export const medicinesSchema = {
     notes: v.optional(v.string()), // メモ
     createdAt: v.number(),
     updatedAt: v.number(),
+    deletedAt: v.optional(v.number()), // 論理削除日時
+    deletedBy: v.optional(v.string()), // 削除者のConvex AuthユーザーID
   })
     .index("by_groupId", ["groupId"])
     .index("by_patientId", ["patientId"])

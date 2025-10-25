@@ -5,7 +5,7 @@ import { mutation } from "../../_generated/server";
 import { error, type Result, success } from "../../types/result";
 
 /**
- * 簡易服薬記録を作成（薬剤マスタ不要）
+ * 服薬記録を作成（簡易記録・処方箋ベース両対応）
  */
 export const recordSimpleMedication = mutation({
   args: {
@@ -18,7 +18,9 @@ export const recordSimpleMedication = mutation({
       v.literal("asNeeded"),
     ),
     scheduledDate: v.string(), // YYYY-MM-DD
-    simpleMedicineName: v.optional(v.string()),
+    medicineId: v.optional(v.id("medicines")), // 処方箋ベースの場合に使用
+    scheduleId: v.optional(v.id("medicationSchedules")), // 処方箋ベースの場合に使用
+    simpleMedicineName: v.optional(v.string()), // 簡易記録の場合に使用
     status: v.union(v.literal("taken"), v.literal("skipped")),
     notes: v.optional(v.string()),
   },
@@ -48,17 +50,17 @@ export const recordSimpleMedication = mutation({
 
     const patientId = patientMember?.userId ?? userId;
 
-    // 薬剤情報のバリデーション（薬剤名が必要）
-    if (!args.simpleMedicineName) {
-      return error("薬剤名が必要です");
+    // 薬剤情報のバリデーション（medicineIdまたはsimpleMedicineNameが必要）
+    if (!args.medicineId && !args.simpleMedicineName) {
+      return error("薬剤情報が必要です");
     }
 
     const now = Date.now();
 
     // 新規レコード作成
     const recordId = await ctx.db.insert("medicationRecords", {
-      medicineId: undefined,
-      scheduleId: undefined,
+      medicineId: args.medicineId,
+      scheduleId: args.scheduleId,
       simpleMedicineName: args.simpleMedicineName,
       groupId: args.groupId,
       patientId,
