@@ -31,12 +31,55 @@ export const getPrescriptions = query({
     const prescriptions = await ctx.db
       .query("prescriptions")
       .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
     // startDateで降順ソート（新しい順）
     prescriptions.sort((a, b) => b.startDate.localeCompare(a.startDate));
 
     return prescriptions;
+  },
+});
+
+/**
+ * グループの削除された処方箋一覧を取得（ゴミ箱用）
+ */
+export const getDeletedPrescriptions = query({
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    // 削除された処方箋一覧を取得（削除日の降順）
+    const deletedPrescriptions = await ctx.db
+      .query("prescriptions")
+      .withIndex("by_groupId_deletedAt", (q) => q.eq("groupId", args.groupId))
+      .filter((q) => q.neq(q.field("deletedAt"), undefined))
+      .collect();
+
+    // deletedAtで降順ソート（新しく削除されたものが上）
+    deletedPrescriptions.sort((a, b) => {
+      const aTime = a.deletedAt ?? 0;
+      const bTime = b.deletedAt ?? 0;
+      return bTime - aTime;
+    });
+
+    return deletedPrescriptions;
   },
 });
 
@@ -54,7 +97,7 @@ export const getPrescription = query({
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
-    if (!prescription) {
+    if (!prescription || prescription.deletedAt !== undefined) {
       throw new Error("処方箋が見つかりません");
     }
 
@@ -87,7 +130,7 @@ export const getPrescriptionMedicines = query({
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
-    if (!prescription) {
+    if (!prescription || prescription.deletedAt !== undefined) {
       throw new Error("処方箋が見つかりません");
     }
 
@@ -106,6 +149,7 @@ export const getPrescriptionMedicines = query({
     const medicines = await ctx.db
       .query("medicines")
       .withIndex("by_prescriptionId", (q) => q.eq("prescriptionId", args.prescriptionId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
     // 各薬のスケジュールも取得
@@ -114,6 +158,7 @@ export const getPrescriptionMedicines = query({
         const schedule = await ctx.db
           .query("medicationSchedules")
           .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+          .filter((q) => q.eq(q.field("deletedAt"), undefined))
           .first();
 
         return {

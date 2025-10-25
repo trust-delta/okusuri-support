@@ -6,8 +6,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Id } from "@/schema";
 import { PrescriptionList } from "./_components";
+import { DeletedPrescriptionList } from "./_components/DeletedPrescriptionList";
 
 export default function PrescriptionsPage() {
   const searchParams = useSearchParams();
@@ -49,8 +51,19 @@ export default function PrescriptionsPage() {
           </Link>
         </div>
 
-        {/* 処方箋一覧 */}
-        <PrescriptionList groupId={activeGroupId} />
+        {/* タブで処方箋一覧とゴミ箱を切り替え */}
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="active">有効な処方箋</TabsTrigger>
+            <TabsTrigger value="deleted">ゴミ箱</TabsTrigger>
+          </TabsList>
+          <TabsContent value="active" className="mt-6">
+            <PrescriptionList groupId={activeGroupId} />
+          </TabsContent>
+          <TabsContent value="deleted" className="mt-6">
+            <DeletedPrescriptionList groupId={activeGroupId} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

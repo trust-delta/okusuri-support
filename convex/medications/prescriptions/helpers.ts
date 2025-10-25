@@ -14,6 +14,7 @@ export async function getActiveMedicationsForDate(
     .withIndex("by_groupId_isActive", (q: any) =>
       q.eq("groupId", groupId).eq("isActive", true)
     )
+    .filter((q) => q.eq(q.field("deletedAt"), undefined))
     .collect();
 
   const activePrescriptions = allPrescriptions.filter((prescription) => {
@@ -43,12 +44,14 @@ export async function getActiveMedicationsForDate(
       .withIndex("by_prescriptionId", (q: any) =>
         q.eq("prescriptionId", prescription._id),
       )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
     for (const medicine of medicines) {
       const schedule = await ctx.db
         .query("medicationSchedules")
         .withIndex("by_medicineId", (q: any) => q.eq("medicineId", medicine._id))
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .first();
 
       if (schedule && schedule.timings) {

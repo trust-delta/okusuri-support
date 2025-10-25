@@ -175,6 +175,11 @@ export const deletePrescription = mutation({
       throw new Error("処方箋が見つかりません");
     }
 
+    // 既に論理削除されている場合はエラー
+    if (prescription.deletedAt !== undefined) {
+      throw new Error("この処方箋は既に削除されています");
+    }
+
     // グループメンバーか確認
     const membership = await ctx.db
       .query("groupMembers")
@@ -270,6 +275,95 @@ export const deletePrescription = mutation({
 
       // 処方箋を削除
       await ctx.db.delete(args.prescriptionId);
+    }
+  },
+});
+
+/**
+ * 論理削除された処方箋を復元
+ */
+export const restorePrescription = mutation({
+  args: {
+    prescriptionId: v.id("prescriptions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    const prescription = await ctx.db.get(args.prescriptionId);
+    if (!prescription) {
+      throw new Error("処方箋が見つかりません");
+    }
+
+    // 論理削除されていない場合はエラー
+    if (prescription.deletedAt === undefined) {
+      throw new Error("この処方箋は削除されていません");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), prescription.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    // 処方箋を復元（deletedAtとdeletedByをundefinedに）
+    await ctx.db.patch(args.prescriptionId, {
+      deletedAt: undefined,
+      deletedBy: undefined,
+    });
+
+    // この処方箋に紐付く薬を取得（削除されたものも含む）
+    const relatedMedicines = await ctx.db
+      .query("medicines")
+      .withIndex("by_prescriptionId", (q) => q.eq("prescriptionId", args.prescriptionId))
+      .collect();
+
+    // 薬とスケジュールと記録を復元
+    for (const medicine of relatedMedicines) {
+      // 薬を復元
+      if (medicine.deletedAt !== undefined) {
+        await ctx.db.patch(medicine._id, {
+          deletedAt: undefined,
+          deletedBy: undefined,
+        });
+      }
+
+      // スケジュールを復元
+      const schedules = await ctx.db
+        .query("medicationSchedules")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+        .collect();
+
+      for (const schedule of schedules) {
+        if (schedule.deletedAt !== undefined) {
+          await ctx.db.patch(schedule._id, {
+            deletedAt: undefined,
+            deletedBy: undefined,
+          });
+        }
+      }
+
+      // 記録を復元
+      const records = await ctx.db
+        .query("medicationRecords")
+        .filter((q) => q.eq(q.field("medicineId"), medicine._id))
+        .collect();
+
+      for (const record of records) {
+        if (record.deletedAt !== undefined) {
+          await ctx.db.patch(record._id, {
+            deletedAt: undefined,
+            deletedBy: undefined,
+          });
+        }
+      }
     }
   },
 });

@@ -42,6 +42,7 @@ export const getTodayRecords = query({
         .withIndex("by_patientId_scheduledDate", (q) =>
           q.eq("patientId", targetPatientId).eq("scheduledDate", args.scheduledDate),
         )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .collect();
     } else {
       // グループ全体の記録を取得
@@ -50,6 +51,7 @@ export const getTodayRecords = query({
         .withIndex("by_groupId_scheduledDate", (q) =>
           q.eq("groupId", args.groupId).eq("scheduledDate", args.scheduledDate),
         )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .collect();
     }
 
@@ -106,6 +108,7 @@ export const getMonthlyRecords = query({
             .gte("scheduledDate", startDate)
             .lte("scheduledDate", endDate),
         )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .collect();
     } else {
       // グループ全体の記録を取得
@@ -117,6 +120,7 @@ export const getMonthlyRecords = query({
             .gte("scheduledDate", startDate)
             .lte("scheduledDate", endDate),
         )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .collect();
     }
 
@@ -144,6 +148,7 @@ async function getActivePrescriptionsForDate(
     .withIndex("by_groupId_isActive", (q: any) =>
       q.eq("groupId", groupId).eq("isActive", true)
     )
+    .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
     .collect();
 
   return allPrescriptions.filter((prescription: any) => {
@@ -178,6 +183,7 @@ async function calculateExpectedCountForPrescriptions(
       .withIndex("by_prescriptionId", (q: any) =>
         q.eq("prescriptionId", prescription._id),
       )
+      .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
     // 各薬のスケジュールを取得
@@ -185,6 +191,7 @@ async function calculateExpectedCountForPrescriptions(
       const schedule = await ctx.db
         .query("medicationSchedules")
         .withIndex("by_medicineId", (q: any) => q.eq("medicineId", medicine._id))
+        .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
         .first();
 
       if (schedule && schedule.timings) {
@@ -244,6 +251,7 @@ export const getMonthlyStats = query({
             .gte("scheduledDate", startDate)
             .lte("scheduledDate", endDate),
         )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .collect();
     } else {
       // グループ全体の記録を取得
@@ -255,6 +263,7 @@ export const getMonthlyStats = query({
             .gte("scheduledDate", startDate)
             .lte("scheduledDate", endDate),
         )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .collect();
     }
 
