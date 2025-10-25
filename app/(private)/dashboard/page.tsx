@@ -1,6 +1,6 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
-import { History, Settings } from "lucide-react";
+import { History, Pill, Settings } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { api } from "@/api";
@@ -117,6 +117,14 @@ export default async function DashboardPage({
                 <Button variant="ghost" size="icon">
                   <History className="h-5 w-5" />
                   <span className="sr-only">記録履歴</span>
+                </Button>
+              </Link>
+              <Link
+                href={`/prescriptions${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
+              >
+                <Button variant="ghost" size="icon">
+                  <Pill className="h-5 w-5" />
+                  <span className="sr-only">処方箋管理</span>
                 </Button>
               </Link>
               <Link
