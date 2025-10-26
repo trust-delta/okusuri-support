@@ -38,6 +38,7 @@ export function PrescriptionFormWithMedicines({
     setMedicines([
       ...medicines,
       {
+        id: crypto.randomUUID(),
         name: "",
         dosage: "",
         timings: {
@@ -212,7 +213,7 @@ export function PrescriptionFormWithMedicines({
           <div className="space-y-4">
             {medicines.map((medicine, index) => (
               <MedicineEntry
-                key={index}
+                key={medicine.id}
                 index={index}
                 medicine={medicine}
                 onChange={(med) => updateMedicine(index, med)}

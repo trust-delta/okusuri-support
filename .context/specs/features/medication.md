@@ -223,9 +223,9 @@
 ```
 
 **挙動**:
-- 紐付く服薬記録が存在する場合：論理削除（deletedAt, deletedByをセット）
-- 紐付く服薬記録が存在しない場合：物理削除
-- 論理削除時は、関連するmedicines, schedules, recordsも全て論理削除
+- 常に論理削除（deletedAt, deletedByをセット）
+- 関連するmedicines, schedules, recordsも全て論理削除
+- ゴミ箱から復元可能
 
 #### 処方箋復元
 **API**: `prescriptions.mutations.restorePrescription`
@@ -241,6 +241,30 @@
 **挙動**:
 - deletedAt, deletedByをundefinedに戻す
 - 関連するmedicines, schedules, recordsも全て復元
+
+#### 処方箋完全削除
+**API**: `prescriptions.mutations.permanentlyDeletePrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+  },
+  returns: void
+}
+```
+
+**挙動**:
+- 論理削除済みの処方箋を物理削除
+- 関連するmedicines, schedules, recordsも全て物理削除
+- **この操作は取り消せません**
+
+**用途**:
+- ゴミ箱内の処方箋を完全に削除したい場合
+- ストレージを節約したい場合
+
+**注意**:
+- 論理削除されていない処方箋には使用できません（先に削除が必要）
+- 二重確認ダイアログで警告を表示
 
 #### 処方箋の無効化
 **API**: `prescriptions.mutations.deactivatePrescription`

@@ -143,13 +143,19 @@ export const updatePrescription = mutation({
     }
 
     // 更新するフィールドを準備
-    const updates: any = {
+    const updates: {
+      updatedAt: number;
+      name?: string;
+      startDate?: string;
+      endDate?: string;
+      notes?: string;
+    } = {
       updatedAt: Date.now(),
     };
 
     if (args.name !== undefined) updates.name = args.name;
     if (args.startDate !== undefined) updates.startDate = args.startDate;
-    if (args.endDate !== undefined) updates.endDate = args.endDate;
+    if (args.endDate !== undefined) updates.endDate = args.endDate ?? undefined;
     if (args.notes !== undefined) updates.notes = args.notes;
 
     await ctx.db.patch(args.prescriptionId, updates);
@@ -200,85 +206,123 @@ export const deletePrescription = mutation({
       )
       .collect();
 
-    // 紐付く薬に服薬記録があるかチェック
-    let hasRecords = false;
-    for (const medicine of relatedMedicines) {
-      const records = await ctx.db
-        .query("medicationRecords")
-        .filter((q) => q.eq(q.field("medicineId"), medicine._id))
-        .first();
-
-      if (records) {
-        hasRecords = true;
-        break;
-      }
-    }
-
     const now = Date.now();
 
-    if (hasRecords) {
-      // 記録がある場合：論理削除
-      // 処方箋を論理削除
-      await ctx.db.patch(args.prescriptionId, {
+    // 常に論理削除
+    // 処方箋を論理削除
+    await ctx.db.patch(args.prescriptionId, {
+      deletedAt: now,
+      deletedBy: userId,
+    });
+
+    // 薬とスケジュールと記録を論理削除
+    for (const medicine of relatedMedicines) {
+      // 薬を論理削除
+      await ctx.db.patch(medicine._id, {
         deletedAt: now,
         deletedBy: userId,
       });
 
-      // 薬とスケジュールと記録を論理削除
-      for (const medicine of relatedMedicines) {
-        // 薬を論理削除
-        await ctx.db.patch(medicine._id, {
+      // スケジュールを論理削除
+      const schedules = await ctx.db
+        .query("medicationSchedules")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+        .collect();
+
+      for (const schedule of schedules) {
+        await ctx.db.patch(schedule._id, {
           deletedAt: now,
           deletedBy: userId,
         });
-
-        // スケジュールを論理削除
-        const schedules = await ctx.db
-          .query("medicationSchedules")
-          .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-          .collect();
-
-        for (const schedule of schedules) {
-          await ctx.db.patch(schedule._id, {
-            deletedAt: now,
-            deletedBy: userId,
-          });
-        }
-
-        // 記録を論理削除
-        const records = await ctx.db
-          .query("medicationRecords")
-          .filter((q) => q.eq(q.field("medicineId"), medicine._id))
-          .collect();
-
-        for (const record of records) {
-          await ctx.db.patch(record._id, {
-            deletedAt: now,
-            deletedBy: userId,
-          });
-        }
-      }
-    } else {
-      // 記録がない場合：物理削除
-      // 薬とスケジュールを削除
-      for (const medicine of relatedMedicines) {
-        // スケジュールを削除
-        const schedules = await ctx.db
-          .query("medicationSchedules")
-          .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-          .collect();
-
-        for (const schedule of schedules) {
-          await ctx.db.delete(schedule._id);
-        }
-
-        // 薬を削除
-        await ctx.db.delete(medicine._id);
       }
 
-      // 処方箋を削除
-      await ctx.db.delete(args.prescriptionId);
+      // 記録を論理削除
+      const records = await ctx.db
+        .query("medicationRecords")
+        .filter((q) => q.eq(q.field("medicineId"), medicine._id))
+        .collect();
+
+      for (const record of records) {
+        await ctx.db.patch(record._id, {
+          deletedAt: now,
+          deletedBy: userId,
+        });
+      }
     }
+  },
+});
+
+/**
+ * 処方箋を完全削除（物理削除）
+ * 既に論理削除されている処方箋のみを対象とする
+ */
+export const permanentlyDeletePrescription = mutation({
+  args: {
+    prescriptionId: v.id("prescriptions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    const prescription = await ctx.db.get(args.prescriptionId);
+    if (!prescription) {
+      throw new Error("処方箋が見つかりません");
+    }
+
+    // 論理削除されていない場合はエラー
+    if (prescription.deletedAt === undefined) {
+      throw new Error("この処方箋は削除されていません。先に削除してください。");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), prescription.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    // この処方箋に紐付く薬を取得（論理削除されたものも含む）
+    const relatedMedicines = await ctx.db
+      .query("medicines")
+      .withIndex("by_prescriptionId", (q) =>
+        q.eq("prescriptionId", args.prescriptionId),
+      )
+      .collect();
+
+    // 薬とスケジュールと記録を物理削除
+    for (const medicine of relatedMedicines) {
+      // 記録を物理削除
+      const records = await ctx.db
+        .query("medicationRecords")
+        .filter((q) => q.eq(q.field("medicineId"), medicine._id))
+        .collect();
+
+      for (const record of records) {
+        await ctx.db.delete(record._id);
+      }
+
+      // スケジュールを物理削除
+      const schedules = await ctx.db
+        .query("medicationSchedules")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+        .collect();
+
+      for (const schedule of schedules) {
+        await ctx.db.delete(schedule._id);
+      }
+
+      // 薬を物理削除
+      await ctx.db.delete(medicine._id);
+    }
+
+    // 処方箋を物理削除
+    await ctx.db.delete(args.prescriptionId);
   },
 });
 

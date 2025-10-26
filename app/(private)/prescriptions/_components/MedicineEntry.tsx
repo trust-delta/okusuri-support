@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export interface MedicineData {
+  id: string;
   name: string;
   dosage: string;
   timings: {

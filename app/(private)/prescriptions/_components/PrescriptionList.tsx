@@ -8,7 +8,6 @@ import {
   Pause,
   Pill,
   Play,
-  Plus,
   Trash2,
 } from "lucide-react";
 import { useState } from "react";

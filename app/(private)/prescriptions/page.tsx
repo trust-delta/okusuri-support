@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Id } from "@/schema";
+import { PrescriptionList } from "./_components";
 import { DeletedPrescriptionList } from "./_components/DeletedPrescriptionList";
 import { PrescriptionFormWithMedicines } from "./_components/PrescriptionFormWithMedicines";
-import { PrescriptionList } from "./_components";
 
 export default function PrescriptionsPage() {
   const searchParams = useSearchParams();

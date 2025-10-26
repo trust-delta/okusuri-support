@@ -37,7 +37,7 @@ const _TIMING_LABELS: Record<string, string> = {
 // 削除された処方箋に含まれる薬の一覧を表示するコンポーネント
 // 注: 削除された薬も含めて表示するため、getPrescriptionMedicinesは使えません
 function DeletedPrescriptionMedicinesList({
-  prescriptionId,
+  prescriptionId: _prescriptionId,
 }: {
   prescriptionId: Id<"prescriptions">;
 }) {
@@ -65,6 +65,9 @@ export function DeletedPrescriptionList({
   );
   const restorePrescription = useMutation(
     api.medications.prescriptions.mutations.restorePrescription,
+  );
+  const permanentlyDeletePrescription = useMutation(
+    api.medications.prescriptions.mutations.permanentlyDeletePrescription,
   );
 
   const toggleExpanded = (prescriptionId: string) => {
@@ -94,6 +97,38 @@ export function DeletedPrescriptionList({
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "処方箋の復元に失敗しました",
+      );
+    }
+  };
+
+  const handlePermanentlyDelete = async (
+    prescriptionId: Id<"prescriptions">,
+  ) => {
+    if (
+      !confirm(
+        "⚠️ 警告：この処方箋を完全に削除しますか？\n\nこの操作は取り消せません。\n処方箋に紐付く薬、スケジュール、服薬記録も全て完全に削除されます。\n\n本当に削除してよろしいですか？",
+      )
+    ) {
+      return;
+    }
+
+    // 二重確認
+    if (
+      !confirm(
+        "最終確認：本当にこの処方箋とすべての関連データを完全に削除しますか？\n\nこの操作は取り消せません。",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await permanentlyDeletePrescription({ prescriptionId });
+      toast.success("処方箋を完全に削除しました");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "処方箋の完全削除に失敗しました",
       );
     }
   };
@@ -198,8 +233,20 @@ export function DeletedPrescriptionList({
                         size="icon"
                         onClick={() => handleRestore(prescription._id)}
                         className="border-green-500 text-green-600 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950"
+                        title="復元"
                       >
                         <RotateCcw className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          handlePermanentlyDelete(prescription._id)
+                        }
+                        className="border-red-500 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+                        title="完全削除"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

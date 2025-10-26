@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { query } from "../../_generated/server";
+import type { Doc, Id } from "../../_generated/dataModel";
+import { type QueryCtx, query } from "../../_generated/server";
 
 /**
  * 指定日の服薬記録を取得
@@ -30,7 +31,7 @@ export const getTodayRecords = query({
 
     // patientIdが指定されている場合は、その患者の記録のみを取得
     // 指定されていない場合は、グループ全体の記録を取得
-    let records;
+    let records: Doc<"medicationRecords">[];
     if (args.patientId) {
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
@@ -95,7 +96,7 @@ export const getMonthlyRecords = query({
 
     // patientIdが指定されている場合は、その患者の記録のみを取得
     // 指定されていない場合は、グループ全体の記録を取得
-    let records;
+    let records: Doc<"medicationRecords">[];
     if (args.patientId) {
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
@@ -141,19 +142,19 @@ export const getMonthlyRecords = query({
  * @returns 有効な処方箋の配列
  */
 async function getActivePrescriptionsForDate(
-  ctx: any,
-  groupId: string,
+  ctx: QueryCtx,
+  groupId: Id<"groups">,
   date: string,
 ) {
   const allPrescriptions = await ctx.db
     .query("prescriptions")
-    .withIndex("by_groupId_isActive", (q: any) =>
+    .withIndex("by_groupId_isActive", (q) =>
       q.eq("groupId", groupId).eq("isActive", true),
     )
-    .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
+    .filter((q) => q.eq(q.field("deletedAt"), undefined))
     .collect();
 
-  return allPrescriptions.filter((prescription: any) => {
+  return allPrescriptions.filter((prescription) => {
     const startDate = prescription.startDate;
     const endDate = prescription.endDate;
 
@@ -173,8 +174,8 @@ async function getActivePrescriptionsForDate(
  * @returns 期待される服薬回数（定期服用のみ、頓服除く）
  */
 async function calculateExpectedCountForPrescriptions(
-  ctx: any,
-  prescriptions: any[],
+  ctx: QueryCtx,
+  prescriptions: Doc<"prescriptions">[],
 ) {
   let expectedCount = 0;
 
@@ -182,27 +183,23 @@ async function calculateExpectedCountForPrescriptions(
     // この処方箋に含まれる薬を取得
     const medicines = await ctx.db
       .query("medicines")
-      .withIndex("by_prescriptionId", (q: any) =>
+      .withIndex("by_prescriptionId", (q) =>
         q.eq("prescriptionId", prescription._id),
       )
-      .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
     // 各薬のスケジュールを取得
     for (const medicine of medicines) {
       const schedule = await ctx.db
         .query("medicationSchedules")
-        .withIndex("by_medicineId", (q: any) =>
-          q.eq("medicineId", medicine._id),
-        )
-        .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .first();
 
       if (schedule?.timings) {
         // 頓服を除いた定期服用のタイミング数をカウント
-        const regularTimings = schedule.timings.filter(
-          (t: string) => t !== "asNeeded",
-        );
+        const regularTimings = schedule.timings.filter((t) => t !== "asNeeded");
         expectedCount += regularTimings.length;
       }
     }
@@ -242,7 +239,7 @@ export const getMonthlyStats = query({
 
     // patientIdが指定されている場合は、その患者の記録のみを取得
     // 指定されていない場合は、グループ全体の記録を取得
-    let records;
+    let records: Doc<"medicationRecords">[];
     if (args.patientId) {
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ

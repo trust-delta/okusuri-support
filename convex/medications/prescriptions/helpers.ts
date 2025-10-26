@@ -1,3 +1,4 @@
+import type { Id } from "../../_generated/dataModel";
 import type { QueryCtx } from "../../_generated/server";
 
 /**
@@ -5,13 +6,13 @@ import type { QueryCtx } from "../../_generated/server";
  */
 export async function getActiveMedicationsForDate(
   ctx: QueryCtx,
-  groupId: string,
+  groupId: Id<"groups">,
   date: string, // YYYY-MM-DD
 ) {
   // 指定日に有効な処方箋を取得
   const allPrescriptions = await ctx.db
     .query("prescriptions")
-    .withIndex("by_groupId_isActive", (q: any) =>
+    .withIndex("by_groupId_isActive", (q) =>
       q.eq("groupId", groupId).eq("isActive", true),
     )
     .filter((q) => q.eq(q.field("deletedAt"), undefined))
@@ -29,11 +30,11 @@ export async function getActiveMedicationsForDate(
 
   // 各処方箋の薬を取得（アクティブなもののみ）
   const medications: Array<{
-    prescriptionId: string;
+    prescriptionId: Id<"prescriptions">;
     prescriptionName: string;
-    medicineId: string;
+    medicineId: Id<"medicines">;
     medicineName: string;
-    scheduleId: string;
+    scheduleId: Id<"medicationSchedules">;
     timings: string[];
     dosage?: string;
   }> = [];
@@ -41,7 +42,7 @@ export async function getActiveMedicationsForDate(
   for (const prescription of activePrescriptions) {
     const medicines = await ctx.db
       .query("medicines")
-      .withIndex("by_prescriptionId", (q: any) =>
+      .withIndex("by_prescriptionId", (q) =>
         q.eq("prescriptionId", prescription._id),
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
@@ -50,9 +51,7 @@ export async function getActiveMedicationsForDate(
     for (const medicine of medicines) {
       const schedule = await ctx.db
         .query("medicationSchedules")
-        .withIndex("by_medicineId", (q: any) =>
-          q.eq("medicineId", medicine._id),
-        )
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
         .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .first();
 
