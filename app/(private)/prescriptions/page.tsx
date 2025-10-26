@@ -1,8 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { ArrowLeft, Plus } from "lucide-react";
-import Link from "next/link";
+import { Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/api";
@@ -47,18 +46,6 @@ export default function PrescriptionsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4">
-          <Link
-            href={`/dashboard${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
-          >
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">ダッシュボードに戻る</span>
-            </Button>
-          </Link>
-        </div>
-
         {/* タイトルと説明 */}
         <div className="flex items-center justify-between">
           <div>

@@ -1,14 +1,9 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
-import { History, Pill, Settings } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { api } from "@/api";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import { GroupInfoCard } from "./_components/GroupInfoCard";
-import { GroupSwitcherSection } from "./_components/GroupSwitcherSection";
 import { MedicationSection } from "./_components/MedicationSection";
 import { MembersSection } from "./_components/MembersSection";
 
@@ -26,22 +21,16 @@ export default async function DashboardPage({
     {},
     { token },
   );
-  const currentUser = await preloadQuery(
-    api.users.getCurrentUser,
-    {},
-    { token },
-  );
 
   // 認証されていない場合はログインページへ
-  if (groupStatus === null || currentUser === null) {
+  if (groupStatus === null) {
     redirect("/login");
   }
 
   const groupStatusResult = preloadedQueryResult(groupStatus);
-  const currentUserResult = preloadedQueryResult(currentUser);
 
   // groupStatusResultがnullの場合はログインページへ
-  if (!groupStatusResult || !currentUserResult) {
+  if (!groupStatusResult) {
     redirect("/login");
   }
 
@@ -80,67 +69,11 @@ export default async function DashboardPage({
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 space-y-4">
-          {/* ヘッダー（Server Component内で直接レンダリング） */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              {currentUserResult && (
-                <Avatar className="h-12 w-12">
-                  <AvatarImage
-                    src={currentUserResult.image || undefined}
-                    alt={currentUserResult.name || "プロフィール画像"}
-                  />
-                  <AvatarFallback>
-                    {currentUserResult.name?.charAt(0) ||
-                      currentUserResult.email?.charAt(0) ||
-                      "?"}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                  ダッシュボード
-                </h1>
-                {currentUserResult?.displayName && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    ようこそ、{currentUserResult.displayName}さん
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/history${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
-              >
-                <Button variant="ghost" size="icon">
-                  <History className="h-5 w-5" />
-                  <span className="sr-only">記録履歴</span>
-                </Button>
-              </Link>
-              <Link
-                href={`/prescriptions${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
-              >
-                <Button variant="ghost" size="icon">
-                  <Pill className="h-5 w-5" />
-                  <span className="sr-only">処方箋管理</span>
-                </Button>
-              </Link>
-              <Link
-                href={`/settings${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
-              >
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
-                  <span className="sr-only">設定</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* グループスイッチャー */}
-          <GroupSwitcherSection preloadedGroupStatus={groupStatus} />
-        </div>
+    <div className="py-8 px-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          ダッシュボード
+        </h1>
 
         {/* グループ情報カード */}
         <GroupInfoCard
@@ -149,14 +82,10 @@ export default async function DashboardPage({
         />
 
         {/* メンバーリスト */}
-        <div className="mt-6">
-          <MembersSection preloadedGroupMembers={groupMembers} />
-        </div>
+        <MembersSection preloadedGroupMembers={groupMembers} />
 
         {/* 服薬記録 */}
-        <div className="mt-6">
-          <MedicationSection groupId={activeGroup.groupId} />
-        </div>
+        <MedicationSection groupId={activeGroup.groupId} />
       </div>
     </div>
   );

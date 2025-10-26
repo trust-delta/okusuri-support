@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -88,19 +87,9 @@ export default function HistoryPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* ヘッダー */}
-        <div className="flex items-center gap-4">
-          <Link
-            href={`/dashboard${activeGroupId ? `?groupId=${activeGroupId}` : ""}`}
-          >
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">ダッシュボードに戻る</span>
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            記録履歴
-          </h1>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          記録履歴
+        </h1>
 
         {/* 2カラムレイアウト: PC表示では横並び、モバイルでは縦並び */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

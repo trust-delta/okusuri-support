@@ -1,0 +1,46 @@
+"use client";
+
+import { History, Home, Pill, Settings } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+
+/**
+ * ヘッダーのナビゲーションボタン（Client Component）
+ *
+ * URLパラメータからgroupIdを読み取り、ナビゲーションリンクに含める
+ */
+export function HeaderNavigation() {
+  const searchParams = useSearchParams();
+  const groupId = searchParams.get("groupId");
+  const groupIdParam = groupId ? `?groupId=${groupId}` : "";
+
+  return (
+    <div className="flex items-center gap-2">
+      <Link href={`/dashboard${groupIdParam}`}>
+        <Button variant="ghost" size="icon">
+          <Home className="h-5 w-5" />
+          <span className="sr-only">ダッシュボード</span>
+        </Button>
+      </Link>
+      <Link href={`/history${groupIdParam}`}>
+        <Button variant="ghost" size="icon">
+          <History className="h-5 w-5" />
+          <span className="sr-only">記録履歴</span>
+        </Button>
+      </Link>
+      <Link href={`/prescriptions${groupIdParam}`}>
+        <Button variant="ghost" size="icon">
+          <Pill className="h-5 w-5" />
+          <span className="sr-only">処方箋管理</span>
+        </Button>
+      </Link>
+      <Link href={`/settings${groupIdParam}`}>
+        <Button variant="ghost" size="icon">
+          <Settings className="h-5 w-5" />
+          <span className="sr-only">設定</span>
+        </Button>
+      </Link>
+    </div>
+  );
+}
