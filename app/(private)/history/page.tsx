@@ -102,19 +102,26 @@ export default function HistoryPage() {
           </h1>
         </div>
 
-        {/* 月別統計 */}
-        <MonthlyStatsCard stats={stats} />
+        {/* 2カラムレイアウト: PC表示では横並び、モバイルでは縦並び */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 月別統計 */}
+          <div className="lg:col-span-2">
+            <MonthlyStatsCard stats={stats} />
+          </div>
 
-        {/* カレンダービュー */}
-        <CalendarView
-          year={year}
-          month={month}
-          dailyStats={stats?.dailyStats || {}}
-          onDateSelect={handleDateSelect}
-          onMonthChange={handleMonthChange}
-        />
+          {/* カレンダービュー */}
+          <div className="lg:col-span-1">
+            <CalendarView
+              year={year}
+              month={month}
+              dailyStats={stats?.dailyStats || {}}
+              onDateSelect={handleDateSelect}
+              onMonthChange={handleMonthChange}
+            />
+          </div>
+        </div>
 
-        {/* 日別詳細 */}
+        {/* 日別詳細（全幅） */}
         <DailyRecordDetail
           groupId={activeGroupId}
           selectedDate={selectedDate}

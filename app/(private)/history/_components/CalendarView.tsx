@@ -143,6 +143,10 @@ export function CalendarView({
           modifiers={modifiers}
           modifiersClassNames={modifiersClassNames}
           className="rounded-md border"
+          classNames={{
+            nav: "hidden", // ナビゲーションボタンを非表示（CalendarViewのヘッダーで制御）
+            month_caption: "hidden", // 月キャプションを非表示（CalendarViewのヘッダーで表示）
+          }}
           disabled={(date) => {
             // 未来の日付は無効化
             return date > today;
