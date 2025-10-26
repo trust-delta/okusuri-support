@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
+import { createDefaultPrescription } from "../medications/prescriptions/helpers";
 import { error, type Result, success } from "../types/result";
 
 /**
@@ -37,6 +38,9 @@ export const createGroup = mutation({
 
     // アクティブグループとして設定
     await ctx.db.patch(userId, { activeGroupId: groupId });
+
+    // デフォルト処方箋を作成
+    await createDefaultPrescription(ctx, groupId, userId);
 
     return success(groupId);
   },
@@ -81,6 +85,9 @@ export const completeOnboardingWithNewGroup = mutation({
 
     // アクティブグループとして設定
     await ctx.db.patch(userId, { activeGroupId: groupId });
+
+    // デフォルト処方箋を作成
+    await createDefaultPrescription(ctx, groupId, userId);
 
     return success({ groupId });
   },
