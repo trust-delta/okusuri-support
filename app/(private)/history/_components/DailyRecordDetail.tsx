@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { api } from "@/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MedicationRecordActions } from "@/features/medication";
 import { formatJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
 
@@ -21,26 +21,19 @@ const TIMING_LABELS = {
   asNeeded: "頓服",
 } as const;
 
-const STATUS_CONFIG = {
-  taken: {
-    label: "服用済み",
-    icon: CheckCircle2,
-    color: "text-green-600 dark:text-green-400",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
-  },
-  skipped: {
-    label: "スキップ",
-    icon: XCircle,
-    color: "text-red-600 dark:text-red-400",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
-  },
-  pending: {
-    label: "未服用",
-    icon: Clock,
-    color: "text-gray-600 dark:text-gray-400",
-    bgColor: "bg-gray-50 dark:bg-gray-800",
-  },
-} as const;
+// タイミングの順序
+const TIMING_ORDER = {
+  morning: 1,
+  noon: 2,
+  evening: 3,
+  bedtime: 4,
+  asNeeded: 5,
+};
+
+// タイミング値からラベルを取得するヘルパー
+const getTimingLabel = (timing: string) => {
+  return TIMING_LABELS[timing as keyof typeof TIMING_LABELS] || timing;
+};
 
 export function DailyRecordDetail({
   groupId,
@@ -50,6 +43,18 @@ export function DailyRecordDetail({
     ? formatJST(selectedDate, "yyyy-MM-dd")
     : undefined;
 
+  // その日に有効な薬剤を取得
+  const medications = useQuery(
+    api.medications.prescriptions.queries.getActiveMedicationsForDateQuery,
+    scheduledDate
+      ? {
+          groupId,
+          date: scheduledDate,
+        }
+      : "skip",
+  );
+
+  // その日の記録を取得
   const records = useQuery(
     api.medications.getTodayRecords,
     scheduledDate
@@ -75,7 +80,8 @@ export function DailyRecordDetail({
     );
   }
 
-  if (records === undefined) {
+  // ローディング中
+  if (medications === undefined || records === undefined) {
     return (
       <Card>
         <CardHeader>
@@ -91,97 +97,139 @@ export function DailyRecordDetail({
     );
   }
 
-  if (records.length === 0) {
+  // scheduledDateがundefinedの場合の早期リターン（型の安全性を確保）
+  if (!scheduledDate) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
+          <CardTitle>日別記録詳細</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            この日の記録はありません
+            カレンダーから日付を選択してください
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  // 定期服用と頓服を分ける
-  const regularRecords = records.filter((r) => r.timing !== "asNeeded");
-  const asNeededRecords = records.filter((r) => r.timing === "asNeeded");
-
-  const renderRecord = (record: (typeof records)[0]) => {
-    const statusConfig = STATUS_CONFIG[record.status];
-    const StatusIcon = statusConfig.icon;
-
+  // 薬がない場合
+  if (medications.length === 0) {
     return (
-      <div
-        key={record._id}
-        className={`p-4 rounded-lg border ${statusConfig.bgColor} border-gray-200 dark:border-gray-700`}
-      >
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="font-medium text-gray-900 dark:text-gray-100">
-                {TIMING_LABELS[record.timing as keyof typeof TIMING_LABELS]}
-              </span>
-              <div className={`flex items-center gap-1 ${statusConfig.color}`}>
-                <StatusIcon className="h-4 w-4" />
-                <span className="text-sm font-medium">
-                  {statusConfig.label}
-                </span>
-              </div>
-            </div>
-
-            {record.simpleMedicineName && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                {record.simpleMedicineName}
-              </p>
-            )}
-
-            {record.takenAt && (
-              <p className="text-xs text-gray-500 dark:text-gray-500">
-                服用時刻: {formatJST(new Date(record.takenAt), "HH:mm")}
-              </p>
-            )}
-
-            {record.notes && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-white dark:bg-gray-800 rounded">
-                {record.notes}
+      <Card>
+        <CardHeader>
+          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <p>この日に服用する薬がありません</p>
+            {records && records.length > 0 && (
+              <p className="text-sm mt-2">
+                簡易記録のみがある可能性があります
               </p>
             )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
-  };
+  }
+
+  // 薬ごとにタイミング別に展開
+  const medicationItems = medications.flatMap((med) =>
+    med.timings.map((timing) => ({
+      medicineId: med.medicineId,
+      scheduleId: med.scheduleId,
+      medicineName: med.medicineName,
+      prescriptionId: med.prescriptionId,
+      prescriptionName: med.prescriptionName,
+      timing: timing as "morning" | "noon" | "evening" | "bedtime" | "asNeeded",
+      dosage: med.dosage,
+    })),
+  );
+
+  // タイミングでグルーピング
+  const grouped = Object.entries(
+    medicationItems.reduce(
+      (acc, item) => {
+        if (!acc[item.timing]) acc[item.timing] = [];
+        acc[item.timing].push(item);
+        return acc;
+      },
+      {} as Record<string, typeof medicationItems>,
+    ),
+  ).sort(
+    ([a], [b]) =>
+      TIMING_ORDER[a as keyof typeof TIMING_ORDER] -
+      TIMING_ORDER[b as keyof typeof TIMING_ORDER],
+  );
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          この日の記録を編集・作成できます
+        </p>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* 定期服用 */}
-        {regularRecords.length > 0 && (
-          <div className="space-y-3">{regularRecords.map(renderRecord)}</div>
-        )}
+      <CardContent className="space-y-6">
+        {grouped.map(([groupName, items]) => (
+          <div key={groupName} className="space-y-3">
+            {/* グループ見出し */}
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b pb-1">
+              {getTimingLabel(groupName)}
+            </h3>
 
-        {/* 頓服（参考） */}
-        {asNeededRecords.length > 0 && (
-          <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              頓服（参考）
-            </h4>
-            {asNeededRecords.map(renderRecord)}
+            {/* グループ内の薬 */}
+            <div className="space-y-2">
+              {items.map((item, index) => {
+                const record = records?.find(
+                  (r) =>
+                    r.medicineId === item.medicineId && r.timing === item.timing,
+                );
+
+                return (
+                  <div
+                    key={`${item.medicineId}-${item.timing}-${index}`}
+                    className="flex flex-col gap-2 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                            {item.medicineName}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {item.prescriptionName}
+                          {item.dosage && ` · ${item.dosage}`}
+                        </div>
+                        {record?.notes && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                            メモ: {record.notes}
+                          </p>
+                        )}
+                        {record?.takenAt && (
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            服用時刻: {formatJST(new Date(record.takenAt), "HH:mm")}
+                          </p>
+                        )}
+                      </div>
+                      <MedicationRecordActions
+                        groupId={groupId}
+                        timing={item.timing}
+                        scheduledDate={scheduledDate}
+                        medicineId={item.medicineId}
+                        scheduleId={item.scheduleId}
+                        recordId={record?._id}
+                        recordStatus={record?.status}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        )}
-
-        {regularRecords.length === 0 && asNeededRecords.length === 0 && (
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            この日の記録はありません
-          </p>
-        )}
+        ))}
       </CardContent>
     </Card>
   );
