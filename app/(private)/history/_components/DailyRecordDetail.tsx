@@ -1,11 +1,13 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { Edit } from "lucide-react";
 import { api } from "@/api";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MedicationRecordActions } from "@/features/medication";
-import { formatJST } from "@/lib/date-fns";
+import { formatJST, nowJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
 
 interface DailyRecordDetailProps {
@@ -35,6 +37,13 @@ const getTimingLabel = (timing: string) => {
   return TIMING_LABELS[timing as keyof typeof TIMING_LABELS] || timing;
 };
 
+// 日付が今日または過去かを判定するヘルパー
+const isPastOrToday = (date: Date): boolean => {
+  const today = formatJST(nowJST(), "yyyy-MM-dd");
+  const targetDate = formatJST(date, "yyyy-MM-dd");
+  return targetDate <= today;
+};
+
 export function DailyRecordDetail({
   groupId,
   selectedDate,
@@ -42,6 +51,9 @@ export function DailyRecordDetail({
   const scheduledDate = selectedDate
     ? formatJST(selectedDate, "yyyy-MM-dd")
     : undefined;
+
+  // 選択された日付が編集可能か判定
+  const isEditable = selectedDate ? isPastOrToday(selectedDate) : false;
 
   // その日に有効な薬剤を取得
   const medications = useQuery(
@@ -124,9 +136,7 @@ export function DailyRecordDetail({
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <p>この日に服用する薬がありません</p>
             {records && records.length > 0 && (
-              <p className="text-sm mt-2">
-                簡易記録のみがある可能性があります
-              </p>
+              <p className="text-sm mt-2">簡易記録のみがある可能性があります</p>
             )}
           </div>
         </CardContent>
@@ -166,9 +176,19 @@ export function DailyRecordDetail({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
+          {isEditable && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Edit className="h-3 w-3" />
+              編集可能
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          この日の記録を編集・作成できます
+          {isEditable
+            ? "記録の編集・追加ができます"
+            : "この日の記録は閲覧のみです"}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -184,13 +204,20 @@ export function DailyRecordDetail({
               {items.map((item, index) => {
                 const record = records?.find(
                   (r) =>
-                    r.medicineId === item.medicineId && r.timing === item.timing,
+                    r.medicineId === item.medicineId &&
+                    r.timing === item.timing,
                 );
+
+                const hasRecord = !!record;
 
                 return (
                   <div
                     key={`${item.medicineId}-${item.timing}-${index}`}
-                    className="flex flex-col gap-2 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+                    className={`flex flex-col gap-2 p-4 rounded-lg transition-all ${
+                      hasRecord
+                        ? "border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20"
+                        : "border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50"
+                    }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -198,6 +225,11 @@ export function DailyRecordDetail({
                           <span className="font-medium text-gray-900 dark:text-gray-100">
                             {item.medicineName}
                           </span>
+                          {!hasRecord && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                              （未記録）
+                            </span>
+                          )}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                           {item.prescriptionName}
@@ -210,7 +242,8 @@ export function DailyRecordDetail({
                         )}
                         {record?.takenAt && (
                           <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                            服用時刻: {formatJST(new Date(record.takenAt), "HH:mm")}
+                            服用時刻:{" "}
+                            {formatJST(new Date(record.takenAt), "HH:mm")}
                           </p>
                         )}
                       </div>
