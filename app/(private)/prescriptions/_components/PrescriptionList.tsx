@@ -13,6 +13,16 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -149,6 +159,14 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
     useState<Id<"prescriptions"> | null>(null);
   const [endDateInput, setEndDateInput] = useState("");
 
+  // 削除確認ダイアログ
+  const [deleteDialogPrescriptionId, setDeleteDialogPrescriptionId] =
+    useState<Id<"prescriptions"> | null>(null);
+
+  // 無効化確認ダイアログ
+  const [deactivateDialogPrescriptionId, setDeactivateDialogPrescriptionId] =
+    useState<Id<"prescriptions"> | null>(null);
+
   const toggleExpanded = (prescriptionId: string) => {
     setExpandedPrescriptions((prev) => {
       const next = new Set(prev);
@@ -161,16 +179,13 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
     });
   };
 
-  const handleDelete = async (prescriptionId: Id<"prescriptions">) => {
-    if (
-      !confirm("この処方箋を削除しますか？\n（紐付く薬も一緒に削除されます）")
-    ) {
-      return;
-    }
+  const handleDelete = async () => {
+    if (!deleteDialogPrescriptionId) return;
 
     try {
-      await deletePrescription({ prescriptionId });
+      await deletePrescription({ prescriptionId: deleteDialogPrescriptionId });
       toast.success("処方箋を削除しました");
+      setDeleteDialogPrescriptionId(null);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "処方箋の削除に失敗しました",
@@ -178,14 +193,15 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
     }
   };
 
-  const handleDeactivate = async (prescriptionId: Id<"prescriptions">) => {
-    if (!confirm("この処方箋を無効化しますか？")) {
-      return;
-    }
+  const handleDeactivate = async () => {
+    if (!deactivateDialogPrescriptionId) return;
 
     try {
-      await deactivatePrescription({ prescriptionId });
+      await deactivatePrescription({
+        prescriptionId: deactivateDialogPrescriptionId,
+      });
       toast.success("処方箋を無効化しました");
+      setDeactivateDialogPrescriptionId(null);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "処方箋の無効化に失敗しました",
@@ -326,7 +342,11 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeactivate(prescription._id)}
+                            onClick={() =>
+                              setDeactivateDialogPrescriptionId(
+                                prescription._id,
+                              )
+                            }
                           >
                             <Pause className="h-4 w-4 mr-1" />
                             無効化
@@ -362,7 +382,9 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => handleDelete(prescription._id)}
+                        onClick={() =>
+                          setDeleteDialogPrescriptionId(prescription._id)
+                        }
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -431,6 +453,54 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 削除確認ダイアログ */}
+      <AlertDialog
+        open={deleteDialogPrescriptionId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteDialogPrescriptionId(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>処方箋を削除しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この操作により、処方箋と紐付く薬がゴミ箱に移動されます。ゴミ箱から復元することができます。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>削除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 無効化確認ダイアログ */}
+      <AlertDialog
+        open={deactivateDialogPrescriptionId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeactivateDialogPrescriptionId(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>処方箋を無効化しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この処方箋を無効化すると、新しい服薬記録を作成できなくなります。既存の記録は保持されます。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeactivate}>
+              無効化
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

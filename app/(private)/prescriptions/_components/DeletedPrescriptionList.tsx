@@ -11,6 +11,16 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -70,6 +80,22 @@ export function DeletedPrescriptionList({
     api.medications.prescriptions.mutations.permanentlyDeletePrescription,
   );
 
+  // 復元確認ダイアログ
+  const [restoreDialogPrescriptionId, setRestoreDialogPrescriptionId] =
+    useState<Id<"prescriptions"> | null>(null);
+
+  // 完全削除確認ダイアログ（1段階目）
+  const [
+    permanentDeleteDialogPrescriptionId,
+    setPermanentDeleteDialogPrescriptionId,
+  ] = useState<Id<"prescriptions"> | null>(null);
+
+  // 完全削除確認ダイアログ（2段階目：最終確認）
+  const [
+    permanentDeleteFinalDialogPrescriptionId,
+    setPermanentDeleteFinalDialogPrescriptionId,
+  ] = useState<Id<"prescriptions"> | null>(null);
+
   const toggleExpanded = (prescriptionId: string) => {
     setExpandedPrescriptions((prev) => {
       const next = new Set(prev);
@@ -82,18 +108,15 @@ export function DeletedPrescriptionList({
     });
   };
 
-  const handleRestore = async (prescriptionId: Id<"prescriptions">) => {
-    if (
-      !confirm(
-        "この処方箋を復元しますか？\n（紐付く薬と記録も一緒に復元されます）",
-      )
-    ) {
-      return;
-    }
+  const handleRestore = async () => {
+    if (!restoreDialogPrescriptionId) return;
 
     try {
-      await restorePrescription({ prescriptionId });
+      await restorePrescription({
+        prescriptionId: restoreDialogPrescriptionId,
+      });
       toast.success("処方箋を復元しました");
+      setRestoreDialogPrescriptionId(null);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "処方箋の復元に失敗しました",
@@ -101,29 +124,24 @@ export function DeletedPrescriptionList({
     }
   };
 
-  const handlePermanentlyDelete = async (
-    prescriptionId: Id<"prescriptions">,
-  ) => {
-    if (
-      !confirm(
-        "⚠️ 警告：この処方箋を完全に削除しますか？\n\nこの操作は取り消せません。\n処方箋に紐付く薬、スケジュール、服薬記録も全て完全に削除されます。\n\n本当に削除してよろしいですか？",
-      )
-    ) {
-      return;
-    }
+  const handlePermanentlyDeleteConfirm = () => {
+    // 1段階目から2段階目へ
+    if (!permanentDeleteDialogPrescriptionId) return;
+    setPermanentDeleteFinalDialogPrescriptionId(
+      permanentDeleteDialogPrescriptionId,
+    );
+    setPermanentDeleteDialogPrescriptionId(null);
+  };
 
-    // 二重確認
-    if (
-      !confirm(
-        "最終確認：本当にこの処方箋とすべての関連データを完全に削除しますか？\n\nこの操作は取り消せません。",
-      )
-    ) {
-      return;
-    }
+  const handlePermanentlyDelete = async () => {
+    if (!permanentDeleteFinalDialogPrescriptionId) return;
 
     try {
-      await permanentlyDeletePrescription({ prescriptionId });
+      await permanentlyDeletePrescription({
+        prescriptionId: permanentDeleteFinalDialogPrescriptionId,
+      });
       toast.success("処方箋を完全に削除しました");
+      setPermanentDeleteFinalDialogPrescriptionId(null);
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -231,7 +249,9 @@ export function DeletedPrescriptionList({
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => handleRestore(prescription._id)}
+                        onClick={() =>
+                          setRestoreDialogPrescriptionId(prescription._id)
+                        }
                         className="border-green-500 text-green-600 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950"
                         title="復元"
                       >
@@ -241,7 +261,9 @@ export function DeletedPrescriptionList({
                         variant="outline"
                         size="icon"
                         onClick={() =>
-                          handlePermanentlyDelete(prescription._id)
+                          setPermanentDeleteDialogPrescriptionId(
+                            prescription._id,
+                          )
                         }
                         className="border-red-500 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
                         title="完全削除"
@@ -270,6 +292,96 @@ export function DeletedPrescriptionList({
           })}
         </div>
       )}
+
+      {/* 復元確認ダイアログ */}
+      <AlertDialog
+        open={restoreDialogPrescriptionId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRestoreDialogPrescriptionId(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>処方箋を復元しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この操作により、処方箋と紐付く薬、服薬記録が復元されます。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestore}>復元</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 完全削除確認ダイアログ（1段階目） */}
+      <AlertDialog
+        open={permanentDeleteDialogPrescriptionId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPermanentDeleteDialogPrescriptionId(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600 dark:text-red-400">
+              ⚠️ 警告：処方箋を完全に削除しますか？
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p className="font-semibold">この操作は取り消せません。</p>
+              <p>
+                処方箋に紐付く薬、スケジュール、服薬記録も全て完全に削除されます。
+              </p>
+              <p>本当に削除してよろしいですか？</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handlePermanentlyDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              次へ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 完全削除確認ダイアログ（2段階目：最終確認） */}
+      <AlertDialog
+        open={permanentDeleteFinalDialogPrescriptionId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPermanentDeleteFinalDialogPrescriptionId(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600 dark:text-red-400">
+              最終確認
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              本当にこの処方箋とすべての関連データを完全に削除しますか？
+              <br />
+              <br />
+              <strong>この操作は取り消せません。</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handlePermanentlyDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              完全に削除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
