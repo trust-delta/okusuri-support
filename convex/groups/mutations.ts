@@ -47,6 +47,79 @@ export const createGroup = mutation({
 });
 
 /**
+ * グループ情報を更新
+ */
+export const updateGroup = mutation({
+  args: {
+    groupId: v.id("groups"),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<Result<void>> => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+
+    // グループを取得
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      return error("グループが見つかりません");
+    }
+
+    // 削除済みかチェック
+    if (group.deletedAt !== undefined) {
+      return error("このグループは削除されています");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .filter((q) => q.eq(q.field("leftAt"), undefined))
+      .first();
+
+    if (!membership) {
+      return error("このグループのメンバーではありません");
+    }
+
+    // グループ情報を更新（変更があるフィールドのみ）
+    const updates: Partial<{
+      name: string;
+      description: string | undefined;
+    }> = {};
+
+    if (args.name !== undefined) {
+      if (args.name.trim().length === 0) {
+        return error("グループ名を入力してください");
+      }
+      if (args.name.length > 100) {
+        return error("グループ名は100文字以内で入力してください");
+      }
+      updates.name = args.name.trim();
+    }
+
+    if (args.description !== undefined) {
+      if (args.description.length > 500) {
+        return error("説明は500文字以内で入力してください");
+      }
+      updates.description =
+        args.description.trim().length > 0
+          ? args.description.trim()
+          : undefined;
+    }
+
+    // 更新がある場合のみpatch
+    if (Object.keys(updates).length > 0) {
+      await ctx.db.patch(args.groupId, updates);
+    }
+
+    return success(undefined);
+  },
+});
+
+/**
  * オンボーディング完了とグループ作成を同時実行
  */
 export const completeOnboardingWithNewGroup = mutation({

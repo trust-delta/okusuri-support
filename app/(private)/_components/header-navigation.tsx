@@ -1,6 +1,6 @@
 "use client";
 
-import { History, Home, Pill, Settings } from "lucide-react";
+import { History, Home, Pill, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,12 @@ export function HeaderNavigation() {
         <Button variant="ghost" size="icon">
           <Pill className="h-5 w-5" />
           <span className="sr-only">処方箋管理</span>
+        </Button>
+      </Link>
+      <Link href={`/group${groupIdParam}`}>
+        <Button variant="ghost" size="icon">
+          <Users className="h-5 w-5" />
+          <span className="sr-only">グループ</span>
         </Button>
       </Link>
       <Link href={`/settings${groupIdParam}`}>

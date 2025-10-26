@@ -3,10 +3,12 @@ import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
 import { api } from "@/api";
 import { DangerZoneCard } from "./_components/DangerZoneCard";
-import { GroupInfoCard } from "./_components/GroupInfoCard";
+import { GroupHeader } from "./_components/GroupHeader";
 import { GroupMembersCard } from "./_components/GroupMembersCard";
+import { GroupStatsCard } from "./_components/GroupStatsCard";
+import { InviteSection } from "./_components/InviteSection";
 
-export default async function GroupSettingsPage() {
+export default async function GroupPage() {
   const token = await convexAuthNextjsToken();
 
   const groupStatus = await preloadQuery(
@@ -63,21 +65,21 @@ export default async function GroupSettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-          グループ設定
-        </h1>
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* ヘッダー: グループ名・説明、編集・招待ボタン */}
+        <GroupHeader preloadedGroupDetails={groupDetails} />
 
-        <div className="space-y-6">
-          {/* グループ情報 */}
-          <GroupInfoCard preloadedGroupDetails={groupDetails} />
+        {/* 統計カード: あなたの役割、メンバー数、作成日 */}
+        <GroupStatsCard preloadedGroupDetails={groupDetails} />
 
-          {/* メンバー一覧 */}
-          <GroupMembersCard preloadedMembers={groupMembers} />
+        {/* メンバー一覧 */}
+        <GroupMembersCard preloadedMembers={groupMembers} />
 
-          {/* 危険な操作 */}
-          <DangerZoneCard preloadedGroupDetails={groupDetails} />
-        </div>
+        {/* 招待管理（アコーディオン） */}
+        <InviteSection groupId={activeGroupId} />
+
+        {/* 危険な操作 */}
+        <DangerZoneCard preloadedGroupDetails={groupDetails} />
       </div>
     </div>
   );
