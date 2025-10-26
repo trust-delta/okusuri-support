@@ -199,7 +199,8 @@ export function PrescriptionBasedRecorder({
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                           {groupBy === "timing" && item.prescriptionName}
-                          {item.dosage && ` · ${item.dosage}`}
+                          {item.dosage &&
+                            ` · ${item.dosage.amount}${item.dosage.unit}`}
                         </div>
                       </div>
                       <MedicationRecordActions

@@ -10,14 +10,21 @@ import type { Id } from "@/schema";
 import {
   CalendarView,
   DailyRecordDetail,
-  MonthlyStatsCard,
+  FilteredRecordsList,
+  RecordFilters,
+  type FilterState,
 } from "./_components";
 
 export default function HistoryPage() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(today);
+  const [filters, setFilters] = useState<FilterState>({
+    searchQuery: "",
+    status: "all",
+    timing: "all",
+  });
   const searchParams = useSearchParams();
 
   // グループステータスを取得
@@ -28,9 +35,21 @@ export default function HistoryPage() {
   const activeGroupId =
     urlGroupId || groupStatus?.activeGroupId || groupStatus?.groups[0]?.groupId;
 
-  // 月別統計を取得
+  // カレンダー表示用の日別統計を取得
   const stats = useQuery(
     api.medications.getMonthlyStats,
+    activeGroupId
+      ? {
+          groupId: activeGroupId,
+          year,
+          month,
+        }
+      : "skip",
+  );
+
+  // フィルター用の月別記録を取得
+  const monthlyRecords = useQuery(
+    api.medications.getMonthlyRecords,
     activeGroupId
       ? {
           groupId: activeGroupId,
@@ -91,15 +110,13 @@ export default function HistoryPage() {
           記録履歴
         </h1>
 
-        {/* 2カラムレイアウト: PC表示では横並び、モバイルでは縦並び */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 月別統計 */}
-          <div className="lg:col-span-2">
-            <MonthlyStatsCard stats={stats} />
-          </div>
+        {/* フィルター */}
+        <RecordFilters filters={filters} onFiltersChange={setFilters} />
 
+        {/* 2カラムレイアウト */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* カレンダービュー */}
-          <div className="lg:col-span-1">
+          <div>
             <CalendarView
               year={year}
               month={month}
@@ -108,13 +125,20 @@ export default function HistoryPage() {
               onMonthChange={handleMonthChange}
             />
           </div>
+
+          {/* フィルター結果 */}
+          <div>
+            <FilteredRecordsList records={monthlyRecords} filters={filters} />
+          </div>
         </div>
 
-        {/* 日別詳細（全幅） */}
-        <DailyRecordDetail
-          groupId={activeGroupId}
-          selectedDate={selectedDate}
-        />
+        {/* 日別詳細（選択時のみ表示） */}
+        {selectedDate && (
+          <DailyRecordDetail
+            groupId={activeGroupId}
+            selectedDate={selectedDate}
+          />
+        )}
       </div>
     </div>
   );

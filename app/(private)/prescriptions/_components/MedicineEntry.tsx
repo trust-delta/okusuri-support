@@ -5,11 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface MedicineData {
   id: string;
   name: string;
-  dosage: string;
+  dosage: {
+    amount: string; // フォームでは文字列として扱う
+    unit: string;
+  };
   timings: {
     morning: boolean;
     noon: boolean;
@@ -19,6 +29,16 @@ export interface MedicineData {
   };
   description?: string;
 }
+
+const UNIT_OPTIONS = [
+  { value: "回", label: "回" },
+  { value: "錠", label: "錠" },
+  { value: "カプセル", label: "カプセル" },
+  { value: "包", label: "包" },
+  { value: "mg", label: "mg" },
+  { value: "g", label: "g" },
+  { value: "mL", label: "mL" },
+] as const;
 
 interface MedicineEntryProps {
   index: number;
@@ -71,26 +91,58 @@ export function MedicineEntry({
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor={`medicine-${index}-name`}>薬名 *</Label>
-          <Input
-            id={`medicine-${index}-name`}
-            value={medicine.name}
-            onChange={(e) => onChange({ ...medicine, name: e.target.value })}
-            placeholder="例: ロキソニン"
-            required
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor={`medicine-${index}-name`}>薬名 *</Label>
+        <Input
+          id={`medicine-${index}-name`}
+          value={medicine.name}
+          onChange={(e) => onChange({ ...medicine, name: e.target.value })}
+          placeholder="例: ロキソニン"
+          required
+        />
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor={`medicine-${index}-dosage`}>用量</Label>
-          <Input
-            id={`medicine-${index}-dosage`}
-            value={medicine.dosage}
-            onChange={(e) => onChange({ ...medicine, dosage: e.target.value })}
-            placeholder="例: 1錠"
-          />
+      <div className="space-y-2">
+        <Label>用量</Label>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Input
+              id={`medicine-${index}-dosage-amount`}
+              type="number"
+              step="1"
+              min="0"
+              value={medicine.dosage.amount}
+              onChange={(e) =>
+                onChange({
+                  ...medicine,
+                  dosage: { ...medicine.dosage, amount: e.target.value },
+                })
+              }
+              placeholder="数量"
+            />
+          </div>
+          <div className="w-32">
+            <Select
+              value={medicine.dosage.unit}
+              onValueChange={(value) =>
+                onChange({
+                  ...medicine,
+                  dosage: { ...medicine.dosage, unit: value },
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="単位" />
+              </SelectTrigger>
+              <SelectContent>
+                {UNIT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 

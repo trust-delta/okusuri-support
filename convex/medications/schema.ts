@@ -52,7 +52,13 @@ export const medicinesSchema = {
         v.literal("asNeeded"), // 頓服
       ),
     ),
-    dosage: v.optional(v.string()), // 用量 (例: "1錠", "2カプセル")
+    // 用量（数値化）
+    dosage: v.optional(
+      v.object({
+        amount: v.number(), // 数値（例: 10, 1.5）
+        unit: v.string(), // 単位（例: "mg", "錠", "mL", "カプセル", "g"）
+      }),
+    ),
     notes: v.optional(v.string()), // メモ
     createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
@@ -142,4 +148,15 @@ export const medicinesSchema = {
     .index("by_groupId", ["groupId"])
     .index("by_patientId", ["patientId"])
     .index("by_archivedAt", ["archivedAt"]), // 特定タイミングの記録を効率的に取得
+
+  // 薬名統合グループ: 表記ゆれを統合するための設定
+  medicineGroups: defineTable({
+    groupId: v.id("groups"),
+    canonicalName: v.string(), // 代表名（例: "ロキソニン"）
+    medicineNames: v.array(v.string()), // 統合する薬名リスト
+    notes: v.optional(v.string()), // メモ
+    createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_groupId", ["groupId"]),
 };

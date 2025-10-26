@@ -40,7 +40,10 @@ export function PrescriptionFormWithMedicines({
       {
         id: crypto.randomUUID(),
         name: "",
-        dosage: "",
+        dosage: {
+          amount: "",
+          unit: "回",
+        },
         timings: {
           morning: false,
           noon: false,
@@ -98,16 +101,27 @@ export function PrescriptionFormWithMedicines({
 
     try {
       // 薬のデータを変換
-      const medicinesData = medicines.map((med) => ({
-        name: med.name.trim(),
-        dosage: med.dosage.trim() || undefined,
-        timings: Object.entries(med.timings)
-          .filter(([_, selected]) => selected)
-          .map(([timing]) => timing) as Array<
-          "morning" | "noon" | "evening" | "bedtime" | "asNeeded"
-        >,
-        description: med.description,
-      }));
+      const medicinesData = medicines.map((med) => {
+        // 用量が入力されている場合は数値化
+        const dosage =
+          med.dosage.amount && med.dosage.unit
+            ? {
+                amount: Number.parseFloat(med.dosage.amount),
+                unit: med.dosage.unit,
+              }
+            : undefined;
+
+        return {
+          name: med.name.trim(),
+          dosage,
+          timings: Object.entries(med.timings)
+            .filter(([_, selected]) => selected)
+            .map(([timing]) => timing) as Array<
+            "morning" | "noon" | "evening" | "bedtime" | "asNeeded"
+          >,
+          description: med.description,
+        };
+      });
 
       await createPrescription({
         groupId,

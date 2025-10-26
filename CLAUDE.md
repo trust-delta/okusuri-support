@@ -11,8 +11,8 @@
 
 ### 参照すべきドキュメント
 
-- [.context/README.md](./.context/README.md) - コンテキストディレクトリ全体の説明
-- [.context/context/](./.context/context/) - プロジェクト情報、アーキテクチャ、技術スタック、ADR
+- [.context/context/](./.context/context/) - プロジェクト情報、アーキテクチャ、技術スタック
+- [.context/decisions/](./.context/decisions/) - ADR
 - [.context/runbook/](./.context/runbook/) - 作業手順書
 - [.context/spec/](./.context/spec/) - 詳細仕様書
 
@@ -28,7 +28,7 @@
 
 ## アーキテクチャ・設計判断
 
-- `.context/decisions/adr/` に記載されたArchitecture Decision Record (ADR)を尊重すること
+- `.context/decisions/` に記載されたArchitecture Decision Record (ADR)を尊重すること
 - ADRで決定された技術選定や設計方針に従うこと
 - 新たな技術的決定を行う場合は、ADRとして記録することを提案すること
 

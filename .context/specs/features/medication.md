@@ -63,7 +63,10 @@
   medicineId: Id<"medicines">,
   groupId: Id<"groups">,
   timings: ("morning" | "noon" | "evening" | "bedtime" | "asNeeded")[],
-  dosage?: string,            // 例: "1錠", "2カプセル"
+  dosage?: {
+    amount: number,           // 例: 1, 2, 10
+    unit: string,             // 例: "錠", "カプセル", "mg", "mL", "g", "回"
+  },
   notes?: string,
   createdBy: string,
   createdAt: number,
@@ -136,6 +139,28 @@
 - `by_patientId`: 患者別履歴
 - `by_archivedAt`: アーカイブ日時
 
+### 6. medicineGroups（薬名統合グループ）
+
+```typescript
+{
+  _id: Id<"medicineGroups">,
+  groupId: Id<"groups">,
+  canonicalName: string,           // 代表名（統計に表示される名前）
+  medicineNames: string[],         // 統合する薬名の配列
+  notes?: string,
+  createdBy: string,
+  createdAt: number,
+  updatedAt: number,
+}
+```
+
+**用途**:
+- 薬名の表記ゆれを統一して統計を正確に表示
+- 例: "ロキソニン", "ロキソニン錠", "ロキソニン錠60mg" → "ロキソニン" に統合
+
+**インデックス**:
+- `by_groupId`: グループ別グループ一覧
+
 ---
 
 ## 機能
@@ -156,7 +181,10 @@
       name: string,
       description?: string,
       timings: Timing[],
-      dosage?: string,
+      dosage?: {
+        amount: number,
+        unit: string,
+      },
       scheduleNotes?: string,
     }>,
   },
@@ -410,7 +438,10 @@
     medicineName: string,
     scheduleId: string,
     timings: string[],
-    dosage?: string,
+    dosage?: {
+      amount: number,
+      unit: string,
+    },
   }>
 }
 ```
@@ -651,6 +682,238 @@ adherenceRate = (taken / (taken + skipped + pending)) * 100
 
 ---
 
+## 薬名グルーピング機能
+
+### 概要
+
+薬名の表記ゆれ（例: "ロキソニン", "ロキソニン錠", "ロキソニン錠60mg"）により、統計が分散してしまう問題を解決するため、ユーザーが手動で薬名を統合できる機能。
+
+### 目的
+
+- 統計情報を正確に集計
+- ユーザー主導のデータ品質管理
+- 柔軟な薬名管理
+
+### API
+
+#### 薬名グループ作成
+**API**: `medications.groups.mutations.createMedicineGroup`
+```typescript
+{
+  args: {
+    groupId: Id<"groups">,
+    canonicalName: string,    // 代表名
+    medicineNames: string[],  // 統合する薬名リスト
+    notes?: string,
+  },
+  returns: Id<"medicineGroups">
+}
+```
+
+**バリデーション**:
+- 同じ薬名が複数のグループに含まれないようチェック
+- 空の薬名リストは許可しない
+
+#### 薬名グループ更新
+**API**: `medications.groups.mutations.updateMedicineGroup`
+```typescript
+{
+  args: {
+    groupId: Id<"medicineGroups">,
+    canonicalName?: string,
+    medicineNames?: string[],
+    notes?: string,
+  },
+  returns: void
+}
+```
+
+#### 薬名グループ削除
+**API**: `medications.groups.mutations.deleteMedicineGroup`
+```typescript
+{
+  args: {
+    groupId: Id<"medicineGroups">,
+  },
+  returns: void
+}
+```
+
+#### 薬名グループ一覧取得
+**API**: `medications.groups.queries.getMedicineGroups`
+```typescript
+{
+  args: {
+    groupId: Id<"groups">,
+  },
+  returns: Array<MedicineGroup>
+}
+```
+
+#### 類似薬名検索
+**API**: `medications.groups.queries.findSimilarMedicineNames`
+```typescript
+{
+  args: {
+    groupId: Id<"groups">,
+    medicineName: string,
+    threshold?: number,       // デフォルト: 0.6
+  },
+  returns: Array<{
+    name: string,
+    similarity: number,
+  }>
+}
+```
+
+**アルゴリズム**: Levenshtein距離を用いた類似度計算
+
+### 統合の適用
+
+統計クエリ内で `applyMedicineGrouping` ヘルパー関数を使用し、薬名グループに基づいて統計データを自動的に統合。
+
+---
+
+## 統計機能
+
+### 概要
+
+期間別の服薬統計を提供し、薬別の服薬状況、用量、服薬率を可視化。
+
+### 目的
+
+- 期間別の服薬状況の把握
+- 薬別の服薬量と回数の追跡
+- 服薬継続率の分析
+
+### API
+
+#### 期間別薬剤統計取得
+**API**: `medications.statistics.queries.getMedicationStatsByPeriod`
+```typescript
+{
+  args: {
+    groupId: Id<"groups">,
+    patientId?: string,
+    medicineId?: Id<"medicines">,  // 特定の薬に絞る場合
+    startDate: string,              // YYYY-MM-DD
+    endDate: string,                // YYYY-MM-DD
+  },
+  returns: {
+    medicines: Array<MedicineStats>,
+    summary: {
+      totalMedicines: number,
+      totalDoses: number,
+      totalTaken: number,
+      totalSkipped: number,
+      totalPending: number,
+      overallAdherenceRate: number,
+    },
+    period: {
+      startDate: string,
+      endDate: string,
+      days: number,
+    },
+  }
+}
+```
+
+**MedicineStats型**:
+```typescript
+interface MedicineStats {
+  medicineId?: Id<"medicines">,
+  medicineName: string,
+  totalAmount: number,           // 合計用量
+  unit: string,                  // 単位
+  totalDoses: number,            // 合計服用予定回数
+  takenCount: number,            // 実際に服用した回数
+  skippedCount: number,          // スキップした回数
+  pendingCount: number,          // 未記録の回数
+  adherenceRate: number,         // 服用率（%）
+}
+```
+
+### 計算ロジック
+
+1. **期間内の日付を生成**: `generateDateRange` で全日付を列挙
+2. **各日の有効な処方箋を取得**: `isDateInRange` で処方箋の有効性を判定
+3. **期待値を計算**: 各日の薬ごとのタイミング数を集計（頓服を除く）
+4. **実際の記録を取得**: 期間内の服薬記録を集計
+5. **薬名グルーピングを適用**: `applyMedicineGrouping` で統計を統合
+6. **服薬率を計算**: `takenCount / totalDoses * 100`
+
+### ヘルパー関数
+
+#### applyMedicineGrouping
+```typescript
+async function applyMedicineGrouping(
+  ctx: QueryCtx,
+  groupId: Id<"groups">,
+  stats: Record<string, MedicineStats>,
+): Promise<Record<string, MedicineStats>>
+```
+
+**処理内容**:
+- 薬名グループ設定を取得
+- グループ内の薬の統計を統合
+- 単位の不一致を警告
+- 服薬率を再計算
+
+#### generateDateRange
+```typescript
+function generateDateRange(startDate: string, endDate: string): string[]
+```
+
+**処理内容**: 開始日から終了日までの日付配列を生成
+
+#### isDateInRange
+```typescript
+function isDateInRange(
+  date: string,
+  startDate: string,
+  endDate?: string,
+): boolean
+```
+
+**処理内容**: 指定日が処方箋の有効期間内かを判定
+
+### UI コンポーネント
+
+#### 統計ページ (`/statistics`)
+- 期間選択（クイックプリセット + カスタム日付）
+- サマリー表示（合計薬数、服薬回数、服薬率）
+- 薬別統計リスト（用量、回数、服薬率）
+- 類似薬名警告
+- 薬名統合ダイアログ
+
+#### PeriodSelector
+- 過去7日、過去30日、今月、先月のクイックプリセット
+- カスタム開始日・終了日入力
+
+#### StatsSummary
+- 合計薬数、合計服用予定回数、実際に服用した回数
+- スキップした回数、未記録の回数
+- 全体の服薬率（プログレスバー表示）
+
+#### MedicineStatsList
+- 薬別の詳細統計（用量、回数、服薬率）
+- 類似薬名がある場合の警告表示
+- 統合ボタンで MedicineGroupDialog を開く
+
+#### MedicineGroupDialog
+- 代表名入力
+- 統合する薬名の選択（チェックボックス）
+- カスタム薬名追加
+- 統合実行
+
+### 注意事項
+
+- 頓服（asNeeded）は統計から除外
+- 単位の不一致がある場合は警告を表示
+- グルーピング適用後は元の薬名ごとの統計は表示されない
+
+---
+
 ## 制限事項
 
 - **簡易服薬記録**: medicineId未設定の記録も可能（柔軟性）
@@ -686,3 +949,4 @@ adherenceRate = (taken / (taken + skipped + pending)) * 100
 - [グループ管理](group.md)
 - [アーキテクチャ](../../architecture.md)
 - [処方箋管理機能の導入 ADR](../../decisions/2025-10-26-prescription-management.md)
+- [服薬統計機能とデータ品質管理 ADR](../../decisions/2025-10-26-medication-statistics.md)

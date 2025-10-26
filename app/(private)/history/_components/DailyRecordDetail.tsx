@@ -233,7 +233,8 @@ export function DailyRecordDetail({
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                           {item.prescriptionName}
-                          {item.dosage && ` · ${item.dosage}`}
+                          {item.dosage &&
+                            ` · ${item.dosage.amount}${item.dosage.unit}`}
                         </div>
                         {record?.notes && (
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded">

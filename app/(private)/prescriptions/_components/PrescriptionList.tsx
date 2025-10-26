@@ -116,7 +116,8 @@ function PrescriptionMedicinesList({
                 )}
                 {medicine.schedule?.dosage && (
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    用量: {medicine.schedule.dosage}
+                    用量: {medicine.schedule.dosage.amount}
+                    {medicine.schedule.dosage.unit}
                   </div>
                 )}
                 {medicine.description && (

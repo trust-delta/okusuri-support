@@ -3,7 +3,6 @@ import { preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
 import { api } from "@/api";
 import { AccountCard } from "./_components/AccountCard";
-import { InvitationSection } from "./_components/InvitationSection";
 import { ProfileCard } from "./_components/ProfileCard";
 import { ThemeCard } from "./_components/ThemeCard";
 
@@ -40,9 +39,6 @@ export default async function SettingsPage() {
 
           {/* テーマ設定 */}
           <ThemeCard />
-
-          {/* グループ招待管理 */}
-          <InvitationSection preloadedGroupStatus={groupStatus} />
 
           {/* アカウント設定 */}
           <AccountCard />

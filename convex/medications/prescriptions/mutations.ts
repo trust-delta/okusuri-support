@@ -16,7 +16,12 @@ export const createPrescription = mutation({
       v.array(
         v.object({
           name: v.string(),
-          dosage: v.optional(v.string()),
+          dosage: v.optional(
+            v.object({
+              amount: v.number(),
+              unit: v.string(),
+            }),
+          ),
           timings: v.array(
             v.union(
               v.literal("morning"),

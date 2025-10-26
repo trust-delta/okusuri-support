@@ -36,7 +36,7 @@ export async function getActiveMedicationsForDate(
     medicineName: string;
     scheduleId: Id<"medicationSchedules">;
     timings: string[];
-    dosage?: string;
+    dosage?: { amount: number; unit: string };
   }> = [];
 
   for (const prescription of activePrescriptions) {

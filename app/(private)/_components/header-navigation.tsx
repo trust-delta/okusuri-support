@@ -1,6 +1,6 @@
 "use client";
 
-import { History, Home, Pill, Settings, Users } from "lucide-react";
+import { BarChart3, History, Home, Pill, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,12 @@ export function HeaderNavigation() {
         <Button variant="ghost" size="icon">
           <History className="h-5 w-5" />
           <span className="sr-only">記録履歴</span>
+        </Button>
+      </Link>
+      <Link href={`/statistics${groupIdParam}`}>
+        <Button variant="ghost" size="icon">
+          <BarChart3 className="h-5 w-5" />
+          <span className="sr-only">統計</span>
         </Button>
       </Link>
       <Link href={`/prescriptions${groupIdParam}`}>
