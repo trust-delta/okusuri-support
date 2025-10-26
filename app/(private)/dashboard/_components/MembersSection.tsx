@@ -12,5 +12,10 @@ interface MembersSectionProps {
 export function MembersSection({ preloadedGroupMembers }: MembersSectionProps) {
   const groupMembers = usePreloadedQuery(preloadedGroupMembers);
 
+  // メンバー情報が取得できない場合は何も表示しない
+  if (!groupMembers) {
+    return null;
+  }
+
   return <GroupMembersList members={groupMembers} />;
 }
