@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "convex/react";
 import { Pill } from "lucide-react";
+import { useState } from "react";
 import { api } from "@/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -106,12 +106,7 @@ export function PrescriptionBasedRecorder({
       medicineName: med.medicineName,
       prescriptionId: med.prescriptionId,
       prescriptionName: med.prescriptionName,
-      timing: timing as
-        | "morning"
-        | "noon"
-        | "evening"
-        | "bedtime"
-        | "asNeeded",
+      timing: timing as "morning" | "noon" | "evening" | "bedtime" | "asNeeded",
       dosage: med.dosage,
     })),
   );
@@ -154,7 +149,10 @@ export function PrescriptionBasedRecorder({
             <Pill className="h-5 w-5" />
             今日の服薬記録 ({formatJST(nowJST(), "M月d日(E)")})
           </CardTitle>
-          <Select value={groupBy} onValueChange={(v) => setGroupBy(v as typeof groupBy)}>
+          <Select
+            value={groupBy}
+            onValueChange={(v) => setGroupBy(v as typeof groupBy)}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -178,7 +176,8 @@ export function PrescriptionBasedRecorder({
               {items.map((item, index) => {
                 const record = records?.find(
                   (r) =>
-                    r.medicineId === item.medicineId && r.timing === item.timing,
+                    r.medicineId === item.medicineId &&
+                    r.timing === item.timing,
                 );
 
                 return (

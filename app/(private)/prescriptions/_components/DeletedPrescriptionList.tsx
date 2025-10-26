@@ -1,7 +1,13 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { Calendar, ChevronDown, ChevronUp, RotateCcw, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
@@ -20,7 +26,7 @@ interface DeletedPrescriptionListProps {
   groupId: Id<"groups">;
 }
 
-const TIMING_LABELS: Record<string, string> = {
+const _TIMING_LABELS: Record<string, string> = {
   morning: "朝",
   noon: "昼",
   evening: "晩",
@@ -46,8 +52,12 @@ function DeletedPrescriptionMedicinesList({
   );
 }
 
-export function DeletedPrescriptionList({ groupId }: DeletedPrescriptionListProps) {
-  const [expandedPrescriptions, setExpandedPrescriptions] = useState<Set<string>>(new Set());
+export function DeletedPrescriptionList({
+  groupId,
+}: DeletedPrescriptionListProps) {
+  const [expandedPrescriptions, setExpandedPrescriptions] = useState<
+    Set<string>
+  >(new Set());
 
   const deletedPrescriptions = useQuery(
     api.medications.prescriptions.queries.getDeletedPrescriptions,
@@ -134,7 +144,10 @@ export function DeletedPrescriptionList({ groupId }: DeletedPrescriptionListProp
           {deletedPrescriptions.map((prescription) => {
             const isExpanded = expandedPrescriptions.has(prescription._id);
             return (
-              <Card key={prescription._id} className="border-red-200 dark:border-red-900">
+              <Card
+                key={prescription._id}
+                className="border-red-200 dark:border-red-900"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -151,12 +164,9 @@ export function DeletedPrescriptionList({ groupId }: DeletedPrescriptionListProp
                           <Calendar className="h-4 w-4" />
                           {formatDate(prescription.startDate)}
                           {prescription.endDate && (
-                            <>
-                              {" "}
-                              〜 {formatDate(prescription.endDate)}
-                            </>
+                            <> 〜 {formatDate(prescription.endDate)}</>
                           )}
-                          {!prescription.endDate && <> 〜 継続中</>}
+                          {!prescription.endDate && "〜 継続中"}
                         </span>
                         {prescription.deletedAt && (
                           <span className="text-xs text-red-600 dark:text-red-400">
@@ -202,7 +212,9 @@ export function DeletedPrescriptionList({ groupId }: DeletedPrescriptionListProp
                       </p>
                     )}
                     {isExpanded && (
-                      <DeletedPrescriptionMedicinesList prescriptionId={prescription._id} />
+                      <DeletedPrescriptionMedicinesList
+                        prescriptionId={prescription._id}
+                      />
                     )}
                   </CardContent>
                 )}

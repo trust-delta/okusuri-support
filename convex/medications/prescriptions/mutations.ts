@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * 処方箋を作成（薬も一緒に登録）
@@ -134,7 +134,8 @@ export const updatePrescription = mutation({
 
     // 更新後の値を計算
     const newStartDate = args.startDate ?? prescription.startDate;
-    const newEndDate = args.endDate !== undefined ? args.endDate : prescription.endDate;
+    const newEndDate =
+      args.endDate !== undefined ? args.endDate : prescription.endDate;
 
     // 日付の妥当性チェック
     if (newEndDate && newStartDate > newEndDate) {
@@ -194,7 +195,9 @@ export const deletePrescription = mutation({
     // この処方箋に紐付く薬を取得
     const relatedMedicines = await ctx.db
       .query("medicines")
-      .withIndex("by_prescriptionId", (q) => q.eq("prescriptionId", args.prescriptionId))
+      .withIndex("by_prescriptionId", (q) =>
+        q.eq("prescriptionId", args.prescriptionId),
+      )
       .collect();
 
     // 紐付く薬に服薬記録があるかチェック
@@ -280,6 +283,100 @@ export const deletePrescription = mutation({
 });
 
 /**
+ * 処方箋を無効化（isActiveをfalseに設定）
+ */
+export const deactivatePrescription = mutation({
+  args: {
+    prescriptionId: v.id("prescriptions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    const prescription = await ctx.db.get(args.prescriptionId);
+    if (!prescription) {
+      throw new Error("処方箋が見つかりません");
+    }
+
+    // 既に論理削除されている場合はエラー
+    if (prescription.deletedAt !== undefined) {
+      throw new Error("削除された処方箋は無効化できません");
+    }
+
+    // 既に無効化されている場合はエラー
+    if (!prescription.isActive) {
+      throw new Error("この処方箋は既に無効化されています");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), prescription.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    // isActiveをfalseに設定
+    await ctx.db.patch(args.prescriptionId, {
+      isActive: false,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * 処方箋を有効化（isActiveをtrueに設定）
+ */
+export const activatePrescription = mutation({
+  args: {
+    prescriptionId: v.id("prescriptions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("認証が必要です");
+    }
+
+    const prescription = await ctx.db.get(args.prescriptionId);
+    if (!prescription) {
+      throw new Error("処方箋が見つかりません");
+    }
+
+    // 既に論理削除されている場合はエラー
+    if (prescription.deletedAt !== undefined) {
+      throw new Error("削除された処方箋は有効化できません");
+    }
+
+    // 既に有効化されている場合はエラー
+    if (prescription.isActive) {
+      throw new Error("この処方箋は既に有効化されています");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), prescription.groupId))
+      .first();
+
+    if (!membership) {
+      throw new Error("このグループのメンバーではありません");
+    }
+
+    // isActiveをtrueに設定
+    await ctx.db.patch(args.prescriptionId, {
+      isActive: true,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
  * 論理削除された処方箋を復元
  */
 export const restorePrescription = mutation({
@@ -322,7 +419,9 @@ export const restorePrescription = mutation({
     // この処方箋に紐付く薬を取得（削除されたものも含む）
     const relatedMedicines = await ctx.db
       .query("medicines")
-      .withIndex("by_prescriptionId", (q) => q.eq("prescriptionId", args.prescriptionId))
+      .withIndex("by_prescriptionId", (q) =>
+        q.eq("prescriptionId", args.prescriptionId),
+      )
       .collect();
 
     // 薬とスケジュールと記録を復元

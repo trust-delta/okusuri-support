@@ -40,7 +40,9 @@ export const getTodayRecords = query({
       records = await ctx.db
         .query("medicationRecords")
         .withIndex("by_patientId_scheduledDate", (q) =>
-          q.eq("patientId", targetPatientId).eq("scheduledDate", args.scheduledDate),
+          q
+            .eq("patientId", targetPatientId)
+            .eq("scheduledDate", args.scheduledDate),
         )
         .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .collect();
@@ -146,7 +148,7 @@ async function getActivePrescriptionsForDate(
   const allPrescriptions = await ctx.db
     .query("prescriptions")
     .withIndex("by_groupId_isActive", (q: any) =>
-      q.eq("groupId", groupId).eq("isActive", true)
+      q.eq("groupId", groupId).eq("isActive", true),
     )
     .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
     .collect();
@@ -190,13 +192,17 @@ async function calculateExpectedCountForPrescriptions(
     for (const medicine of medicines) {
       const schedule = await ctx.db
         .query("medicationSchedules")
-        .withIndex("by_medicineId", (q: any) => q.eq("medicineId", medicine._id))
+        .withIndex("by_medicineId", (q: any) =>
+          q.eq("medicineId", medicine._id),
+        )
         .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
         .first();
 
-      if (schedule && schedule.timings) {
+      if (schedule?.timings) {
         // 頓服を除いた定期服用のタイミング数をカウント
-        const regularTimings = schedule.timings.filter((t: string) => t !== "asNeeded");
+        const regularTimings = schedule.timings.filter(
+          (t: string) => t !== "asNeeded",
+        );
         expectedCount += regularTimings.length;
       }
     }
@@ -342,8 +348,10 @@ export const getMonthlyStats = query({
       );
 
       // 処方箋から期待値を計算
-      const expectedDailyCount =
-        await calculateExpectedCountForPrescriptions(ctx, activePrescriptions);
+      const expectedDailyCount = await calculateExpectedCountForPrescriptions(
+        ctx,
+        activePrescriptions,
+      );
 
       expectedTotalCount += expectedDailyCount;
 
@@ -384,7 +392,10 @@ export const getMonthlyStats = query({
     // 実際にDBにあるレコード数
     const actualRecordCount = totalTaken + totalSkipped + totalPending;
     // 期待される回数との差分を未記録（pending）として加算
-    const missingRecordCount = Math.max(0, expectedTotalCount - actualRecordCount);
+    const missingRecordCount = Math.max(
+      0,
+      expectedTotalCount - actualRecordCount,
+    );
     totalPending += missingRecordCount;
 
     // 全体服用率を計算（定期服用のみ、pending含む、レコードがない日も含む）
@@ -409,4 +420,4 @@ export const getMonthlyStats = query({
       },
     };
   },
-});;;;;
+});

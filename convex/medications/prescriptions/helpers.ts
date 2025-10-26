@@ -12,7 +12,7 @@ export async function getActiveMedicationsForDate(
   const allPrescriptions = await ctx.db
     .query("prescriptions")
     .withIndex("by_groupId_isActive", (q: any) =>
-      q.eq("groupId", groupId).eq("isActive", true)
+      q.eq("groupId", groupId).eq("isActive", true),
     )
     .filter((q) => q.eq(q.field("deletedAt"), undefined))
     .collect();
@@ -50,11 +50,13 @@ export async function getActiveMedicationsForDate(
     for (const medicine of medicines) {
       const schedule = await ctx.db
         .query("medicationSchedules")
-        .withIndex("by_medicineId", (q: any) => q.eq("medicineId", medicine._id))
+        .withIndex("by_medicineId", (q: any) =>
+          q.eq("medicineId", medicine._id),
+        )
         .filter((q) => q.eq(q.field("deletedAt"), undefined))
         .first();
 
-      if (schedule && schedule.timings) {
+      if (schedule?.timings) {
         medications.push({
           prescriptionId: prescription._id,
           prescriptionName: prescription.name,

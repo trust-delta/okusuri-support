@@ -96,25 +96,25 @@ export function MedicineEntry({
       <div className="space-y-2">
         <Label>服用タイミング *（複数選択可）</Label>
         <div className="flex flex-wrap gap-4">
-          {(Object.keys(TIMING_LABELS) as Array<keyof typeof TIMING_LABELS>).map(
-            (timing) => (
-              <div key={timing} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`medicine-${index}-timing-${timing}`}
-                  checked={medicine.timings[timing]}
-                  onCheckedChange={(checked) =>
-                    handleTimingChange(timing, checked as boolean)
-                  }
-                />
-                <label
-                  htmlFor={`medicine-${index}-timing-${timing}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {TIMING_LABELS[timing]}
-                </label>
-              </div>
-            ),
-          )}
+          {(
+            Object.keys(TIMING_LABELS) as Array<keyof typeof TIMING_LABELS>
+          ).map((timing) => (
+            <div key={timing} className="flex items-center space-x-2">
+              <Checkbox
+                id={`medicine-${index}-timing-${timing}`}
+                checked={medicine.timings[timing]}
+                onCheckedChange={(checked) =>
+                  handleTimingChange(timing, checked as boolean)
+                }
+              />
+              <label
+                htmlFor={`medicine-${index}-timing-${timing}`}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {TIMING_LABELS[timing]}
+              </label>
+            </div>
+          ))}
         </div>
       </div>
     </div>

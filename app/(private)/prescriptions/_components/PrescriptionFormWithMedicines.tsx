@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Id } from "@/schema";
-import { MedicineEntry, type MedicineData } from "./MedicineEntry";
+import { type MedicineData, MedicineEntry } from "./MedicineEntry";
 
 interface PrescriptionFormWithMedicinesProps {
   groupId: Id<"groups">;
@@ -187,7 +187,12 @@ export function PrescriptionFormWithMedicines({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">薬リスト</h3>
-          <Button type="button" variant="outline" size="sm" onClick={addMedicine}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addMedicine}
+          >
             <Plus className="h-4 w-4 mr-2" />
             薬を追加
           </Button>

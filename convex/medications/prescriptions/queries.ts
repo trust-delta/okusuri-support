@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { getActiveMedicationsForDate } from "./helpers";
 
 /**
@@ -148,7 +148,9 @@ export const getPrescriptionMedicines = query({
     // この処方箋に紐付く薬を取得
     const medicines = await ctx.db
       .query("medicines")
-      .withIndex("by_prescriptionId", (q) => q.eq("prescriptionId", args.prescriptionId))
+      .withIndex("by_prescriptionId", (q) =>
+        q.eq("prescriptionId", args.prescriptionId),
+      )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 

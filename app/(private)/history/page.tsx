@@ -27,9 +27,7 @@ export default function HistoryPage() {
   // URLパラメータからgroupIdを取得、なければDBのactiveGroupIdまたは最初のグループ
   const urlGroupId = searchParams.get("groupId") as Id<"groups"> | null;
   const activeGroupId =
-    urlGroupId ||
-    groupStatus?.activeGroupId ||
-    groupStatus?.groups[0]?.groupId;
+    urlGroupId || groupStatus?.activeGroupId || groupStatus?.groups[0]?.groupId;
 
   // 月別統計を取得
   const stats = useQuery(

@@ -12,10 +12,30 @@ interface MonthlyStatsCardProps {
         totalPending: number;
         adherenceRate: number;
         timingStats: {
-          morning: { taken: number; skipped: number; pending: number; rate: number };
-          noon: { taken: number; skipped: number; pending: number; rate: number };
-          evening: { taken: number; skipped: number; pending: number; rate: number };
-          bedtime: { taken: number; skipped: number; pending: number; rate: number };
+          morning: {
+            taken: number;
+            skipped: number;
+            pending: number;
+            rate: number;
+          };
+          noon: {
+            taken: number;
+            skipped: number;
+            pending: number;
+            rate: number;
+          };
+          evening: {
+            taken: number;
+            skipped: number;
+            pending: number;
+            rate: number;
+          };
+          bedtime: {
+            taken: number;
+            skipped: number;
+            pending: number;
+            rate: number;
+          };
         };
         asNeeded: {
           taken: number;
@@ -88,9 +108,7 @@ export function MonthlyStatsCard({ stats }: MonthlyStatsCardProps) {
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                未記録
-              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">未記録</p>
               <p className="text-lg font-semibold text-gray-600 dark:text-gray-400">
                 {stats.totalPending}
               </p>
@@ -136,9 +154,7 @@ export function MonthlyStatsCard({ stats }: MonthlyStatsCardProps) {
             </h4>
             <div className="grid grid-cols-3 gap-4 text-center text-sm">
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  服用
-                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">服用</p>
                 <p className="font-semibold text-blue-600 dark:text-blue-400">
                   {stats.asNeeded.taken}回
                 </p>
@@ -152,9 +168,7 @@ export function MonthlyStatsCard({ stats }: MonthlyStatsCardProps) {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  保留
-                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">保留</p>
                 <p className="font-semibold text-gray-600 dark:text-gray-400">
                   {stats.asNeeded.pending}回
                 </p>

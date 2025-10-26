@@ -242,6 +242,58 @@
 - deletedAt, deletedByをundefinedに戻す
 - 関連するmedicines, schedules, recordsも全て復元
 
+#### 処方箋の無効化
+**API**: `prescriptions.mutations.deactivatePrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+  },
+  returns: void
+}
+```
+
+**挙動**:
+- `isActive` を `false` に設定
+- 既存の服薬記録は保持される
+- 新規の服薬記録は作成できなくなる（有効な薬剤の取得から除外される）
+
+**用途**:
+- 処方が終了した場合
+- 処方内容が変わった場合
+- データを削除せずに処方箋を無効化したい場合
+
+#### 処方箋の有効化
+**API**: `prescriptions.mutations.activatePrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+  },
+  returns: void
+}
+```
+
+**挙動**:
+- `isActive` を `true` に設定
+- 無効化した処方箋を再度有効にする
+
+#### 処方箋の終了日設定
+**既存の機能**: `prescriptions.mutations.updatePrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+    endDate: string,  // YYYY-MM-DD
+  },
+  returns: Id<"prescriptions">
+}
+```
+
+**用途**:
+- 継続中（`endDate` 未設定）の処方箋に終了日を設定
+- 期限が明確な処方に変更する
+
 ### 2. 有効な薬剤の取得
 
 #### 指定日に有効な薬剤を取得

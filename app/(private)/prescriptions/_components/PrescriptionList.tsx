@@ -1,10 +1,20 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { Calendar, ChevronDown, ChevronUp, Pill, Plus, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Pause,
+  Pill,
+  Play,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,15 +27,18 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Id } from "@/schema";
-import { PrescriptionFormWithMedicines } from "./PrescriptionFormWithMedicines";
 
 interface PrescriptionListProps {
   groupId: Id<"groups">;
+  filter: "active" | "inactive";
 }
 
 const TIMING_LABELS: Record<string, string> = {
@@ -111,9 +124,10 @@ function PrescriptionMedicinesList({
   );
 }
 
-export function PrescriptionList({ groupId }: PrescriptionListProps) {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [expandedPrescriptions, setExpandedPrescriptions] = useState<Set<string>>(new Set());
+export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
+  const [expandedPrescriptions, setExpandedPrescriptions] = useState<
+    Set<string>
+  >(new Set());
 
   const prescriptions = useQuery(
     api.medications.prescriptions.queries.getPrescriptions,
@@ -122,6 +136,19 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
   const deletePrescription = useMutation(
     api.medications.prescriptions.mutations.deletePrescription,
   );
+  const deactivatePrescription = useMutation(
+    api.medications.prescriptions.mutations.deactivatePrescription,
+  );
+  const activatePrescription = useMutation(
+    api.medications.prescriptions.mutations.activatePrescription,
+  );
+  const updatePrescription = useMutation(
+    api.medications.prescriptions.mutations.updatePrescription,
+  );
+
+  const [endDateDialogPrescriptionId, setEndDateDialogPrescriptionId] =
+    useState<Id<"prescriptions"> | null>(null);
+  const [endDateInput, setEndDateInput] = useState("");
 
   const toggleExpanded = (prescriptionId: string) => {
     setExpandedPrescriptions((prev) => {
@@ -137,9 +164,7 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
 
   const handleDelete = async (prescriptionId: Id<"prescriptions">) => {
     if (
-      !confirm(
-        "この処方箋を削除しますか？\n（紐付く薬も一緒に削除されます）",
-      )
+      !confirm("この処方箋を削除しますか？\n（紐付く薬も一緒に削除されます）")
     ) {
       return;
     }
@@ -150,6 +175,53 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "処方箋の削除に失敗しました",
+      );
+    }
+  };
+
+  const handleDeactivate = async (prescriptionId: Id<"prescriptions">) => {
+    if (!confirm("この処方箋を無効化しますか？")) {
+      return;
+    }
+
+    try {
+      await deactivatePrescription({ prescriptionId });
+      toast.success("処方箋を無効化しました");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "処方箋の無効化に失敗しました",
+      );
+    }
+  };
+
+  const handleActivate = async (prescriptionId: Id<"prescriptions">) => {
+    try {
+      await activatePrescription({ prescriptionId });
+      toast.success("処方箋を有効化しました");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "処方箋の有効化に失敗しました",
+      );
+    }
+  };
+
+  const handleSetEndDate = async () => {
+    if (!endDateDialogPrescriptionId || !endDateInput) {
+      toast.error("終了日を入力してください");
+      return;
+    }
+
+    try {
+      await updatePrescription({
+        prescriptionId: endDateDialogPrescriptionId,
+        endDate: endDateInput,
+      });
+      toast.success("終了日を設定しました");
+      setEndDateDialogPrescriptionId(null);
+      setEndDateInput("");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "終了日の設定に失敗しました",
       );
     }
   };
@@ -173,59 +245,104 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
     );
   }
 
+  // フィルタ適用
+  const today = new Date().toISOString().split("T")[0];
+  const filteredPrescriptions = prescriptions.filter((prescription) => {
+    const isExpired = prescription.endDate && prescription.endDate < today;
+    const isInactive = !prescription.isActive;
+
+    if (filter === "active") {
+      // 有効な処方箋: 期限内かつアクティブ
+      return !isExpired && !isInactive;
+    } else {
+      // 無効な処方箋: 期限切れまたは無効化済み
+      return isExpired || isInactive;
+    }
+  });
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">処方箋管理</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            処方箋を登録して、薬の有効期間を管理できます
-          </p>
-        </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          処方箋を登録
-        </Button>
-      </div>
-
-      {prescriptions.length === 0 ? (
+      {filteredPrescriptions.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Pill className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              処方箋が登録されていません
+            <p className="text-gray-500 dark:text-gray-400">
+              {prescriptions.length === 0
+                ? "処方箋が登録されていません"
+                : "該当する処方箋がありません"}
             </p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              最初の処方箋を登録
-            </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {prescriptions.map((prescription) => {
+        <div className="grid gap-4 mt-6">
+          {filteredPrescriptions.map((prescription) => {
             const isExpanded = expandedPrescriptions.has(prescription._id);
+            const isExpired =
+              prescription.endDate && prescription.endDate < today;
+            const isInactive = !prescription.isActive;
+
             return (
-              <Card key={prescription._id}>
+              <Card
+                key={prescription._id}
+                className={isInactive || isExpired ? "opacity-70" : ""}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle>{prescription.name}</CardTitle>
-                      <CardDescription className="flex items-center gap-4 mt-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CardTitle>{prescription.name}</CardTitle>
+                        {isInactive && <Badge variant="secondary">無効</Badge>}
+                        {isExpired && !isInactive && (
+                          <Badge variant="outline">期限切れ</Badge>
+                        )}
+                      </div>
+                      <CardDescription className="flex items-center gap-4">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           {formatDate(prescription.startDate)}
                           {prescription.endDate && (
-                            <>
-                              {" "}
-                              〜 {formatDate(prescription.endDate)}
-                            </>
+                            <> 〜 {formatDate(prescription.endDate)}</>
                           )}
-                          {!prescription.endDate && <> 〜 継続中</>}
+                          {!prescription.endDate && "〜 継続中"}
                         </span>
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">
+                      {prescription.isActive ? (
+                        <>
+                          {!prescription.endDate && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEndDateDialogPrescriptionId(
+                                  prescription._id,
+                                );
+                                setEndDateInput(today);
+                              }}
+                            >
+                              終了日を設定
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeactivate(prescription._id)}
+                          >
+                            <Pause className="h-4 w-4 mr-1" />
+                            無効化
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleActivate(prescription._id)}
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          有効化
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -261,7 +378,9 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
                       </p>
                     )}
                     {isExpanded && (
-                      <PrescriptionMedicinesList prescriptionId={prescription._id} />
+                      <PrescriptionMedicinesList
+                        prescriptionId={prescription._id}
+                      />
                     )}
                   </CardContent>
                 )}
@@ -271,20 +390,46 @@ export function PrescriptionList({ groupId }: PrescriptionListProps) {
         </div>
       )}
 
-      {/* 新規作成ダイアログ */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      {/* 終了日設定ダイアログ */}
+      <Dialog
+        open={endDateDialogPrescriptionId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEndDateDialogPrescriptionId(null);
+            setEndDateInput("");
+          }
+        }}
+      >
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>処方箋を登録</DialogTitle>
+            <DialogTitle>終了日を設定</DialogTitle>
             <DialogDescription>
-              処方箋の情報と薬を入力してください
+              この処方箋の終了日を設定します
             </DialogDescription>
           </DialogHeader>
-          <PrescriptionFormWithMedicines
-            groupId={groupId}
-            onSuccess={() => setIsCreateDialogOpen(false)}
-            onCancel={() => setIsCreateDialogOpen(false)}
-          />
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="endDate">終了日</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={endDateInput}
+                onChange={(e) => setEndDateInput(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEndDateDialogPrescriptionId(null);
+                setEndDateInput("");
+              }}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handleSetEndDate}>設定</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

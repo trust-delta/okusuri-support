@@ -158,11 +158,7 @@ export function PrescriptionForm({
           </Button>
         )}
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? "保存中..."
-            : prescriptionId
-              ? "更新"
-              : "登録"}
+          {isSubmitting ? "保存中..." : prescriptionId ? "更新" : "登録"}
         </Button>
       </div>
     </form>
