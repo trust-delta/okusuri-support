@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { Edit } from "lucide-react";
 import { api } from "@/api";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MedicationRecordActions } from "@/features/medication";
 import { formatJST, nowJST } from "@/lib/date-fns";
@@ -73,10 +74,14 @@ export function RecordDetailView({
   // 選択なし
   if (dates.length === 0 && !filterMode) {
     return (
-      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-        <p>カレンダーから日付を選択してください</p>
-        <p className="text-sm mt-2">範囲選択にも対応しています</p>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <p>カレンダーから日付を選択してください</p>
+            <p className="text-sm mt-2">範囲選択にも対応しています</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -85,15 +90,20 @@ export function RecordDetailView({
   }
 
   return (
-    <div className="space-y-8">
-      {dates.map((date) => (
-        <DayRecordSection
-          key={date.toISOString()}
-          groupId={groupId}
-          date={date}
-        />
-      ))}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>記録詳細</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        {dates.map((date) => (
+          <DayRecordSection
+            key={date.toISOString()}
+            groupId={groupId}
+            date={date}
+          />
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -287,9 +297,13 @@ function FilteredRecordsView({
 }) {
   if (records.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-        <p>条件に一致する記録がありません</p>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <p>条件に一致する記録がありません</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -311,22 +325,23 @@ function FilteredRecordsView({
   );
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-        検索結果{" "}
-        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-          ({records.length}件)
-        </span>
-      </h2>
-
-      <div className="space-y-8">
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          検索結果{" "}
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+            ({records.length}件)
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-8">
         {sortedDates.map((dateStr) => {
           const date = new Date(`${dateStr}T00:00:00`);
           return (
             <DayRecordSection key={dateStr} groupId={groupId} date={date} />
           );
         })}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

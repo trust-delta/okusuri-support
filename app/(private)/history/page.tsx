@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import type { Id } from "@/schema";
 import {
   CalendarView,
@@ -22,7 +21,7 @@ export default function HistoryPage() {
   const [selectedRange, setSelectedRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
-  }>({ from: undefined, to: undefined });
+  }>({ from: today, to: today }); // デフォルトで当日を選択
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: "",
     status: "all",
@@ -68,7 +67,10 @@ export default function HistoryPage() {
     setSelectedRange({ from: undefined, to: undefined }); // 月が変わったら選択をクリア
   };
 
-  const handleDateRangeSelect = (range: { from: Date | undefined; to: Date | undefined }) => {
+  const handleDateRangeSelect = (range: {
+    from: Date | undefined;
+    to: Date | undefined;
+  }) => {
     setSelectedRange(range);
   };
 
@@ -140,35 +142,29 @@ export default function HistoryPage() {
           記録履歴
         </h1>
 
-        {/* 2カラムレイアウト */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 左カラム：カレンダービュー */}
-          <Card>
-            <CardContent className="pt-6">
-              <CalendarView
-                year={year}
-                month={month}
-                dailyStats={stats?.dailyStats || {}}
-                onDateRangeSelect={handleDateRangeSelect}
-                onMonthChange={handleMonthChange}
-              />
-            </CardContent>
-          </Card>
+        {/* 1カラムレイアウト */}
+        <div className="space-y-6">
+          {/* カレンダー */}
+          <CalendarView
+            year={year}
+            month={month}
+            dailyStats={stats?.dailyStats || {}}
+            onDateRangeSelect={handleDateRangeSelect}
+            onMonthChange={handleMonthChange}
+          />
 
-          {/* 右カラム：記録詳細ビュー */}
-          <Card>
-            <CardContent className="pt-6">
-              <RecordFilters filters={filters} onFiltersChange={setFilters} />
-              <div className="border-t pt-6 mt-6">
-                <RecordDetailView
-                  groupId={activeGroupId}
-                  dateRange={hasActiveFilter ? { from: undefined, to: undefined } : selectedRange}
-                  filterMode={hasActiveFilter}
-                  filteredRecords={filteredRecords}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* 検索・フィルター */}
+          <RecordFilters filters={filters} onFiltersChange={setFilters} />
+
+          {/* 記録詳細 */}
+          <RecordDetailView
+            groupId={activeGroupId}
+            dateRange={
+              hasActiveFilter ? { from: undefined, to: undefined } : selectedRange
+            }
+            filterMode={hasActiveFilter}
+            filteredRecords={filteredRecords}
+          />
         </div>
       </div>
     </div>
