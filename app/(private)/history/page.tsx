@@ -6,12 +6,12 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Id } from "@/schema";
 import {
   CalendarView,
-  DailyRecordDetail,
-  FilteredRecordsList,
   type FilterState,
+  RecordDetailView,
   RecordFilters,
 } from "./_components";
 
@@ -19,7 +19,10 @@ export default function HistoryPage() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(today);
+  const [selectedRange, setSelectedRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({ from: undefined, to: undefined });
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: "",
     status: "all",
@@ -62,12 +65,39 @@ export default function HistoryPage() {
   const handleMonthChange = (newYear: number, newMonth: number) => {
     setYear(newYear);
     setMonth(newMonth);
-    setSelectedDate(undefined); // 月が変わったら選択をクリア
+    setSelectedRange({ from: undefined, to: undefined }); // 月が変わったら選択をクリア
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
+  const handleDateRangeSelect = (range: { from: Date | undefined; to: Date | undefined }) => {
+    setSelectedRange(range);
   };
+
+  // フィルター適用済みの記録を取得
+  const hasActiveFilter =
+    filters.searchQuery !== "" || filters.status !== "all" || filters.timing !== "all";
+
+  const filteredRecords = monthlyRecords?.filter((record) => {
+    // 薬名検索
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      const medicineName = record.simpleMedicineName || "";
+      if (!medicineName.toLowerCase().includes(query)) {
+        return false;
+      }
+    }
+
+    // ステータスフィルター
+    if (filters.status !== "all" && record.status !== filters.status) {
+      return false;
+    }
+
+    // タイミングフィルター
+    if (filters.timing !== "all" && record.timing !== filters.timing) {
+      return false;
+    }
+
+    return true;
+  });
 
   // ローディング中
   if (groupStatus === undefined) {
@@ -113,27 +143,32 @@ export default function HistoryPage() {
         {/* 2カラムレイアウト */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 左カラム：カレンダービュー */}
-          <div className="space-y-6">
-            <CalendarView
-              year={year}
-              month={month}
-              dailyStats={stats?.dailyStats || {}}
-              onDateSelect={handleDateSelect}
-              onMonthChange={handleMonthChange}
-            />
-            {selectedDate && (
-              <DailyRecordDetail
-                groupId={activeGroupId}
-                selectedDate={selectedDate}
+          <Card>
+            <CardContent className="pt-6">
+              <CalendarView
+                year={year}
+                month={month}
+                dailyStats={stats?.dailyStats || {}}
+                onDateRangeSelect={handleDateRangeSelect}
+                onMonthChange={handleMonthChange}
               />
-            )}
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* 右カラム：検索・フィルタービュー */}
-          <div className="space-y-6">
-            <RecordFilters filters={filters} onFiltersChange={setFilters} />
-            <FilteredRecordsList records={monthlyRecords} filters={filters} />
-          </div>
+          {/* 右カラム：記録詳細ビュー */}
+          <Card>
+            <CardContent className="pt-6">
+              <RecordFilters filters={filters} onFiltersChange={setFilters} />
+              <div className="border-t pt-6 mt-6">
+                <RecordDetailView
+                  groupId={activeGroupId}
+                  dateRange={hasActiveFilter ? { from: undefined, to: undefined } : selectedRange}
+                  filterMode={hasActiveFilter}
+                  filteredRecords={filteredRecords}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
