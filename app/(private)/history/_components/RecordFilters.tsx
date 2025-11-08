@@ -1,7 +1,6 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -38,7 +37,10 @@ const TIMING_OPTIONS = [
   { value: "asNeeded", label: "頓服" },
 ] as const;
 
-export function RecordFilters({ filters, onFiltersChange }: RecordFiltersProps) {
+export function RecordFilters({
+  filters,
+  onFiltersChange,
+}: RecordFiltersProps) {
   const handleSearchChange = (value: string) => {
     onFiltersChange({ ...filters, searchQuery: value });
   };
@@ -58,63 +60,62 @@ export function RecordFilters({ filters, onFiltersChange }: RecordFiltersProps) 
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="space-y-4">
-          {/* 薬名検索 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="薬名で検索..."
-              value={filters.searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        検索・フィルター
+      </h2>
+      {/* 薬名検索 */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="薬名で検索..."
+          value={filters.searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-10"
+        />
+      </div>
 
-          {/* ステータスとタイミングのフィルター */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* ステータスフィルター */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                ステータス
-              </label>
-              <Select value={filters.status} onValueChange={handleStatusChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* タイミングフィルター */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                タイミング
-              </label>
-              <Select value={filters.timing} onValueChange={handleTimingChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMING_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* ステータスとタイミングのフィルター */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ステータスフィルター */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            ステータス
           </div>
+          <Select value={filters.status} onValueChange={handleStatusChange}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* タイミングフィルター */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            タイミング
+          </div>
+          <Select value={filters.timing} onValueChange={handleTimingChange}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIMING_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
   );
 }

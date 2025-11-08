@@ -4,7 +4,6 @@ import { useQuery } from "convex/react";
 import { Edit } from "lucide-react";
 import { api } from "@/api";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MedicationRecordActions } from "@/features/medication";
 import { formatJST, nowJST } from "@/lib/date-fns";
@@ -78,69 +77,45 @@ export function DailyRecordDetail({
   );
 
   if (!selectedDate) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>日別記録詳細</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            カレンダーから日付を選択してください
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   // ローディング中
   if (medications === undefined || records === undefined) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="border-t pt-6 mt-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          {formatJST(selectedDate, "M月d日(E)")}の記録
+        </h2>
+        <div className="space-y-3">
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   // scheduledDateがundefinedの場合の早期リターン（型の安全性を確保）
   if (!scheduledDate) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>日別記録詳細</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            カレンダーから日付を選択してください
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   // 薬がない場合
   if (medications.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <p>この日に服用する薬がありません</p>
-            {records && records.length > 0 && (
-              <p className="text-sm mt-2">簡易記録のみがある可能性があります</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="border-t pt-6 mt-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          {formatJST(selectedDate, "M月d日(E)")}の記録
+        </h2>
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <p>この日に服用する薬がありません</p>
+          {records && records.length > 0 && (
+            <p className="text-sm mt-2">簡易記録のみがある可能性があります</p>
+          )}
+        </div>
+      </div>
     );
   }
 
@@ -174,24 +149,24 @@ export function DailyRecordDetail({
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
-          {isEditable && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Edit className="h-3 w-3" />
-              編集可能
-            </Badge>
-          )}
-        </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {isEditable
-            ? "記録の編集・追加ができます"
-            : "この日の記録は閲覧のみです"}
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="border-t pt-6 mt-6">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          {formatJST(selectedDate, "M月d日(E)")}の記録
+        </h2>
+        {isEditable && (
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Edit className="h-3 w-3" />
+            編集可能
+          </Badge>
+        )}
+      </div>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        {isEditable
+          ? "記録の編集・追加ができます"
+          : "この日の記録は閲覧のみです"}
+      </p>
+      <div className="space-y-6">
         {grouped.map(([groupName, items]) => (
           <div key={groupName} className="space-y-3">
             {/* グループ見出し */}
@@ -264,7 +239,7 @@ export function DailyRecordDetail({
             </div>
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
