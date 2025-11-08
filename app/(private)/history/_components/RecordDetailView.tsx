@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MedicationRecordActions } from "@/features/medication";
 import { formatJST, nowJST } from "@/lib/date-fns";
-import type { Id } from "@/schema";
+import type { Doc, Id } from "@/schema";
 
-interface DailyRecordDetailProps {
+interface RecordDetailViewProps {
   groupId: Id<"groups">;
-  selectedDate: Date | undefined;
+  dateRange: { from: Date | undefined; to: Date | undefined };
+  filterMode?: boolean;
+  filteredRecords?: Doc<"medicationRecords">[];
 }
 
 const TIMING_LABELS = {
@@ -44,103 +46,119 @@ const isPastOrToday = (date: Date): boolean => {
   return targetDate <= today;
 };
 
-export function DailyRecordDetail({
-  groupId,
-  selectedDate,
-}: DailyRecordDetailProps) {
-  const scheduledDate = selectedDate
-    ? formatJST(selectedDate, "yyyy-MM-dd")
-    : undefined;
+// 日付範囲から日付の配列を生成
+const getDateArray = (from: Date, to: Date): Date[] => {
+  const dates: Date[] = [];
+  const current = new Date(from);
+  const end = new Date(to);
 
-  // 選択された日付が編集可能か判定
-  const isEditable = selectedDate ? isPastOrToday(selectedDate) : false;
+  while (current <= end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+};
+
+export function RecordDetailView({
+  groupId,
+  dateRange,
+  filterMode = false,
+  filteredRecords,
+}: RecordDetailViewProps) {
+  const { from, to } = dateRange;
+
+  // 表示する日付の配列を取得
+  const dates = from && to ? getDateArray(from, to) : from ? [from] : [];
+
+  // 選択なし
+  if (dates.length === 0 && !filterMode) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <p>カレンダーから日付を選択してください</p>
+            <p className="text-sm mt-2">範囲選択にも対応しています</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (filterMode && filteredRecords) {
+    return <FilteredRecordsView groupId={groupId} records={filteredRecords} />;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>記録詳細</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        {dates.map((date) => (
+          <DayRecordSection
+            key={date.toISOString()}
+            groupId={groupId}
+            date={date}
+          />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// 単一日の記録セクション
+function DayRecordSection({
+  groupId,
+  date,
+}: {
+  groupId: Id<"groups">;
+  date: Date;
+}) {
+  const scheduledDate = formatJST(date, "yyyy-MM-dd");
+  const isEditable = isPastOrToday(date);
 
   // その日に有効な薬剤を取得
   const medications = useQuery(
     api.medications.prescriptions.queries.getActiveMedicationsForDateQuery,
-    scheduledDate
-      ? {
-          groupId,
-          date: scheduledDate,
-        }
-      : "skip",
+    {
+      groupId,
+      date: scheduledDate,
+    },
   );
 
   // その日の記録を取得
-  const records = useQuery(
-    api.medications.getTodayRecords,
-    scheduledDate
-      ? {
-          groupId,
-          scheduledDate,
-        }
-      : "skip",
-  );
-
-  if (!selectedDate) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>日別記録詳細</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            カレンダーから日付を選択してください
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const records = useQuery(api.medications.getTodayRecords, {
+    groupId,
+    scheduledDate,
+  });
 
   // ローディング中
   if (medications === undefined || records === undefined) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="border-t pt-6 first:border-t-0 first:pt-0">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          {formatJST(date, "M月d日(E)")}の記録
+        </h2>
+        <div className="space-y-3">
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-20 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // scheduledDateがundefinedの場合の早期リターン（型の安全性を確保）
-  if (!scheduledDate) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>日別記録詳細</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            カレンダーから日付を選択してください
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   // 薬がない場合
   if (medications.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <p>この日に服用する薬がありません</p>
-            {records && records.length > 0 && (
-              <p className="text-sm mt-2">簡易記録のみがある可能性があります</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="border-t pt-6 first:border-t-0 first:pt-0">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          {formatJST(date, "M月d日(E)")}の記録
+        </h2>
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <p>この日に服用する薬がありません</p>
+        </div>
+      </div>
     );
   }
 
@@ -174,24 +192,24 @@ export function DailyRecordDetail({
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{formatJST(selectedDate, "M月d日(E)")}の記録</CardTitle>
-          {isEditable && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Edit className="h-3 w-3" />
-              編集可能
-            </Badge>
-          )}
-        </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {isEditable
-            ? "記録の編集・追加ができます"
-            : "この日の記録は閲覧のみです"}
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="border-t pt-6 first:border-t-0 first:pt-0">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          {formatJST(date, "M月d日(E)")}の記録
+        </h2>
+        {isEditable && (
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Edit className="h-3 w-3" />
+            編集可能
+          </Badge>
+        )}
+      </div>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        {isEditable
+          ? "記録の編集・追加ができます"
+          : "この日の記録は閲覧のみです"}
+      </p>
+      <div className="space-y-6">
         {grouped.map(([groupName, items]) => (
           <div key={groupName} className="space-y-3">
             {/* グループ見出し */}
@@ -264,6 +282,65 @@ export function DailyRecordDetail({
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// フィルター結果のビュー
+function FilteredRecordsView({
+  groupId,
+  records,
+}: {
+  groupId: Id<"groups">;
+  records: Doc<"medicationRecords">[];
+}) {
+  if (records.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <p>条件に一致する記録がありません</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 日付でグループ化（新しい順）
+  const groupedByDate = records.reduce(
+    (acc, record) => {
+      const date = record.scheduledDate;
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(record);
+      return acc;
+    },
+    {} as Record<string, typeof records>,
+  );
+
+  const sortedDates = Object.keys(groupedByDate).sort((a, b) =>
+    b.localeCompare(a),
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          検索結果{" "}
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+            ({records.length}件)
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        {sortedDates.map((dateStr) => {
+          const date = new Date(`${dateStr}T00:00:00`);
+          return (
+            <DayRecordSection key={dateStr} groupId={groupId} date={date} />
+          );
+        })}
       </CardContent>
     </Card>
   );

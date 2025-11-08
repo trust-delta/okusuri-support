@@ -14,7 +14,10 @@ interface CalendarViewProps {
     string,
     { taken: number; skipped: number; pending: number; rate: number }
   >;
-  onDateSelect: (date: Date | undefined) => void;
+  onDateRangeSelect: (range: {
+    from: Date | undefined;
+    to: Date | undefined;
+  }) => void;
   onMonthChange: (year: number, month: number) => void;
 }
 
@@ -22,14 +25,20 @@ export function CalendarView({
   year,
   month,
   dailyStats,
-  onDateSelect,
+  onDateRangeSelect,
   onMonthChange,
 }: CalendarViewProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedRange, setSelectedRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({ from: undefined, to: undefined });
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
-    onDateSelect(date);
+  const handleDateSelect = (
+    range: { from: Date | undefined; to: Date | undefined } | undefined,
+  ) => {
+    const newRange = range || { from: undefined, to: undefined };
+    setSelectedRange(newRange);
+    onDateRangeSelect(newRange);
   };
 
   const handlePreviousMonth = () => {
@@ -135,8 +144,8 @@ export function CalendarView({
         </div>
 
         <Calendar
-          mode="single"
-          selected={selectedDate}
+          mode="range"
+          selected={selectedRange}
           onSelect={handleDateSelect}
           month={new Date(year, month - 1)}
           locale={ja}

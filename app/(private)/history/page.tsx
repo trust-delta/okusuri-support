@@ -9,17 +9,19 @@ import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import {
   CalendarView,
-  DailyRecordDetail,
-  FilteredRecordsList,
-  RecordFilters,
   type FilterState,
+  RecordDetailView,
+  RecordFilters,
 } from "./_components";
 
 export default function HistoryPage() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(today);
+  const [selectedRange, setSelectedRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({ from: today, to: today }); // デフォルトで当日を選択
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: "",
     status: "all",
@@ -62,12 +64,42 @@ export default function HistoryPage() {
   const handleMonthChange = (newYear: number, newMonth: number) => {
     setYear(newYear);
     setMonth(newMonth);
-    setSelectedDate(undefined); // 月が変わったら選択をクリア
+    setSelectedRange({ from: undefined, to: undefined }); // 月が変わったら選択をクリア
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
+  const handleDateRangeSelect = (range: {
+    from: Date | undefined;
+    to: Date | undefined;
+  }) => {
+    setSelectedRange(range);
   };
+
+  // フィルター適用済みの記録を取得
+  const hasActiveFilter =
+    filters.searchQuery !== "" || filters.status !== "all" || filters.timing !== "all";
+
+  const filteredRecords = monthlyRecords?.filter((record) => {
+    // 薬名検索
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      const medicineName = record.simpleMedicineName || "";
+      if (!medicineName.toLowerCase().includes(query)) {
+        return false;
+      }
+    }
+
+    // ステータスフィルター
+    if (filters.status !== "all" && record.status !== filters.status) {
+      return false;
+    }
+
+    // タイミングフィルター
+    if (filters.timing !== "all" && record.timing !== filters.timing) {
+      return false;
+    }
+
+    return true;
+  });
 
   // ローディング中
   if (groupStatus === undefined) {
@@ -110,35 +142,30 @@ export default function HistoryPage() {
           記録履歴
         </h1>
 
-        {/* フィルター */}
-        <RecordFilters filters={filters} onFiltersChange={setFilters} />
-
-        {/* 2カラムレイアウト */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* カレンダービュー */}
-          <div>
-            <CalendarView
-              year={year}
-              month={month}
-              dailyStats={stats?.dailyStats || {}}
-              onDateSelect={handleDateSelect}
-              onMonthChange={handleMonthChange}
-            />
-          </div>
-
-          {/* フィルター結果 */}
-          <div>
-            <FilteredRecordsList records={monthlyRecords} filters={filters} />
-          </div>
-        </div>
-
-        {/* 日別詳細（選択時のみ表示） */}
-        {selectedDate && (
-          <DailyRecordDetail
-            groupId={activeGroupId}
-            selectedDate={selectedDate}
+        {/* 1カラムレイアウト */}
+        <div className="space-y-6">
+          {/* カレンダー */}
+          <CalendarView
+            year={year}
+            month={month}
+            dailyStats={stats?.dailyStats || {}}
+            onDateRangeSelect={handleDateRangeSelect}
+            onMonthChange={handleMonthChange}
           />
-        )}
+
+          {/* 検索・フィルター */}
+          <RecordFilters filters={filters} onFiltersChange={setFilters} />
+
+          {/* 記録詳細 */}
+          <RecordDetailView
+            groupId={activeGroupId}
+            dateRange={
+              hasActiveFilter ? { from: undefined, to: undefined } : selectedRange
+            }
+            filterMode={hasActiveFilter}
+            filteredRecords={filteredRecords}
+          />
+        </div>
       </div>
     </div>
   );
