@@ -11,8 +11,8 @@ import {
   CalendarView,
   DailyRecordDetail,
   FilteredRecordsList,
-  RecordFilters,
   type FilterState,
+  RecordFilters,
 } from "./_components";
 
 export default function HistoryPage() {
@@ -110,13 +110,10 @@ export default function HistoryPage() {
           記録履歴
         </h1>
 
-        {/* フィルター */}
-        <RecordFilters filters={filters} onFiltersChange={setFilters} />
-
         {/* 2カラムレイアウト */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* カレンダービュー */}
-          <div>
+          {/* 左カラム：カレンダービュー */}
+          <div className="space-y-6">
             <CalendarView
               year={year}
               month={month}
@@ -124,21 +121,20 @@ export default function HistoryPage() {
               onDateSelect={handleDateSelect}
               onMonthChange={handleMonthChange}
             />
+            {selectedDate && (
+              <DailyRecordDetail
+                groupId={activeGroupId}
+                selectedDate={selectedDate}
+              />
+            )}
           </div>
 
-          {/* フィルター結果 */}
-          <div>
+          {/* 右カラム：検索・フィルタービュー */}
+          <div className="space-y-6">
+            <RecordFilters filters={filters} onFiltersChange={setFilters} />
             <FilteredRecordsList records={monthlyRecords} filters={filters} />
           </div>
         </div>
-
-        {/* 日別詳細（選択時のみ表示） */}
-        {selectedDate && (
-          <DailyRecordDetail
-            groupId={activeGroupId}
-            selectedDate={selectedDate}
-          />
-        )}
       </div>
     </div>
   );
