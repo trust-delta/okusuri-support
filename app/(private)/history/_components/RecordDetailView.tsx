@@ -12,9 +12,10 @@ import type { Doc, Id } from "@/schema";
 
 interface RecordDetailViewProps {
   groupId: Id<"groups">;
-  dateRange: { from: Date | undefined; to: Date | undefined };
+  dateRange: { from?: Date; to?: Date };
   filterMode?: boolean;
   filteredRecords?: Doc<"medicationRecords">[];
+  sortOrder?: "asc" | "desc";
 }
 
 const TIMING_LABELS = {
@@ -65,11 +66,20 @@ export function RecordDetailView({
   dateRange,
   filterMode = false,
   filteredRecords,
+  sortOrder = "desc",
 }: RecordDetailViewProps) {
   const { from, to } = dateRange;
 
   // 表示する日付の配列を取得
-  const dates = from && to ? getDateArray(from, to) : from ? [from] : [];
+  let dates = from && to ? getDateArray(from, to) : from ? [from] : [];
+
+  // 並び替えを適用
+  dates = dates.sort((a, b) => {
+    if (sortOrder === "desc") {
+      return b.getTime() - a.getTime(); // 新しい順（降順）
+    }
+    return a.getTime() - b.getTime(); // 古い順（昇順）
+  });
 
   // 選択なし
   if (dates.length === 0 && !filterMode) {
@@ -77,8 +87,7 @@ export function RecordDetailView({
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <p>カレンダーから日付を選択してください</p>
-            <p className="text-sm mt-2">範囲選択にも対応しています</p>
+            <p>検索・フィルターから日付範囲を選択してください</p>
           </div>
         </CardContent>
       </Card>
@@ -86,7 +95,13 @@ export function RecordDetailView({
   }
 
   if (filterMode && filteredRecords) {
-    return <FilteredRecordsView groupId={groupId} records={filteredRecords} />;
+    return (
+      <FilteredRecordsView
+        groupId={groupId}
+        records={filteredRecords}
+        sortOrder={sortOrder}
+      />
+    );
   }
 
   return (
@@ -291,9 +306,11 @@ function DayRecordSection({
 function FilteredRecordsView({
   groupId,
   records,
+  sortOrder = "desc",
 }: {
   groupId: Id<"groups">;
   records: Doc<"medicationRecords">[];
+  sortOrder?: "asc" | "desc";
 }) {
   if (records.length === 0) {
     return (
@@ -307,7 +324,7 @@ function FilteredRecordsView({
     );
   }
 
-  // 日付でグループ化（新しい順）
+  // 日付でグループ化
   const groupedByDate = records.reduce(
     (acc, record) => {
       const date = record.scheduledDate;
@@ -320,9 +337,13 @@ function FilteredRecordsView({
     {} as Record<string, typeof records>,
   );
 
-  const sortedDates = Object.keys(groupedByDate).sort((a, b) =>
-    b.localeCompare(a),
-  );
+  // 並び替えを適用
+  const sortedDates = Object.keys(groupedByDate).sort((a, b) => {
+    if (sortOrder === "desc") {
+      return b.localeCompare(a); // 新しい順（降順）
+    }
+    return a.localeCompare(b); // 古い順（昇順）
+  });
 
   return (
     <Card>

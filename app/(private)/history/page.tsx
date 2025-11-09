@@ -1,5 +1,6 @@
 "use client";
 
+import { subDays } from "date-fns";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -8,7 +9,6 @@ import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import {
-  CalendarView,
   type FilterState,
   RecordDetailView,
   RecordFilters,
@@ -16,16 +16,13 @@ import {
 
 export default function HistoryPage() {
   const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1);
-  const [selectedRange, setSelectedRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({ from: today, to: today }); // デフォルトで当日を選択
+  const oneWeekAgo = subDays(today, 7);
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: "",
     status: "all",
     timing: "all",
+    dateRange: { from: oneWeekAgo, to: today }, // デフォルトで過去1週間を選択
+    sortOrder: "desc", // デフォルトで新しい順
   });
   const searchParams = useSearchParams();
 
@@ -37,42 +34,17 @@ export default function HistoryPage() {
   const activeGroupId =
     urlGroupId || groupStatus?.activeGroupId || groupStatus?.groups[0]?.groupId;
 
-  // カレンダー表示用の日別統計を取得
-  const stats = useQuery(
-    api.medications.getMonthlyStats,
-    activeGroupId
-      ? {
-          groupId: activeGroupId,
-          year,
-          month,
-        }
-      : "skip",
-  );
-
-  // フィルター用の月別記録を取得
+  // 当月の記録を取得（フィルター用）
   const monthlyRecords = useQuery(
     api.medications.getMonthlyRecords,
     activeGroupId
       ? {
           groupId: activeGroupId,
-          year,
-          month,
+          year: today.getFullYear(),
+          month: today.getMonth() + 1,
         }
       : "skip",
   );
-
-  const handleMonthChange = (newYear: number, newMonth: number) => {
-    setYear(newYear);
-    setMonth(newMonth);
-    setSelectedRange({ from: undefined, to: undefined }); // 月が変わったら選択をクリア
-  };
-
-  const handleDateRangeSelect = (range: {
-    from: Date | undefined;
-    to: Date | undefined;
-  }) => {
-    setSelectedRange(range);
-  };
 
   // フィルター適用済みの記録を取得
   const hasActiveFilter =
@@ -144,26 +116,16 @@ export default function HistoryPage() {
 
         {/* 1カラムレイアウト */}
         <div className="space-y-6">
-          {/* カレンダー */}
-          <CalendarView
-            year={year}
-            month={month}
-            dailyStats={stats?.dailyStats || {}}
-            onDateRangeSelect={handleDateRangeSelect}
-            onMonthChange={handleMonthChange}
-          />
-
           {/* 検索・フィルター */}
           <RecordFilters filters={filters} onFiltersChange={setFilters} />
 
           {/* 記録詳細 */}
           <RecordDetailView
             groupId={activeGroupId}
-            dateRange={
-              hasActiveFilter ? { from: undefined, to: undefined } : selectedRange
-            }
+            dateRange={hasActiveFilter ? {} : filters.dateRange}
             filterMode={hasActiveFilter}
             filteredRecords={filteredRecords}
+            sortOrder={filters.sortOrder}
           />
         </div>
       </div>

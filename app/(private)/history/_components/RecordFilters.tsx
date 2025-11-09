@@ -1,8 +1,17 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
+import { CalendarIcon, Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -15,6 +24,11 @@ export interface FilterState {
   searchQuery: string;
   status: "all" | "taken" | "skipped" | "pending";
   timing: "all" | "morning" | "noon" | "evening" | "bedtime" | "asNeeded";
+  dateRange: {
+    from?: Date;
+    to?: Date;
+  };
+  sortOrder: "asc" | "desc";
 }
 
 interface RecordFiltersProps {
@@ -36,6 +50,11 @@ const TIMING_OPTIONS = [
   { value: "evening", label: "晩" },
   { value: "bedtime", label: "就寝前" },
   { value: "asNeeded", label: "頓服" },
+] as const;
+
+const SORT_OPTIONS = [
+  { value: "desc", label: "新しい順" },
+  { value: "asc", label: "古い順" },
 ] as const;
 
 export function RecordFilters({
@@ -60,6 +79,27 @@ export function RecordFilters({
     });
   };
 
+  const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
+    onFiltersChange({
+      ...filters,
+      dateRange: range || {},
+    });
+  };
+
+  const handleClearDateRange = () => {
+    onFiltersChange({
+      ...filters,
+      dateRange: {},
+    });
+  };
+
+  const handleSortOrderChange = (value: string) => {
+    onFiltersChange({
+      ...filters,
+      sortOrder: value as FilterState["sortOrder"],
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -76,6 +116,67 @@ export function RecordFilters({
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
+        </div>
+
+        {/* 日付範囲選択 */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            日付範囲
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {filters.dateRange.from ? (
+                  filters.dateRange.to ? (
+                    <>
+                      {format(filters.dateRange.from, "yyyy/MM/dd", {
+                        locale: ja,
+                      })}{" "}
+                      -{" "}
+                      {format(filters.dateRange.to, "yyyy/MM/dd", {
+                        locale: ja,
+                      })}
+                    </>
+                  ) : (
+                    format(filters.dateRange.from, "yyyy/MM/dd", { locale: ja })
+                  )
+                ) : (
+                  <span className="text-gray-500">日付を選択...</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={
+                  filters.dateRange.from
+                    ? { from: filters.dateRange.from, to: filters.dateRange.to }
+                    : undefined
+                }
+                onSelect={(range) => handleDateRangeChange(range)}
+                locale={ja}
+                disabled={(date) => date > new Date()}
+                initialFocus
+              />
+              {(filters.dateRange.from || filters.dateRange.to) && (
+                <div className="p-3 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearDateRange}
+                    className="w-full"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    クリア
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* ステータスとタイミングのフィルター */}
@@ -117,6 +218,25 @@ export function RecordFilters({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        {/* 並び替え */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            並び替え
+          </div>
+          <Select value={filters.sortOrder} onValueChange={handleSortOrderChange}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardContent>
     </Card>
