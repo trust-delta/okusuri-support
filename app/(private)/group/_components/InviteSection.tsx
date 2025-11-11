@@ -7,7 +7,6 @@ import { Check, Clock, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
-import type { Id } from "@/schema";
 import {
   Accordion,
   AccordionContent,
@@ -23,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { Id } from "@/schema";
 
 type Props = {
   groupId: Id<"groups">;

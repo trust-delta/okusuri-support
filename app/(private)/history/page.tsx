@@ -1,7 +1,7 @@
 "use client";
 
-import { subDays } from "date-fns";
 import { useQuery } from "convex/react";
+import { subDays } from "date-fns";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -48,7 +48,9 @@ export default function HistoryPage() {
 
   // フィルター適用済みの記録を取得
   const hasActiveFilter =
-    filters.searchQuery !== "" || filters.status !== "all" || filters.timing !== "all";
+    filters.searchQuery !== "" ||
+    filters.status !== "all" ||
+    filters.timing !== "all";
 
   const filteredRecords = monthlyRecords?.filter((record) => {
     // 薬名検索

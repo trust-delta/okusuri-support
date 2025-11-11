@@ -79,7 +79,9 @@ export function RecordFilters({
     });
   };
 
-  const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
+  const handleDateRangeChange = (
+    range: { from?: Date; to?: Date } | undefined,
+  ) => {
     onFiltersChange({
       ...filters,
       dateRange: range || {},
@@ -225,7 +227,10 @@ export function RecordFilters({
           <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
             並び替え
           </div>
-          <Select value={filters.sortOrder} onValueChange={handleSortOrderChange}>
+          <Select
+            value={filters.sortOrder}
+            onValueChange={handleSortOrderChange}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

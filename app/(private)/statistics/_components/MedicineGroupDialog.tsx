@@ -100,7 +100,9 @@ export function MedicineGroupDialog({
       setCustomMedicine("");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "薬名グループの作成に失敗しました",
+        error instanceof Error
+          ? error.message
+          : "薬名グループの作成に失敗しました",
       );
     } finally {
       setIsSubmitting(false);

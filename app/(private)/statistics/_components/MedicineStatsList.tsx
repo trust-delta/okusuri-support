@@ -63,16 +63,19 @@ export function MedicineStatsList({
             <p>
               以下の薬は名前が似ています。同じ薬の場合は統合することで、より正確な統計を表示できます。
             </p>
-            {similarMedicines.slice(0, 3).map((suggestion, index) => (
+            {similarMedicines.slice(0, 3).map((suggestion) => (
               <div
-                key={index}
+                key={suggestion.medicineNames.join("-")}
                 className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
               >
                 <div className="flex items-center gap-2">
-                  {suggestion.medicineNames.map((name, i) => (
-                    <span key={i}>
+                  {suggestion.medicineNames.map((name) => (
+                    <span key={name}>
                       <Badge variant="outline">{name}</Badge>
-                      {i < suggestion.medicineNames.length - 1 && " ≈ "}
+                      {name !==
+                        suggestion.medicineNames[
+                          suggestion.medicineNames.length - 1
+                        ] && " ≈ "}
                     </span>
                   ))}
                   <span className="text-sm text-gray-500">
@@ -111,7 +114,9 @@ export function MedicineStatsList({
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{medicine.medicineName}</h3>
+                  <h3 className="font-semibold text-lg">
+                    {medicine.medicineName}
+                  </h3>
                   <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
                     {medicine.totalAmount > 0 && (
                       <span>
@@ -151,7 +156,9 @@ export function MedicineStatsList({
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">服用率</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    服用率
+                  </span>
                   <span className="font-medium">
                     {medicine.takenCount} / {medicine.totalDoses}回
                   </span>
