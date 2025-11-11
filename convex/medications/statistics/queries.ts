@@ -1,11 +1,10 @@
 import { v } from "convex/values";
-import type { Id } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
 import {
-  type MedicineStats,
   applyMedicineGrouping,
   generateDateRange,
   isDateInRange,
+  type MedicineStats,
 } from "./helpers";
 
 /**
@@ -138,7 +137,8 @@ export const getMedicationStatsByPeriod = query({
       const isInPeriod =
         record.scheduledDate >= args.startDate &&
         record.scheduledDate <= args.endDate;
-      const matchesPatient = !args.patientId || record.patientId === args.patientId;
+      const matchesPatient =
+        !args.patientId || record.patientId === args.patientId;
       return isInPeriod && matchesPatient;
     });
 
@@ -195,7 +195,8 @@ export const getMedicationStatsByPeriod = query({
     // 各薬の服用率を計算
     for (const medicineName of Object.keys(medicineStatsMap)) {
       const stats = medicineStatsMap[medicineName];
-      const actualRecords = stats.takenCount + stats.skippedCount + stats.pendingCount;
+      const actualRecords =
+        stats.takenCount + stats.skippedCount + stats.pendingCount;
 
       // 未記録分をpendingに追加
       if (stats.totalDoses > actualRecords) {

@@ -89,16 +89,36 @@ export function PeriodSelector({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={setLast7Days}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={setLast7Days}
+            >
               過去7日間
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={setLast30Days}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={setLast30Days}
+            >
               過去30日間
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={setLastMonth}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={setLastMonth}
+            >
               先月
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={setThisMonth}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={setThisMonth}
+            >
               今月
             </Button>
           </div>

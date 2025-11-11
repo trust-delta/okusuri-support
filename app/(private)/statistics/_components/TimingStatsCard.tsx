@@ -30,7 +30,10 @@ const TIMING_LABELS = {
   bedtime: "就寝前",
 } as const;
 
-export function TimingStatsCard({ timingStats, asNeeded }: TimingStatsCardProps) {
+export function TimingStatsCard({
+  timingStats,
+  asNeeded,
+}: TimingStatsCardProps) {
   if (timingStats === undefined || asNeeded === undefined) {
     return (
       <Card>
@@ -99,7 +102,9 @@ export function TimingStatsCard({ timingStats, asNeeded }: TimingStatsCardProps)
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">未使用</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  未使用
+                </p>
                 <p className="font-semibold text-gray-600 dark:text-gray-400">
                   {asNeeded.skipped}回
                 </p>
