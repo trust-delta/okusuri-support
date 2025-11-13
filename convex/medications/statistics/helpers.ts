@@ -83,10 +83,12 @@ export async function applyMedicineGrouping(
     }
 
     // データがある場合のみ結果に追加
-    if (hasData && mergedStats.totalDoses > 0) {
-      // 服用率を再計算
-      mergedStats.adherenceRate =
-        (mergedStats.takenCount / mergedStats.totalDoses) * 100;
+    if (hasData) {
+      // 服用率を再計算（頓服のみの場合はtotalDosesが0なので計算しない）
+      if (mergedStats.totalDoses > 0) {
+        mergedStats.adherenceRate =
+          (mergedStats.takenCount / mergedStats.totalDoses) * 100;
+      }
 
       result[group.canonicalName] = mergedStats as MedicineStats;
     }
