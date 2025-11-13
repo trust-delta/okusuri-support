@@ -169,18 +169,28 @@ export const getMedicationStatsByPeriod = query({
       }
     }
 
-    // 頓服を除く記録のみを薬別統計に使用
-    const regularRecords = filteredRecords.filter(
-      (record) => record.timing !== "asNeeded",
-    );
-
-    // 記録を薬ごとに集計（頓服を除く）
-    for (const record of regularRecords) {
+    // 記録を薬ごとに集計（頓服も含める）
+    for (const record of filteredRecords) {
       if (!record.medicineId) continue;
 
       // medicineIdから薬名を取得
       const medicine = await ctx.db.get(record.medicineId);
-      if (!medicine || !medicineStatsMap[medicine.name]) continue;
+      if (!medicine) continue;
+
+      // 薬が統計マップにない場合は初期化（頓服のみの薬など）
+      if (!medicineStatsMap[medicine.name]) {
+        medicineStatsMap[medicine.name] = {
+          medicineId: medicine._id,
+          medicineName: medicine.name,
+          totalAmount: 0,
+          unit: "",
+          totalDoses: 0,
+          takenCount: 0,
+          skippedCount: 0,
+          pendingCount: 0,
+          adherenceRate: 0,
+        };
+      }
 
       // ステータスに応じてカウント
       if (record.status === "taken") {
