@@ -124,7 +124,9 @@ export function MedicineStatsList({
                         {medicine.unit}
                       </span>
                     )}
-                    <span>服用予定: {medicine.totalDoses}回</span>
+                    {medicine.totalDoses > 0 && (
+                      <span>服用予定: {medicine.totalDoses}回</span>
+                    )}
                     <span className="text-green-600 dark:text-green-400">
                       服用: {medicine.takenCount}回
                     </span>
@@ -140,31 +142,43 @@ export function MedicineStatsList({
                     )}
                   </div>
                 </div>
-                <Badge
-                  variant={
-                    medicine.adherenceRate >= 80
-                      ? "default"
-                      : medicine.adherenceRate >= 50
-                        ? "secondary"
-                        : "destructive"
-                  }
-                  className="text-base px-3 py-1"
-                >
-                  {medicine.adherenceRate.toFixed(1)}%
-                </Badge>
+                {medicine.totalDoses > 0 ? (
+                  <Badge
+                    variant={
+                      medicine.adherenceRate >= 80
+                        ? "default"
+                        : medicine.adherenceRate >= 50
+                          ? "secondary"
+                          : "destructive"
+                    }
+                    className="text-base px-3 py-1"
+                  >
+                    {medicine.adherenceRate.toFixed(1)}%
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-base px-3 py-1">
+                    頓服
+                  </Badge>
+                )}
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    服用率
-                  </span>
-                  <span className="font-medium">
-                    {medicine.takenCount} / {medicine.totalDoses}回
-                  </span>
+              {medicine.totalDoses > 0 ? (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      服用率
+                    </span>
+                    <span className="font-medium">
+                      {medicine.takenCount} / {medicine.totalDoses}回
+                    </span>
+                  </div>
+                  <Progress value={medicine.adherenceRate} className="h-2" />
                 </div>
-                <Progress value={medicine.adherenceRate} className="h-2" />
-              </div>
+              ) : (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  頓服のみの薬（服用率は表示されません）
+                </div>
+              )}
             </div>
           ))}
         </CardContent>
