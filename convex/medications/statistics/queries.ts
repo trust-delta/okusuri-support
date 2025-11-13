@@ -175,7 +175,22 @@ export const getMedicationStatsByPeriod = query({
 
       // medicineIdから薬名を取得
       const medicine = await ctx.db.get(record.medicineId);
-      if (!medicine || !medicineStatsMap[medicine.name]) continue;
+      if (!medicine) continue;
+
+      // 薬が統計マップにない場合は初期化（頓服のみの薬など）
+      if (!medicineStatsMap[medicine.name]) {
+        medicineStatsMap[medicine.name] = {
+          medicineId: medicine._id,
+          medicineName: medicine.name,
+          totalAmount: 0,
+          unit: "",
+          totalDoses: 0,
+          takenCount: 0,
+          skippedCount: 0,
+          pendingCount: 0,
+          adherenceRate: 0,
+        };
+      }
 
       // ステータスに応じてカウント
       if (record.status === "taken") {
