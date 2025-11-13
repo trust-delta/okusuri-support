@@ -169,13 +169,8 @@ export const getMedicationStatsByPeriod = query({
       }
     }
 
-    // 頓服を除く記録のみを薬別統計に使用
-    const regularRecords = filteredRecords.filter(
-      (record) => record.timing !== "asNeeded",
-    );
-
-    // 記録を薬ごとに集計（頓服を除く）
-    for (const record of regularRecords) {
+    // 記録を薬ごとに集計（頓服も含める）
+    for (const record of filteredRecords) {
       if (!record.medicineId) continue;
 
       // medicineIdから薬名を取得
