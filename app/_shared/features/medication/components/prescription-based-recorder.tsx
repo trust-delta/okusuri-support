@@ -17,6 +17,7 @@ import { formatJST, nowJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
 import { MEDICATION_TIMINGS } from "../constants/timings";
 import { MedicationRecordActions } from "./medication-record-actions";
+import { TimingGroupActions } from "./timing-group-actions";
 
 // タイミング値からラベルを取得するヘルパー
 const getTimingLabel = (timing: string) => {
@@ -164,61 +165,98 @@ export function PrescriptionBasedRecorder({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {grouped.map(([groupName, items]) => (
-          <div key={groupName} className="space-y-3">
-            {/* グループ見出し */}
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b pb-1">
-              {groupBy === "timing" ? getTimingLabel(groupName) : groupName}
-            </h3>
+        {grouped.map(([groupName, items]) => {
+          // グループ内の薬の記録状態を取得
+          const itemsWithRecordStatus = items.map((item) => {
+            const record = records?.find(
+              (r) =>
+                r.medicineId === item.medicineId && r.timing === item.timing,
+            );
+            return {
+              ...item,
+              hasRecord: !!record,
+            };
+          });
 
-            {/* グループ内の薬 */}
-            <div className="space-y-2">
-              {items.map((item, index) => {
-                const record = records?.find(
-                  (r) =>
-                    r.medicineId === item.medicineId &&
-                    r.timing === item.timing,
-                );
+          return (
+            <div key={groupName} className="space-y-3">
+              {/* グループ見出しとまとめて操作ボタン */}
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {groupBy === "timing" ? getTimingLabel(groupName) : groupName}
+                </h3>
+                {/* 時間帯でグルーピングしている場合のみまとめて操作ボタンを表示 */}
+                {groupBy === "timing" && (
+                  <TimingGroupActions
+                    groupId={groupId}
+                    timing={
+                      groupName as
+                        | "morning"
+                        | "noon"
+                        | "evening"
+                        | "bedtime"
+                        | "asNeeded"
+                    }
+                    scheduledDate={today}
+                    items={itemsWithRecordStatus.map((item) => ({
+                      medicineId: item.medicineId,
+                      scheduleId: item.scheduleId,
+                      medicineName: item.medicineName,
+                      hasRecord: item.hasRecord,
+                    }))}
+                  />
+                )}
+              </div>
 
-                return (
-                  <div
-                    key={`${item.medicineId}-${item.timing}-${index}`}
-                    className="flex flex-col gap-2 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
-                            {item.medicineName}
-                          </span>
-                          {groupBy === "prescription" && (
-                            <span className="text-sm px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                              {getTimingLabel(item.timing)}
+              {/* グループ内の薬 */}
+              <div className="space-y-2">
+                {items.map((item, index) => {
+                  const record = records?.find(
+                    (r) =>
+                      r.medicineId === item.medicineId &&
+                      r.timing === item.timing,
+                  );
+
+                  return (
+                    <div
+                      key={`${item.medicineId}-${item.timing}-${index}`}
+                      className="flex flex-col gap-2 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              {item.medicineName}
                             </span>
-                          )}
+                            {groupBy === "prescription" && (
+                              <span className="text-sm px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                                {getTimingLabel(item.timing)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {groupBy === "timing" && item.prescriptionName}
+                            {item.dosage &&
+                              ` · ${item.dosage.amount}${item.dosage.unit}`}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {groupBy === "timing" && item.prescriptionName}
-                          {item.dosage &&
-                            ` · ${item.dosage.amount}${item.dosage.unit}`}
-                        </div>
+                        <MedicationRecordActions
+                          groupId={groupId}
+                          timing={item.timing}
+                          scheduledDate={today}
+                          medicineId={item.medicineId}
+                          scheduleId={item.scheduleId}
+                          recordId={record?._id}
+                          recordStatus={record?.status}
+                        />
                       </div>
-                      <MedicationRecordActions
-                        groupId={groupId}
-                        timing={item.timing}
-                        scheduledDate={today}
-                        medicineId={item.medicineId}
-                        scheduleId={item.scheduleId}
-                        recordId={record?._id}
-                        recordStatus={record?.status}
-                      />
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );
