@@ -6,7 +6,10 @@ import { api } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MedicationRecordActions } from "@/features/medication";
+import {
+  MedicationRecordActions,
+  TimingGroupActions,
+} from "@/features/medication";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import type { Doc, Id } from "@/schema";
 
@@ -225,78 +228,112 @@ function DayRecordSection({
           : "この日の記録は閲覧のみです"}
       </p>
       <div className="space-y-6">
-        {grouped.map(([groupName, items]) => (
-          <div key={groupName} className="space-y-3">
-            {/* グループ見出し */}
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b pb-1">
-              {getTimingLabel(groupName)}
-            </h3>
+        {grouped.map(([groupName, items]) => {
+          // グループ内の薬の記録状態を取得
+          const itemsWithRecordStatus = items.map((item) => {
+            const record = records?.find(
+              (r) =>
+                r.medicineId === item.medicineId && r.timing === item.timing,
+            );
+            return {
+              medicineId: item.medicineId,
+              scheduleId: item.scheduleId,
+              medicineName: item.medicineName,
+              hasRecord: !!record,
+            };
+          });
 
-            {/* グループ内の薬 */}
-            <div className="space-y-2">
-              {items.map((item, index) => {
-                const record = records?.find(
-                  (r) =>
-                    r.medicineId === item.medicineId &&
-                    r.timing === item.timing,
-                );
+          return (
+            <div key={groupName} className="space-y-3">
+              {/* グループ見出しとまとめて操作ボタン */}
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {getTimingLabel(groupName)}
+                </h3>
+                {/* 編集可能な場合のみまとめて操作ボタンを表示 */}
+                {isEditable && (
+                  <TimingGroupActions
+                    groupId={groupId}
+                    timing={
+                      groupName as
+                        | "morning"
+                        | "noon"
+                        | "evening"
+                        | "bedtime"
+                        | "asNeeded"
+                    }
+                    scheduledDate={scheduledDate}
+                    items={itemsWithRecordStatus}
+                  />
+                )}
+              </div>
 
-                const hasRecord = !!record;
+              {/* グループ内の薬 */}
+              <div className="space-y-2">
+                {items.map((item, index) => {
+                  const record = records?.find(
+                    (r) =>
+                      r.medicineId === item.medicineId &&
+                      r.timing === item.timing,
+                  );
 
-                return (
-                  <div
-                    key={`${item.medicineId}-${item.timing}-${index}`}
-                    className={`flex flex-col gap-2 p-4 rounded-lg transition-all ${
-                      hasRecord
-                        ? "border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20"
-                        : "border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
-                            {item.medicineName}
-                          </span>
-                          {!hasRecord && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 italic">
-                              （未記録）
+                  const hasRecord = !!record;
+
+                  return (
+                    <div
+                      key={`${item.medicineId}-${item.timing}-${index}`}
+                      className={`flex flex-col gap-2 p-4 rounded-lg transition-all ${
+                        hasRecord
+                          ? "border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20"
+                          : "border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              {item.medicineName}
                             </span>
+                            {!hasRecord && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                （未記録）
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {item.prescriptionName}
+                            {item.dosage &&
+                              ` · ${item.dosage.amount}${item.dosage.unit}`}
+                          </div>
+                          {record?.notes && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                              メモ: {record.notes}
+                            </p>
+                          )}
+                          {record?.takenAt && (
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                              服用時刻:{" "}
+                              {formatJST(new Date(record.takenAt), "HH:mm")}
+                            </p>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {item.prescriptionName}
-                          {item.dosage &&
-                            ` · ${item.dosage.amount}${item.dosage.unit}`}
-                        </div>
-                        {record?.notes && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded">
-                            メモ: {record.notes}
-                          </p>
-                        )}
-                        {record?.takenAt && (
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                            服用時刻:{" "}
-                            {formatJST(new Date(record.takenAt), "HH:mm")}
-                          </p>
-                        )}
+                        <MedicationRecordActions
+                          groupId={groupId}
+                          timing={item.timing}
+                          scheduledDate={scheduledDate}
+                          medicineId={item.medicineId}
+                          scheduleId={item.scheduleId}
+                          recordId={record?._id}
+                          recordStatus={record?.status}
+                        />
                       </div>
-                      <MedicationRecordActions
-                        groupId={groupId}
-                        timing={item.timing}
-                        scheduledDate={scheduledDate}
-                        medicineId={item.medicineId}
-                        scheduleId={item.scheduleId}
-                        recordId={record?._id}
-                        recordStatus={record?.status}
-                      />
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
