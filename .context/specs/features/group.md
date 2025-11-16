@@ -514,4 +514,4 @@
 - [認証機能](auth.md)
 - [服薬管理](medication.md)
 - [アーキテクチャ](../../architecture.md)
-- [グループ脱退・削除機能の導入 ADR](../../decisions/2025-10-26-group-leave-delete.md)
+- [グループ脱退・削除機能の導入決定記録](../../decisions/2025-10-26-group-leave-delete.md)

@@ -1027,5 +1027,5 @@ function isDateInRange(
 
 - [グループ管理](group.md)
 - [アーキテクチャ](../../architecture.md)
-- [処方箋管理機能の導入 ADR](../../decisions/2025-10-26-prescription-management.md)
-- [服薬統計機能とデータ品質管理 ADR](../../decisions/2025-10-26-medication-statistics.md)
+- [処方箋管理機能の導入決定記録](../../decisions/2025-10-26-prescription-management.md)
+- [服薬統計機能とデータ品質管理決定記録](../../decisions/2025-10-26-medication-statistics.md)

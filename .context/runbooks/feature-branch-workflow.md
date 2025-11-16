@@ -89,7 +89,7 @@ git checkout -b docs/api-documentation
 # 仕様書を確認
 ls .context/specs/
 
-# ADRを確認
+# 決定記録を確認
 ls .context/decisions/
 
 # 既存のrunbookを確認

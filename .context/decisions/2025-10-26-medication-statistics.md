@@ -1,4 +1,4 @@
-# ADR: 服薬統計機能の実装
+# 決定記録: 服薬統計機能の実装
 
 **日付**: 2025年10月26日
 **ステータス**: 実装完了
@@ -532,7 +532,7 @@ dosageフィールドの変更：
 
 ## 関連ドキュメント
 
-- [処方箋管理機能の導入 ADR](./2025-10-26-prescription-management.md)
+- [処方箋管理機能の導入決定記録](./2025-10-26-prescription-management.md)
 - [服薬管理機能仕様](../specs/features/medication.md)
 - [服薬記録履歴機能仕様](../specs/features/medication-history.md)
 - [プロジェクト概要](../project.md)
@@ -552,7 +552,7 @@ dosageフィールドの変更：
 
 ## 実装状況
 
-1. ✅ ADR作成（このドキュメント）
+1. ✅ 決定記録作成（このドキュメント）
 2. ✅ ユーザーによるレビューと承認
 3. ✅ スキーマ変更（dosage数値化、medicineGroupsテーブル追加）
 4. ✅ 統計計算APIの実装（タイミング別統計も追加）

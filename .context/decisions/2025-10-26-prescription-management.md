@@ -1,4 +1,4 @@
-# ADR: 処方箋管理機能の導入
+# 決定記録: 処方箋管理機能の導入
 
 **日付**: 2025年10月26日
 **ステータス**: 承認済み
@@ -235,7 +235,7 @@ medicines: {
 
 ## 次のステップ
 
-1. ✅ ADR作成（このドキュメント）
+1. ✅ 決定記録作成（このドキュメント）
 2. ⏳ ユーザーによるレビューと承認
 3. ⏳ 処方箋スキーマの実装
 4. ⏳ 統計計算ロジックの変更
@@ -314,7 +314,7 @@ medicines: {
 - `convex/medications/prescriptions/mutations.ts` - deletePrescription変更、permanentlyDeletePrescription追加
 - `app/(private)/prescriptions/_components/DeletedPrescriptionList.tsx` - 完全削除ボタン追加
 - `.context/specs/features/medication.md` - 仕様書更新
-- `.context/decisions/2025-10-26-prescription-management.md` - ADR更新
+- `.context/decisions/2025-10-26-prescription-management.md` - 決定記録更新
 
 ---
 
