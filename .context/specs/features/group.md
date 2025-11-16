@@ -1,6 +1,6 @@
 # グループ管理機能仕様
 
-**最終更新**: 2025年10月26日
+**最終更新**: 2025年11月16日
 
 ## 概要
 
@@ -86,18 +86,14 @@
 **フロー**:
 ```
 1. ユーザーがドロップダウンから別グループを選択
-2. setActiveGroup mutationを呼び出し
-3. users.activeGroupIdを更新
-4. ページをリロードして新グループのデータを表示
+2. users.activeGroupIdを更新（フロントエンドで直接patch）
+3. ページをリロードして新グループのデータを表示
 ```
 
-**API**: `users.setActiveGroup`
-```typescript
-{
-  args: { groupId: Id<"groups"> },
-  returns: { success: boolean }
-}
-```
+**実装**:
+- 専用のmutationは存在しない
+- 各mutation（createGroup, joinGroupWithInvitation, leaveGroup, deleteGroup）内で自動的にactiveGroupIdが設定される
+- フロントエンドから明示的にグループを切り替える場合は、直接users.activeGroupIdをpatch
 
 ---
 
@@ -155,7 +151,7 @@
 
 ### 3. グループ詳細取得
 
-**API**: `groups.queries.get`
+**API**: `groups.queries.getGroupDetails`
 ```typescript
 {
   args: { groupId: Id<"groups"> },
@@ -165,13 +161,26 @@
     description?: string,
     createdBy: string,
     createdAt: number,
-    members: Array<{
-      userId: string,
-      displayName?: string,
-      role: "patient" | "supporter",
-      joinedAt: number,
-    }>,
-  }
+    myRole: "patient" | "supporter",
+    memberCount: number,
+    isLastMember: boolean,  // グループ削除可否の判定用
+  } | null  // 削除済みグループの場合はnull
+}
+```
+
+**API**: `groups.queries.getGroupMembers`
+```typescript
+{
+  args: { groupId: Id<"groups"> },
+  returns: Array<{
+    userId: string,
+    displayName?: string,
+    role: "patient" | "supporter",
+    joinedAt: number,
+    image?: string,  // プロフィール画像URL（カスタムまたはOAuth）
+    name?: string,
+    email?: string,
+  }> | null  // グループメンバーでない場合はnull
 }
 ```
 
@@ -267,27 +276,35 @@
 
 **フロー**:
 ```
-1. 8文字英数字ランダム生成
-2. 一意性チェック（重複時は再生成）
-3. groupInvitationsに保存
-4. 有効期限: 作成日時 + 7日
+1. 8文字英数字ランダム生成（暗号学的に安全）
+2. 一意性チェック（重複時は最大3回再試行）
+3. Patient在籍状況を確認し、allowedRolesを自動決定
+   - Patient存在時: ["supporter"]のみ
+   - Patient不在時: ["patient", "supporter"]
+4. groupInvitationsに保存
+5. 有効期限: 作成日時 + 7日
 ```
 
-**API**: `invitations.mutations.create`
+**API**: `invitations.actions.createInvitation`
 ```typescript
 {
   args: {
     groupId: Id<"groups">,
-    allowedRoles: ("patient" | "supporter")[],
+    // allowedRolesは自動決定（Patient在籍状況から）
   },
-  returns: {
+  returns: Result<{
+    invitationId: Id<"groupInvitations">,
     code: string,
     expiresAt: number,
-  }
+    allowedRoles: ("patient" | "supporter")[],
+    invitationLink: string,
+  }>
 }
 ```
 
 **招待コード形式**: `ABC12XYZ` (8文字、大文字英数字)
+
+**注**: Actionとして実装（外部の暗号化ライブラリを使用するため）
 
 ### 2. 招待リンク生成
 
@@ -299,60 +316,103 @@
 
 **フロー**:
 ```
-1. 招待コード検証（存在・有効期限・未使用）
-2. ユーザー認証確認
-3. ロール選択（allowedRolesから）
-4. 既存のgroupMembersレコードを検索（leftAt != undefined）
-5. 既存レコードが存在する場合（再参加）:
+1. 認証確認
+2. ユーザー情報取得とdisplayName検証
+   - 未設定の場合は引数のdisplayNameを使用
+   - displayNameは必須、1-50文字
+3. 招待コード検証（存在・有効期限・未使用）
+4. 許可ロールチェック（allowedRolesに含まれるか）
+5. 既存メンバーシップ確認（再参加の可能性も考慮）
+6. Patient role時: 既存のアクティブなPatientがいないか確認
+7. 既存メンバーシップがあり、leftAtが設定されている場合（再参加）:
    - leftAt, leftByをundefinedに戻す（復元）
    - roleは新しく選択したものに更新
    - joinedAtは元の値を保持（初回参加日時）
-6. 既存レコードが存在しない場合（新規参加）:
+8. 既存メンバーシップがない場合（新規参加）:
    - 新規にgroupMembersを作成
-7. users.activeGroupIdを新グループに設定
-8. groupInvitationsのisUsedをtrueに更新
+9. groupInvitationsのisUsedをtrueに更新
+10. users.activeGroupIdを新グループに設定
 ```
 
-**API**: `invitations.mutations.accept`
+**API**: `groups.mutations.joinGroupWithInvitation`
 ```typescript
 {
   args: {
-    code: string,
-    selectedRole: "patient" | "supporter",
+    invitationCode: string,
+    role: "patient" | "supporter",
+    displayName?: string,  // オプション: 既存ユーザーは省略可
   },
-  returns: Id<"groups">
+  returns: Result<{
+    groupId: Id<"groups">,
+    membershipId: Id<"groupMembers">,
+  }>
 }
 ```
 
 **エラーケース**:
-- コード不正: "招待コードが無効です"
-- 有効期限切れ: "招待コードの有効期限が切れました"
-- 既に使用済み: "この招待コードは既に使用されています"
-- 既にメンバー: "既にグループに参加しています"
+- "認証が必要です"
+- "ユーザーが見つかりません"
+- "表示名を入力してください"
+- "表示名は50文字以内で入力してください"
+- "招待コードが無効です"（コード不正・有効期限切れ・使用済み）
+- "この招待では〇〇として参加できます"（ロール不一致）
+- "既にこのグループのメンバーです"
+- "このグループには既に患者が登録されています"
 
 **再参加時のデータ復元**:
 - 脱退前の処方箋データや服薬記録がそのまま復元される
 - 初回参加日時（joinedAt）も保持される
 - ロールは再選択可能（patient ⇄ supporter切り替え可能）
 
-### 4. 招待一覧取得
+### 4. 招待コード検証
 
-**API**: `invitations.queries.list`
+**API**: `invitations.queries.validateInvitationCode`
+```typescript
+{
+  args: { code: string },
+  returns:
+    | { valid: true, invitation: {
+        groupId: Id<"groups">,
+        groupName: string,
+        groupDescription?: string,
+        memberCount: number,
+        allowedRoles: ("patient" | "supporter")[],
+        expiresAt: number,
+      }}
+    | { valid: false, error: string }
+}
+```
+
+**用途**: 招待ページ（`/invite/[code]`）でグループ情報を表示する際に使用
+
+**検証内容**:
+- 招待コードの存在
+- 有効期限内か
+- 未使用か
+- グループが存在するか
+
+### 5. 招待一覧取得
+
+**API**: `invitations.queries.listGroupInvitations`
 ```typescript
 {
   args: { groupId: Id<"groups"> },
   returns: Array<{
     _id: Id<"groupInvitations">,
     code: string,
+    createdBy: string,
     createdAt: number,
     expiresAt: number,
     allowedRoles: ("patient" | "supporter")[],
     isUsed: boolean,
     usedBy?: string,
     usedAt?: number,
+    invitationLink: string,  // フルURL
   }>
 }
 ```
+
+**権限**: グループメンバーのみ
 
 ---
 

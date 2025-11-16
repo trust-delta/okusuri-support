@@ -36,3 +36,13 @@ export const toJST = (date: Date | string): Date => {
  * 日本時間のタイムゾーン定数
  */
 export const JST_TIMEZONE = TIMEZONE;
+
+/**
+ * 現在の日本時間を「YYYY年MM月DD日」形式の文字列で取得
+ * @returns 現在の日本時間を「2025年11月17日」形式で返す
+ */
+export const getCurrentDateJST = (): string => {
+  return formatInTimeZone(new Date(), TIMEZONE, "yyyy年MM月dd日", {
+    locale: ja,
+  });
+};
