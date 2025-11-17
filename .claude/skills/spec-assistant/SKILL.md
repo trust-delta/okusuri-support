@@ -47,9 +47,10 @@ description: 新機能の仕様書を対話形式で作成、または既存仕�
 
 1. **現在日時の取得**
    ```bash
-   TZ='Asia/Tokyo' date '+%Y年%m月%d日'
+   ./scripts/get-date.sh
    ```
-   - Bashツールを使用してJSTの日付を取得
+   - スクリプト: [get-date.sh](scripts/get-date.sh)
+   - Bashツールを使用してJSTの日付を取得（YYYY年MM月DD日形式）
    - 仕様書の「最終更新」に使用
 
 2. **テンプレートの読み込み**

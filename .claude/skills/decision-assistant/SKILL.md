@@ -45,9 +45,10 @@ description: 技術的意思決定や重要な判断を構造化して記録す�
 
 1. **現在日時の取得**
    ```bash
-   TZ='Asia/Tokyo' date '+%Y-%m-%d'
+   ./scripts/get-date.sh
    ```
-   - Bashツールを使用してJSTの日付を取得
+   - スクリプト: [get-date.sh](scripts/get-date.sh)
+   - Bashツールを使用してJSTの日付を取得（YYYY-MM-DD形式）
    - ファイル名に使用（例: `2025-11-16`）
 
 2. **テンプレートの読み込み**
