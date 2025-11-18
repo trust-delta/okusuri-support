@@ -67,24 +67,21 @@ model: sonnet
 
 #### 1-2. 既存コードの参照
 
-**推奨**: code-searchスキルを使用して類似機能を検索します：
+Glob/Grepツールを使用して類似機能を検索します：
 
 ```bash
 # 類似コンポーネントを検索
-Skillツール: code-search → search-components.sh List
+Globツール: "src/features/*/components/*.tsx"
+Grepツール: "List" glob="src/features/*/components/*.tsx"
 
 # 類似API関数を検索
-Skillツール: code-search → search-convex.sh queries list
+Globツール: "convex/*/queries.ts"
+Grepツール: "export const list = query"
 
 # 型定義を検索
-Skillツール: code-search → search-types.sh Notification
-```
+Grepツール: "interface Notification" glob="**/*.ts"
 
-**代替方法**（スキルなし）:
-```bash
-# 手動でGlob/Grepを使用
-Globツール: "src/features/*/components/*.tsx"
-Grepツール: "export const list = query"
+# 検索結果のファイルを読み込み
 Readツールで該当ファイルを読み込み
 ```
 
@@ -293,7 +290,7 @@ export function NotificationList() {
 - Lintルール違反の可能性
 
 【推奨対応】
-→ メインでtype-check-lintスキルを実行
+→ メインでBashツール（npm run type-check, npm run lint）を実行
 → エラーがあればerror-fixerサブエージェントで修正
 ```
 
@@ -307,13 +304,7 @@ export function NotificationList() {
 - **Glob**: ファイル検索（類似コード検索）
 - **Grep**: コード検索（パターン検索）
 - **Bash**: コマンド実行（npmコマンドなど）
-- **Skill**: スキル呼び出し（code-searchなど）
-
-**Skillツールの活用**:
-- ✅ **code-search**: 既存パターン検索
-  - 実装前の準備として使用
-  - コンポーネント・フック・Convex関数・型定義を検索
-  - 既存のコーディングパターンを学習
+- **Skill**: スキル呼び出し（decision-assistant、spec-assistantなど）
 
 ---
 
@@ -322,7 +313,7 @@ export function NotificationList() {
 ### 実装前の必須確認
 1. `.context/coding-style.md` を読む
 2. `.context/architecture.md` でデータフローを確認
-3. **既存の類似機能を検索（code-searchスキル推奨、またはGlob/Grep）**
+3. **既存の類似機能を検索（Glob/Grepツール）**
 4. プロジェクトの命名規則を遵守
 
 ### 実装中の注意
@@ -349,8 +340,9 @@ export function NotificationList() {
 code-implementer:
 [準備フェーズ]
 ✅ .context/coding-style.md を確認
-✅ code-searchスキルで既存のユーティリティ関数を検索
-   → ./scripts/search-pattern.sh 'function format' ts src/shared/lib
+✅ Glob/Grepツールで既存のユーティリティ関数を検索
+   → Glob: "src/shared/lib/*.ts"
+   → Grep: "function format" glob="src/shared/lib/*.ts"
 ✅ src/shared/lib/ の構造を確認
 
 [実装フェーズ]
@@ -384,8 +376,9 @@ code-implementer:
 code-implementer:
 [準備フェーズ]
 ✅ .context/architecture.md でConvex構造を確認
-✅ code-searchスキルで既存のqueries.tsパターンを検索
-   → ./scripts/search-convex.sh queries list
+✅ Glob/Grepツールで既存のqueries.tsパターンを検索
+   → Glob: "convex/*/queries.ts"
+   → Grep: "export const list = query"
 ✅ 認証・エラーハンドリングパターンを学習
 
 [実装フェーズ]

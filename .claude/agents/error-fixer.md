@@ -167,13 +167,9 @@ Writeツール: 新しい型定義ファイルを作成（必要時）
 #### 3-1. 修正結果の確認
 
 ```bash
-Skillツール: type-check-lint スキルを呼び出し
-（または）
 Bashツール: npm run type-check
 Bashツール: npm run lint
 ```
-
-**推奨**: type-check-lintスキルを使用することで、型チェック・Lint・自動修正を統合的に実行できます。
 
 #### 3-2. 修正完了レポートの提出
 
@@ -344,13 +340,7 @@ function processUser(userId: string) {
 - **Glob**: ファイル検索（類似パターン検索）
 - **Grep**: コード検索（型定義検索）
 - **Bash**: コマンド実行（type-check, lint）
-- **Skill**: スキル呼び出し（type-check-lintスキルなど）
-
-**Skillツールの活用**:
-- ✅ **type-check-lint**: 型チェック・Lint・自動修正を統合実行
-  - エラー検証時に使用
-  - 自動修正可能なエラーの一括修正
-  - 修正後の検証
+- **Skill**: スキル呼び出し（decision-assistant、spec-assistantなど）
 
 ---
 
@@ -532,7 +522,7 @@ error-fixer:
 ✅ **型安全性**: any型を使用しない修正
 ✅ **明確なレポート**: 修正内容を詳細に報告
 ✅ **コンテキスト分離**: エラー修正のみに集中
-✅ **スキル活用**: type-check-lintスキルを活用した効率的な修正
+✅ **効率的な修正**: Bashツールを活用した型チェック・Lintの実行
 
 ---
 
