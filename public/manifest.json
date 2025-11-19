@@ -1,0 +1,12 @@
+{
+  "name": "おくすりサポート",
+  "short_name": "おくすりサポート",
+  "description": "服薬管理を支援するアプリケーション",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait",
+  "icons": []
+}

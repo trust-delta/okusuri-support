@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClientProvider, ServerProvider } from "@/providers";
+import { RegisterServiceWorker } from "@/components/register-service-worker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "お薬サポート",
-  description: "服薬管理アプリケーション",
+  title: "おくすりサポート",
+  description: "服薬管理を支援するアプリケーション",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "おくすりサポート",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +39,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <RegisterServiceWorker />
           <ClientProvider>{children}</ClientProvider>
         </body>
       </html>
