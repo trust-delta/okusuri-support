@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Id } from "convex/_generated/dataModel";
+import type { Id } from "@/schema";
 
 interface PushNotificationPromptProps {
   groupId: Id<"groups">;

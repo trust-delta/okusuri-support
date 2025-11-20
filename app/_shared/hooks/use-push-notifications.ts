@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/api";
-import { Id } from "convex/_generated/dataModel";
+import type { Id } from "@/schema";
 
 export type PushNotificationPermission = "default" | "granted" | "denied";
 

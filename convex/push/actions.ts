@@ -1,3 +1,5 @@
+"use node";
+
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import webpush from "web-push";
@@ -10,7 +12,9 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = "mailto:support@okusuri-support.example.com";
 
 if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-  console.warn("⚠️ VAPID keys are not configured. Push notifications will not work.");
+  console.warn(
+    "⚠️ VAPID keys are not configured. Push notifications will not work.",
+  );
 }
 
 // web-pushの設定
@@ -74,13 +78,16 @@ export const sendTestNotification = action({
               auth: subscription.keys.auth,
             },
           },
-          JSON.stringify(payload)
+          JSON.stringify(payload),
         );
         sent++;
       } catch (error) {
         failed++;
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        errors.push(`Endpoint ${subscription.endpoint.substring(0, 50)}...: ${errorMessage}`);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        errors.push(
+          `Endpoint ${subscription.endpoint.substring(0, 50)}...: ${errorMessage}`,
+        );
         console.error("Push notification error:", error);
 
         // サブスクリプションが無効な場合は削除
@@ -140,11 +147,12 @@ export const sendToUser = action({
               auth: subscription.keys.auth,
             },
           },
-          JSON.stringify(args.payload)
+          JSON.stringify(args.payload),
         );
         sent++;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         errors.push(`Failed to send: ${errorMessage}`);
         console.error("Push notification error:", error);
 
@@ -206,11 +214,12 @@ export const sendToGroup = action({
               auth: subscription.keys.auth,
             },
           },
-          JSON.stringify(args.payload)
+          JSON.stringify(args.payload),
         );
         sent++;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         errors.push(`Failed to send: ${errorMessage}`);
         console.error("Push notification error:", error);
 
