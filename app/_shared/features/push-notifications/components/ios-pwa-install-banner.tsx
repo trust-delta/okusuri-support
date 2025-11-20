@@ -4,7 +4,7 @@ import { Share, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { usePWAInstall } from "@/hooks/use-pwa-install";
+import { usePWAInstall } from "@/features/push-notifications/hooks/use-pwa-install";
 
 /**
  * iOSユーザー向けのホーム画面追加案内バナー

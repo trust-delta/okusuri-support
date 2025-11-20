@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { useMutation } from "convex/react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "@/api";
 import type { Id } from "@/schema";
 
@@ -19,7 +19,8 @@ interface UsePushNotificationsResult {
 }
 
 export function usePushNotifications(): UsePushNotificationsResult {
-  const [permission, setPermission] = useState<PushNotificationPermission>("default");
+  const [permission, setPermission] =
+    useState<PushNotificationPermission>("default");
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,22 +67,26 @@ export function usePushNotifications(): UsePushNotificationsResult {
   }, [isSupported]);
 
   // 通知許可をリクエスト
-  const requestPermission = useCallback(async (): Promise<PushNotificationPermission> => {
-    if (!isSupported) {
-      setError("このブラウザはプッシュ通知をサポートしていません");
-      return "denied";
-    }
+  const requestPermission =
+    useCallback(async (): Promise<PushNotificationPermission> => {
+      if (!isSupported) {
+        setError("このブラウザはプッシュ通知をサポートしていません");
+        return "denied";
+      }
 
-    try {
-      const result = await Notification.requestPermission();
-      setPermission(result);
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "通知許可リクエストに失敗しました";
-      setError(message);
-      return "denied";
-    }
-  }, [isSupported]);
+      try {
+        const result = await Notification.requestPermission();
+        setPermission(result);
+        return result;
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "通知許可リクエストに失敗しました";
+        setError(message);
+        return "denied";
+      }
+    }, [isSupported]);
 
   // サブスクリプション登録
   const subscribe = useCallback(
@@ -117,7 +122,9 @@ export function usePushNotifications(): UsePushNotificationsResult {
         // サブスクリプション登録
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
+          applicationServerKey: urlBase64ToUint8Array(
+            vapidPublicKey,
+          ) as BufferSource,
         });
 
         // サブスクリプション情報をサーバーに保存
@@ -135,14 +142,17 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
         setIsSubscribed(true);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "サブスクリプション登録に失敗しました";
+        const message =
+          err instanceof Error
+            ? err.message
+            : "サブスクリプション登録に失敗しました";
         setError(message);
         console.error("サブスクリプション登録エラー:", err);
       } finally {
         setIsLoading(false);
       }
     },
-    [isSupported, permission, requestPermission, subscribeMutation]
+    [isSupported, permission, requestPermission, subscribeMutation],
   );
 
   // サブスクリプション解除
@@ -171,7 +181,10 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
       setIsSubscribed(false);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "サブスクリプション解除に失敗しました";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "サブスクリプション解除に失敗しました";
       setError(message);
       console.error("サブスクリプション解除エラー:", err);
     } finally {

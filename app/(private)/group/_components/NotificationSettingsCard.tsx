@@ -1,8 +1,6 @@
 "use client";
 
 import { Bell } from "lucide-react";
-import { PushNotificationPrompt } from "@/components/push-notification-prompt";
-import { PWAInstallButton } from "@/components/pwa-install-button";
 import {
   Card,
   CardContent,
@@ -10,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PushNotificationPrompt } from "@/features/push-notifications/components/push-notification-prompt";
+import { PWAInstallButton } from "@/features/push-notifications/components/pwa-install-button";
 import type { Id } from "@/schema";
 
 interface NotificationSettingsCardProps {

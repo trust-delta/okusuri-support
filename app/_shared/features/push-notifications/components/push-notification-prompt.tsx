@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Bell, BellOff, Check, Loader2, X } from "lucide-react";
-import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { usePushNotifications } from "@/features/push-notifications/hooks/use-push-notifications";
 import type { Id } from "@/schema";
 
 interface PushNotificationPromptProps {
@@ -64,9 +64,7 @@ export function PushNotificationPrompt({
             <Check className="h-5 w-5 text-green-600" />
             プッシュ通知が有効です
           </CardTitle>
-          <CardDescription>
-            服薬時刻になると通知が届きます
-          </CardDescription>
+          <CardDescription>服薬時刻になると通知が届きます</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -125,9 +123,7 @@ export function PushNotificationPrompt({
           <Bell className="h-5 w-5" />
           服薬リマインダーを有効にしますか？
         </CardTitle>
-        <CardDescription>
-          服薬時刻になると通知でお知らせします
-        </CardDescription>
+        <CardDescription>服薬時刻になると通知でお知らせします</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
@@ -136,7 +132,11 @@ export function PushNotificationPrompt({
           </Alert>
         )}
         <div className="flex gap-2">
-          <Button onClick={handleSubscribe} disabled={isLoading} className="flex-1">
+          <Button
+            onClick={handleSubscribe}
+            disabled={isLoading}
+            className="flex-1"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

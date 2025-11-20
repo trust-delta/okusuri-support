@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { IOSPWAInstallBanner } from "@/components/ios-pwa-install-banner";
 import { RegisterServiceWorker } from "@/components/register-service-worker";
+import { IOSPWAInstallBanner } from "@/features/push-notifications/components/ios-pwa-install-banner";
 import { ClientProvider, ServerProvider } from "@/providers";
 
 const geistSans = Geist({
