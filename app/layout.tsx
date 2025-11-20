@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClientProvider, ServerProvider } from "@/providers";
+import { IOSPWAInstallBanner } from "@/components/ios-pwa-install-banner";
 import { RegisterServiceWorker } from "@/components/register-service-worker";
+import { ClientProvider, ServerProvider } from "@/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +41,10 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <RegisterServiceWorker />
-          <ClientProvider>{children}</ClientProvider>
+          <ClientProvider>
+            <IOSPWAInstallBanner />
+            {children}
+          </ClientProvider>
         </body>
       </html>
     </ServerProvider>
