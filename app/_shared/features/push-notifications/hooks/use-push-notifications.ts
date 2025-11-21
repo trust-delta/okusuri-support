@@ -100,34 +100,47 @@ export function usePushNotifications(): UsePushNotificationsResult {
       setError(null);
 
       try {
+        console.log("[Push] サブスクリプション登録開始");
+
         // 通知許可を確認
         let perm = permission;
         if (perm === "default") {
+          console.log("[Push] 通知許可をリクエスト");
           perm = await requestPermission();
         }
 
         if (perm !== "granted") {
           throw new Error("通知許可が拒否されました");
         }
+        console.log("[Push] 通知許可: granted");
 
         // Service Worker登録を待機
+        console.log("[Push] Service Worker待機中...");
         const registration = await navigator.serviceWorker.ready;
+        console.log("[Push] Service Worker準備完了");
 
         // VAPID公開鍵を取得
         const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        console.log(
+          "[Push] VAPID公開鍵:",
+          vapidPublicKey ? "設定済み" : "未設定",
+        );
         if (!vapidPublicKey) {
           throw new Error("VAPID公開鍵が設定されていません");
         }
 
         // サブスクリプション登録
+        console.log("[Push] PushManager.subscribe呼び出し中...");
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(
             vapidPublicKey,
           ) as BufferSource,
         });
+        console.log("[Push] PushManager.subscribe成功");
 
         // サブスクリプション情報をサーバーに保存
+        console.log("[Push] Convex mutationを呼び出し中...");
         await subscribeMutation({
           groupId,
           subscription: {
@@ -139,8 +152,10 @@ export function usePushNotifications(): UsePushNotificationsResult {
           },
           userAgent: navigator.userAgent,
         });
+        console.log("[Push] Convex mutation成功");
 
         setIsSubscribed(true);
+        console.log("[Push] サブスクリプション登録完了");
       } catch (err) {
         const message =
           err instanceof Error

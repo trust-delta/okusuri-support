@@ -4,12 +4,8 @@ import { useEffect } from "react";
 
 export function RegisterServiceWorker() {
   useEffect(() => {
-    // Service Workerは本番環境のみで登録
-    if (
-      typeof window !== "undefined" &&
-      "serviceWorker" in navigator &&
-      process.env.NODE_ENV === "production"
-    ) {
+    // Service Workerを登録（開発・本番両方）
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
