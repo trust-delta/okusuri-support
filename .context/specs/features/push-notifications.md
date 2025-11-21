@@ -21,13 +21,13 @@ PWA（Progressive Web App）+ Web Push APIを使用した服薬リマインダ�
 2. アプリ起動後3秒で「ホーム画面に追加」案内バナーが表示
 3. ユーザーがSafariの共有ボタンから「ホーム画面に追加」を選択
 4. ホーム画面からPWAとして起動
-5. グループ詳細画面で「通知を有効にする」ボタンをタップ
+5. 個人設定画面で「通知を有効にする」ボタンをタップ
 6. 通知許可ダイアログで「許可」を選択
 7. サブスクリプション登録完了、服薬時刻に通知を受け取れるようになる
 
 **シナリオ2: Android/デスクトップユーザーの通知設定**
 1. ユーザーがAndroidまたはデスクトップでアプリにアクセス
-2. グループ詳細画面で「通知を有効にする」ボタンをタップ
+2. 個人設定画面で「通知を有効にする」ボタンをタップ
 3. 通知許可ダイアログで「許可」を選択
 4. サブスクリプション登録完了
 5. 必要に応じて「アプリをインストール」ボタンから PWAをインストール（任意）
@@ -72,7 +72,7 @@ PWA（Progressive Web App）+ Web Push APIを使用した服薬リマインダ�
 - **実装状況**: 完了
 - **実装場所**: `app/_shared/components/register-service-worker.tsx`
 - **詳細**:
-  - 本番環境でのみ登録
+  - 開発・本番両方で登録（開発環境でのテストのため）
   - Service Worker更新検知
 
 ### プッシュ通知基盤（Phase 2）
@@ -92,10 +92,10 @@ PWA（Progressive Web App）+ Web Push APIを使用した服薬リマインダ�
 - **実装状況**: 完了
 - **実装場所**: `convex/push/mutations.ts`, `convex/push/queries.ts`
 - **詳細**:
-  - subscribe: サブスクリプション登録・更新
+  - subscribe: サブスクリプション登録・更新（ユーザー単位）
   - unsubscribe: サブスクリプション削除
   - list: ユーザーのサブスクリプション一覧
-  - listByGroup: グループのサブスクリプション一覧（メンバーシップチェック付き）
+  - listByUserId: 特定ユーザーのサブスクリプション取得（内部用）
 
 #### 通知送信機能
 - **説明**: Web Push APIを使用した通知送信
@@ -185,14 +185,15 @@ PWA（Progressive Web App）+ Web Push APIを使用した服薬リマインダ�
 - **詳細**: beforeinstallpromptイベント利用可能時のみ表示
 
 #### 通知設定カード
-- **説明**: グループ詳細画面の通知設定UI
+- **説明**: 個人設定画面の通知設定UI
 - **優先度**: 高
 - **実装状況**: 完了
-- **実装場所**: `app/(private)/group/_components/NotificationSettingsCard.tsx`
+- **実装場所**: `app/(private)/settings/_components/NotificationSettingsCard.tsx`
 - **詳細**:
   - プッシュ通知プロンプト
   - PWAインストールボタン
   - サブスクリプション状態表示
+  - グループに依存しないユーザー単位の設定
 
 ---
 
@@ -204,7 +205,6 @@ PWA（Progressive Web App）+ Web Push APIを使用した服薬リマインダ�
 {
   _id: Id<"pushSubscriptions">,
   userId: string,                        // Convex Auth userId
-  groupId: Id<"groups">,                 // 所属グループ
   endpoint: string,                      // プッシュサービスエンドポイント（一意）
   keys: {
     p256dh: string,                      // 公開鍵（暗号化用）
@@ -218,12 +218,16 @@ PWA（Progressive Web App）+ Web Push APIを使用した服薬リマインダ�
 
 **インデックス**:
 - `by_userId`: ユーザーのサブスクリプション一覧
-- `by_groupId`: グループのサブスクリプション一覧
 - `by_endpoint`: エンドポイントによる検索（一意制約）
+
+**設計方針**:
+- ユーザー単位で管理（1ユーザー = N デバイス）
+- グループとの関連は持たない（通知送信時にグループメンバーを検索）
+- 1デバイス = 1サブスクリプション（Web Push APIの仕様）
 
 ### ER図
 ```
-users 1----N pushSubscriptions N----1 groups
+users 1----N pushSubscriptions
 ```
 
 ---
@@ -244,9 +248,9 @@ users 1----N pushSubscriptions N----1 groups
 1. **endpoint一意制約**: 同じendpointは1つのみ登録可能
    - 既存エンドポイントは更新（upsert動作）
 
-2. **グループ単位**: サブスクリプションはグループ単位で管理
-   - グループ切り替え時は再登録不要
-   - グループ脱退時はサブスクリプション削除
+2. **ユーザー単位**: サブスクリプションはユーザー単位で管理
+   - グループに依存しない（複数グループに所属しても1つのサブスクリプション）
+   - ユーザーが複数デバイスを持つ場合は複数サブスクリプション
 
 3. **無効サブスクリプション削除**: 410/404エラー時に自動削除
    - ユーザーが通知を無効化した場合
@@ -290,17 +294,17 @@ users 1----N pushSubscriptions N----1 groups
 - **引数**: なし
 - **戻り値**: `Array<PushSubscription>`
 
-#### `listByGroup`
-- **用途**: グループのサブスクリプション一覧（メンバーシップチェック付き）
-- **認証**: 必須
-- **引数**: `{ groupId: Id<"groups"> }`
-- **戻り値**: `Array<PushSubscription>`
-
 #### `getByEndpoint`
 - **用途**: エンドポイントによるサブスクリプション取得
 - **認証**: 必須
 - **引数**: `{ endpoint: string }`
 - **戻り値**: `PushSubscription | null`
+
+#### `listByUserId` (internal)
+- **用途**: 特定ユーザーのサブスクリプション一覧取得
+- **認証**: internal（通知送信時に使用）
+- **引数**: `{ userId: string }`
+- **戻り値**: `Array<PushSubscription>`
 
 #### `getPendingRecordsByTiming` (internal)
 - **用途**: 指定日時・タイミングの未服薬記録取得
@@ -316,7 +320,6 @@ users 1----N pushSubscriptions N----1 groups
 - **引数**:
   ```typescript
   {
-    groupId: Id<"groups">,
     subscription: {
       endpoint: string,
       keys: { p256dh: string, auth: string }
@@ -324,8 +327,8 @@ users 1----N pushSubscriptions N----1 groups
     userAgent?: string
   }
   ```
-- **戻り値**: `Id<"pushSubscriptions">`
-- **副作用**: pushSubscriptions: 作成/更新
+- **戻り値**: `{ subscriptionId: Id<"pushSubscriptions">, isNew: boolean }`
+- **副作用**: pushSubscriptions: 作成/更新（同一endpointは更新）
 
 #### `unsubscribe`
 - **用途**: サブスクリプション削除
@@ -412,9 +415,9 @@ users 1----N pushSubscriptions N----1 groups
 
 ### 画面構成
 
-#### グループ詳細画面（`/group`）
-- **パス**: `/group`
-- **目的**: グループ管理とプッシュ通知設定
+#### 個人設定画面（`/settings`）
+- **パス**: `/settings`
+- **目的**: 個人設定とプッシュ通知設定
 - **主要コンポーネント**:
   - `NotificationSettingsCard`: 通知設定カード
     - `PushNotificationPrompt`: プッシュ通知プロンプト
@@ -471,22 +474,30 @@ const isSupported =
 
 ```typescript
 // convex/push/mutations.ts
-// グループメンバーシップ確認
-const membership = await ctx.db
-  .query("groupMembers")
-  .withIndex("by_userId", (q) => q.eq("userId", userId))
-  .filter((q) => q.eq(q.field("groupId"), args.groupId))
-  .first();
-
-if (!membership || membership.leftAt) {
-  throw new Error("グループメンバーではありません");
-}
-
 // エンドポイント一意性確認（upsert動作）
 const existing = await ctx.db
   .query("pushSubscriptions")
   .withIndex("by_endpoint", (q) => q.eq("endpoint", args.subscription.endpoint))
   .first();
+
+// 既存の場合は更新、新規の場合は作成
+if (existing) {
+  await ctx.db.patch(existing._id, {
+    userId,
+    keys: args.subscription.keys,
+    userAgent: args.userAgent,
+    updatedAt: Date.now(),
+  });
+} else {
+  await ctx.db.insert("pushSubscriptions", {
+    userId,
+    endpoint: args.subscription.endpoint,
+    keys: args.subscription.keys,
+    userAgent: args.userAgent,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+}
 ```
 
 ---
@@ -498,7 +509,6 @@ const existing = await ctx.db
 | ブラウザ非サポート | "このブラウザはプッシュ通知をサポートしていません" | Service Worker/PushManager未サポート | 対応ブラウザに変更 |
 | 通知許可拒否 | "通知許可が拒否されました" | Notification.permission === "denied" | ブラウザ設定から許可 |
 | VAPID鍵未設定 | "VAPID公開鍵が設定されていません" | 環境変数未設定 | 開発者が環境変数設定 |
-| メンバーシップエラー | "グループメンバーではありません" | グループ未参加/脱退済み | グループに再参加 |
 | サブスクリプション削除エラー | "サブスクリプション解除に失敗しました" | ネットワークエラー等 | 再試行 |
 | 通知送信エラー（410/404） | - | サブスクリプション無効 | 自動削除（ユーザーアクション不要） |
 
