@@ -19,8 +19,14 @@ export const checkMedicationReminders = internalAction({
       const now = new Date();
       const jstDate = formatInTimeZone(now, "Asia/Tokyo", "yyyy-MM-dd");
       const jstTime = formatInTimeZone(now, "Asia/Tokyo", "HH:mm");
-      const jstHour = Number.parseInt(formatInTimeZone(now, "Asia/Tokyo", "HH"), 10);
-      const jstMinute = Number.parseInt(formatInTimeZone(now, "Asia/Tokyo", "mm"), 10);
+      const jstHour = Number.parseInt(
+        formatInTimeZone(now, "Asia/Tokyo", "HH"),
+        10,
+      );
+      const jstMinute = Number.parseInt(
+        formatInTimeZone(now, "Asia/Tokyo", "mm"),
+        10,
+      );
 
       console.log(`[Medication Reminders] JST Time: ${jstDate} ${jstTime}`);
 
@@ -28,7 +34,9 @@ export const checkMedicationReminders = internalAction({
       const currentTiming = determineTimingFromTime(jstHour, jstMinute);
 
       if (!currentTiming) {
-        console.log("[Medication Reminders] No timing matched for current time");
+        console.log(
+          "[Medication Reminders] No timing matched for current time",
+        );
         return { sent: 0, message: "通知対象の時間ではありません" };
       }
 
@@ -40,10 +48,12 @@ export const checkMedicationReminders = internalAction({
         {
           date: jstDate,
           timing: currentTiming,
-        }
+        },
       );
 
-      console.log(`[Medication Reminders] Found ${pendingRecords.length} pending records`);
+      console.log(
+        `[Medication Reminders] Found ${pendingRecords.length} pending records`,
+      );
 
       let sentCount = 0;
       const errors: string[] = [];
@@ -52,12 +62,17 @@ export const checkMedicationReminders = internalAction({
       for (const record of pendingRecords) {
         try {
           // グループのサブスクリプションを取得
-          const subscriptions = await ctx.runQuery(api.push.queries.listByGroup, {
-            groupId: record.groupId,
-          });
+          const subscriptions = await ctx.runQuery(
+            api.push.queries.listByGroup,
+            {
+              groupId: record.groupId,
+            },
+          );
 
           if (subscriptions.length === 0) {
-            console.log(`[Medication Reminders] No subscriptions for group ${record.groupId}`);
+            console.log(
+              `[Medication Reminders] No subscriptions for group ${record.groupId}`,
+            );
             continue;
           }
 
@@ -76,9 +91,13 @@ export const checkMedicationReminders = internalAction({
             errors.push(`Group ${record.groupId}: ${result.message}`);
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           errors.push(`Record ${record._id}: ${errorMessage}`);
-          console.error("[Medication Reminders] Error processing record:", error);
+          console.error(
+            "[Medication Reminders] Error processing record:",
+            error,
+          );
         }
       }
 
@@ -106,7 +125,7 @@ export const checkMedicationReminders = internalAction({
  */
 function determineTimingFromTime(
   hour: number,
-  minute: number
+  minute: number,
 ): "morning" | "noon" | "evening" | "bedtime" | null {
   // 各タイミングの時刻設定（±15分の範囲でマッチ）
   const timings = [
@@ -144,7 +163,7 @@ function createNotificationPayload(
     dosage?: { amount: number; unit: string };
     groupId: string;
   },
-  timing: string
+  timing: string,
 ): {
   title: string;
   body: string;

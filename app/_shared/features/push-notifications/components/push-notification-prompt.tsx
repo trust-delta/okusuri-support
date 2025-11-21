@@ -12,15 +12,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { usePushNotifications } from "@/features/push-notifications/hooks/use-push-notifications";
-import type { Id } from "@/schema";
 
 interface PushNotificationPromptProps {
-  groupId: Id<"groups">;
   onComplete?: () => void;
 }
 
 export function PushNotificationPrompt({
-  groupId,
   onComplete,
 }: PushNotificationPromptProps) {
   const {
@@ -36,7 +33,7 @@ export function PushNotificationPrompt({
   const [showPrompt, setShowPrompt] = useState(true);
 
   const handleSubscribe = async () => {
-    await subscribe(groupId);
+    await subscribe();
     if (onComplete) {
       onComplete();
     }

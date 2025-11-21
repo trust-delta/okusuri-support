@@ -4,7 +4,6 @@ import { v } from "convex/values";
 export const pushSchema = {
   pushSubscriptions: defineTable({
     userId: v.string(), // Convex Auth userId
-    groupId: v.id("groups"),
     endpoint: v.string(), // プッシュサービスのエンドポイント
     keys: v.object({
       p256dh: v.string(), // クライアント公開鍵
@@ -15,6 +14,5 @@ export const pushSchema = {
     updatedAt: v.number(),
   })
     .index("by_userId", ["userId"])
-    .index("by_groupId", ["groupId"])
     .index("by_endpoint", ["endpoint"]),
 };

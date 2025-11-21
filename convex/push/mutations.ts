@@ -7,7 +7,6 @@ import { mutation } from "../_generated/server";
  */
 export const subscribe = mutation({
   args: {
-    groupId: v.id("groups"),
     subscription: v.object({
       endpoint: v.string(),
       keys: v.object({
@@ -28,14 +27,15 @@ export const subscribe = mutation({
     // 既存のサブスクリプションを検索（同じendpoint）
     const existing = await ctx.db
       .query("pushSubscriptions")
-      .withIndex("by_endpoint", (q) => q.eq("endpoint", args.subscription.endpoint))
+      .withIndex("by_endpoint", (q) =>
+        q.eq("endpoint", args.subscription.endpoint),
+      )
       .first();
 
     if (existing) {
       // 既存のサブスクリプションを更新
       await ctx.db.patch(existing._id, {
         userId,
-        groupId: args.groupId,
         keys: args.subscription.keys,
         userAgent: args.userAgent,
         updatedAt: now,
@@ -47,7 +47,6 @@ export const subscribe = mutation({
     // 新規サブスクリプションを作成
     const subscriptionId = await ctx.db.insert("pushSubscriptions", {
       userId,
-      groupId: args.groupId,
       endpoint: args.subscription.endpoint,
       keys: args.subscription.keys,
       userAgent: args.userAgent,
@@ -80,7 +79,10 @@ export const unsubscribe = mutation({
 
     if (!subscription) {
       // 既に削除されている場合はスキップ
-      return { success: true, message: "サブスクリプションが見つかりませんでした" };
+      return {
+        success: true,
+        message: "サブスクリプションが見つかりませんでした",
+      };
     }
 
     // 自分のサブスクリプションのみ削除可能

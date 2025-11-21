@@ -13,7 +13,7 @@ export const getPendingRecordsByTiming = internalQuery({
       v.literal("morning"),
       v.literal("noon"),
       v.literal("evening"),
-      v.literal("bedtime")
+      v.literal("bedtime"),
     ),
   },
   handler: async (ctx, args) => {
@@ -24,8 +24,8 @@ export const getPendingRecordsByTiming = internalQuery({
       .filter((q) =>
         q.and(
           q.eq(q.field("timing"), args.timing),
-          q.eq(q.field("status"), "pending")
-        )
+          q.eq(q.field("status"), "pending"),
+        ),
       )
       .collect();
 
@@ -59,7 +59,7 @@ export const getPendingRecordsByTiming = internalQuery({
           timing: record.timing,
           scheduledDate: record.scheduledDate,
         };
-      })
+      }),
     );
 
     return results;

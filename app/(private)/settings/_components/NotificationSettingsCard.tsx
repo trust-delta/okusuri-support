@@ -10,18 +10,11 @@ import {
 } from "@/components/ui/card";
 import { PushNotificationPrompt } from "@/features/push-notifications/components/push-notification-prompt";
 import { PWAInstallButton } from "@/features/push-notifications/components/pwa-install-button";
-import type { Id } from "@/schema";
-
-interface NotificationSettingsCardProps {
-  groupId: Id<"groups">;
-}
 
 /**
- * グループ詳細画面の通知設定カード
+ * 通知設定カード（個人設定用）
  */
-export function NotificationSettingsCard({
-  groupId,
-}: NotificationSettingsCardProps) {
+export function NotificationSettingsCard() {
   return (
     <Card>
       <CardHeader>
@@ -34,7 +27,7 @@ export function NotificationSettingsCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <PushNotificationPrompt groupId={groupId} />
+        <PushNotificationPrompt />
         <div className="pt-4">
           <PWAInstallButton variant="outline" className="w-full" />
         </div>

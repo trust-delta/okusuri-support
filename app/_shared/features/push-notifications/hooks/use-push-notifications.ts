@@ -3,7 +3,6 @@
 import { useMutation } from "convex/react";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/api";
-import type { Id } from "@/schema";
 
 export type PushNotificationPermission = "default" | "granted" | "denied";
 
@@ -13,7 +12,7 @@ interface UsePushNotificationsResult {
   isSubscribed: boolean;
   isLoading: boolean;
   error: string | null;
-  subscribe: (groupId: Id<"groups">) => Promise<void>;
+  subscribe: () => Promise<void>;
   unsubscribe: () => Promise<void>;
   requestPermission: () => Promise<PushNotificationPermission>;
 }
@@ -89,86 +88,82 @@ export function usePushNotifications(): UsePushNotificationsResult {
     }, [isSupported]);
 
   // サブスクリプション登録
-  const subscribe = useCallback(
-    async (groupId: Id<"groups">) => {
-      if (!isSupported) {
-        setError("このブラウザはプッシュ通知をサポートしていません");
-        return;
+  const subscribe = useCallback(async () => {
+    if (!isSupported) {
+      setError("このブラウザはプッシュ通知をサポートしていません");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log("[Push] サブスクリプション登録開始");
+
+      // 通知許可を確認
+      let perm = permission;
+      if (perm === "default") {
+        console.log("[Push] 通知許可をリクエスト");
+        perm = await requestPermission();
       }
 
-      setIsLoading(true);
-      setError(null);
+      if (perm !== "granted") {
+        throw new Error("通知許可が拒否されました");
+      }
+      console.log("[Push] 通知許可: granted");
 
-      try {
-        console.log("[Push] サブスクリプション登録開始");
+      // Service Worker登録を待機
+      console.log("[Push] Service Worker待機中...");
+      const registration = await navigator.serviceWorker.ready;
+      console.log("[Push] Service Worker準備完了");
 
-        // 通知許可を確認
-        let perm = permission;
-        if (perm === "default") {
-          console.log("[Push] 通知許可をリクエスト");
-          perm = await requestPermission();
-        }
+      // VAPID公開鍵を取得
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      console.log(
+        "[Push] VAPID公開鍵:",
+        vapidPublicKey ? "設定済み" : "未設定",
+      );
+      if (!vapidPublicKey) {
+        throw new Error("VAPID公開鍵が設定されていません");
+      }
 
-        if (perm !== "granted") {
-          throw new Error("通知許可が拒否されました");
-        }
-        console.log("[Push] 通知許可: granted");
+      // サブスクリプション登録
+      console.log("[Push] PushManager.subscribe呼び出し中...");
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(
+          vapidPublicKey,
+        ) as BufferSource,
+      });
+      console.log("[Push] PushManager.subscribe成功");
 
-        // Service Worker登録を待機
-        console.log("[Push] Service Worker待機中...");
-        const registration = await navigator.serviceWorker.ready;
-        console.log("[Push] Service Worker準備完了");
-
-        // VAPID公開鍵を取得
-        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-        console.log(
-          "[Push] VAPID公開鍵:",
-          vapidPublicKey ? "設定済み" : "未設定",
-        );
-        if (!vapidPublicKey) {
-          throw new Error("VAPID公開鍵が設定されていません");
-        }
-
-        // サブスクリプション登録
-        console.log("[Push] PushManager.subscribe呼び出し中...");
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(
-            vapidPublicKey,
-          ) as BufferSource,
-        });
-        console.log("[Push] PushManager.subscribe成功");
-
-        // サブスクリプション情報をサーバーに保存
-        console.log("[Push] Convex mutationを呼び出し中...");
-        await subscribeMutation({
-          groupId,
-          subscription: {
-            endpoint: subscription.endpoint,
-            keys: {
-              p256dh: arrayBufferToBase64(subscription.getKey("p256dh")),
-              auth: arrayBufferToBase64(subscription.getKey("auth")),
-            },
+      // サブスクリプション情報をサーバーに保存
+      console.log("[Push] Convex mutationを呼び出し中...");
+      await subscribeMutation({
+        subscription: {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: arrayBufferToBase64(subscription.getKey("p256dh")),
+            auth: arrayBufferToBase64(subscription.getKey("auth")),
           },
-          userAgent: navigator.userAgent,
-        });
-        console.log("[Push] Convex mutation成功");
+        },
+        userAgent: navigator.userAgent,
+      });
+      console.log("[Push] Convex mutation成功");
 
-        setIsSubscribed(true);
-        console.log("[Push] サブスクリプション登録完了");
-      } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "サブスクリプション登録に失敗しました";
-        setError(message);
-        console.error("サブスクリプション登録エラー:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [isSupported, permission, requestPermission, subscribeMutation],
-  );
+      setIsSubscribed(true);
+      console.log("[Push] サブスクリプション登録完了");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "サブスクリプション登録に失敗しました";
+      setError(message);
+      console.error("サブスクリプション登録エラー:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isSupported, permission, requestPermission, subscribeMutation]);
 
   // サブスクリプション解除
   const unsubscribe = useCallback(async () => {

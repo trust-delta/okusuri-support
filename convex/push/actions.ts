@@ -3,8 +3,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import webpush from "web-push";
-import { action } from "../_generated/server";
-import { api } from "../_generated/api";
+import { action, internalAction } from "../_generated/server";
+import { api, internal } from "../_generated/api";
 
 // VAPID設定
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -187,56 +187,69 @@ export const sendToGroup = action({
       throw new Error("認証が必要です");
     }
 
-    // グループのサブスクリプションを取得
-    // listByGroup内でメンバーシップチェックが行われる
-    const subscriptions = await ctx.runQuery(api.push.queries.listByGroup, {
+    // グループメンバーを取得
+    const members = await ctx.runQuery(api.groups.queries.getGroupMembers, {
       groupId: args.groupId,
     });
 
-    if (subscriptions.length === 0) {
+    if (!members || members.length === 0) {
       return {
         success: false,
-        message: "サブスクリプションが見つかりませんでした",
+        message: "グループメンバーが見つかりませんでした",
         sent: 0,
       };
     }
 
+    // 各メンバーのサブスクリプションを取得して通知送信
     let sent = 0;
+    let totalSubscriptions = 0;
     const errors: string[] = [];
 
-    for (const subscription of subscriptions) {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: subscription.endpoint,
-            keys: {
-              p256dh: subscription.keys.p256dh,
-              auth: subscription.keys.auth,
-            },
-          },
-          JSON.stringify(args.payload),
-        );
-        sent++;
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        errors.push(`Failed to send: ${errorMessage}`);
-        console.error("Push notification error:", error);
+    for (const member of members) {
+      const subscriptions = await ctx.runQuery(
+        internal.push.queries.listByUserId,
+        {
+          userId: member.userId,
+        },
+      );
 
-        // サブスクリプションが無効な場合は削除
-        if (errorMessage.includes("410") || errorMessage.includes("404")) {
-          await ctx.runMutation(api.push.mutations.unsubscribe, {
-            endpoint: subscription.endpoint,
-          });
+      totalSubscriptions += subscriptions.length;
+
+      for (const subscription of subscriptions) {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: subscription.endpoint,
+              keys: {
+                p256dh: subscription.keys.p256dh,
+                auth: subscription.keys.auth,
+              },
+            },
+            JSON.stringify(args.payload),
+          );
+          sent++;
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          errors.push(`Failed to send: ${errorMessage}`);
+          console.error("Push notification error:", error);
+
+          // サブスクリプションが無効な場合は削除
+          if (errorMessage.includes("410") || errorMessage.includes("404")) {
+            await ctx.runMutation(api.push.mutations.unsubscribe, {
+              endpoint: subscription.endpoint,
+            });
+          }
         }
       }
     }
 
     return {
       success: sent > 0,
-      message: `${sent}/${subscriptions.length}件送信`,
+      message: `${sent}/${totalSubscriptions}件送信（メンバー数: ${members.length}）`,
       sent,
-      total: subscriptions.length,
+      total: totalSubscriptions,
+      memberCount: members.length,
       errors: errors.length > 0 ? errors : undefined,
     };
   },
