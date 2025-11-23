@@ -92,7 +92,7 @@ function PrescriptionMedicinesList({
         含まれる薬
       </h4>
       <div className="space-y-2">
-        {medicines.map((medicine) => (
+        {medicines.map((medicine: (typeof medicines)[number]) => (
           <div
             key={medicine._id}
             className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
@@ -104,7 +104,7 @@ function PrescriptionMedicinesList({
                 </div>
                 {medicine.schedule && (
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {medicine.schedule.timings.map((timing) => (
+                    {medicine.schedule.timings.map((timing: string) => (
                       <span
                         key={timing}
                         className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
@@ -263,18 +263,20 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
 
   // フィルタ適用
   const today = new Date().toISOString().split("T")[0];
-  const filteredPrescriptions = prescriptions.filter((prescription) => {
-    const isExpired = prescription.endDate && prescription.endDate < today;
-    const isInactive = !prescription.isActive;
+  const filteredPrescriptions = prescriptions.filter(
+    (prescription: (typeof prescriptions)[number]) => {
+      const isExpired = prescription.endDate && prescription.endDate < today;
+      const isInactive = !prescription.isActive;
 
-    if (filter === "active") {
-      // 有効な処方箋: 期限内かつアクティブ
-      return !isExpired && !isInactive;
-    } else {
-      // 無効な処方箋: 期限切れまたは無効化済み
-      return isExpired || isInactive;
-    }
-  });
+      if (filter === "active") {
+        // 有効な処方箋: 期限内かつアクティブ
+        return !isExpired && !isInactive;
+      } else {
+        // 無効な処方箋: 期限切れまたは無効化済み
+        return isExpired || isInactive;
+      }
+    },
+  );
 
   return (
     <div className="space-y-4">
@@ -291,124 +293,128 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
         </Card>
       ) : (
         <div className="grid gap-4 mt-6">
-          {filteredPrescriptions.map((prescription) => {
-            const isExpanded = expandedPrescriptions.has(prescription._id);
-            const isExpired =
-              prescription.endDate && prescription.endDate < today;
-            const isInactive = !prescription.isActive;
+          {filteredPrescriptions.map(
+            (prescription: (typeof filteredPrescriptions)[number]) => {
+              const isExpanded = expandedPrescriptions.has(prescription._id);
+              const isExpired =
+                prescription.endDate && prescription.endDate < today;
+              const isInactive = !prescription.isActive;
 
-            return (
-              <Card
-                key={prescription._id}
-                className={isInactive || isExpired ? "opacity-70" : ""}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CardTitle>{prescription.name}</CardTitle>
-                        {isInactive && <Badge variant="secondary">無効</Badge>}
-                        {isExpired && !isInactive && (
-                          <Badge variant="outline">期限切れ</Badge>
-                        )}
-                      </div>
-                      <CardDescription className="flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {formatDate(prescription.startDate)}
-                          {prescription.endDate && (
-                            <> 〜 {formatDate(prescription.endDate)}</>
+              return (
+                <Card
+                  key={prescription._id}
+                  className={isInactive || isExpired ? "opacity-70" : ""}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle>{prescription.name}</CardTitle>
+                          {isInactive && (
+                            <Badge variant="secondary">無効</Badge>
                           )}
-                          {!prescription.endDate && "〜 継続中"}
-                        </span>
-                      </CardDescription>
-                    </div>
-                    <div className="flex gap-2">
-                      {prescription.isActive ? (
-                        <>
-                          {!prescription.endDate && (
+                          {isExpired && !isInactive && (
+                            <Badge variant="outline">期限切れ</Badge>
+                          )}
+                        </div>
+                        <CardDescription className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {formatDate(prescription.startDate)}
+                            {prescription.endDate && (
+                              <> 〜 {formatDate(prescription.endDate)}</>
+                            )}
+                            {!prescription.endDate && "〜 継続中"}
+                          </span>
+                        </CardDescription>
+                      </div>
+                      <div className="flex gap-2">
+                        {prescription.isActive ? (
+                          <>
+                            {!prescription.endDate && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEndDateDialogPrescriptionId(
+                                    prescription._id,
+                                  );
+                                  setEndDateInput(today);
+                                }}
+                              >
+                                終了日を設定
+                              </Button>
+                            )}
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                setEndDateDialogPrescriptionId(
+                              onClick={() =>
+                                setDeactivateDialogPrescriptionId(
                                   prescription._id,
-                                );
-                                setEndDateInput(today);
-                              }}
+                                )
+                              }
                             >
-                              終了日を設定
+                              <Pause className="h-4 w-4 mr-1" />
+                              無効化
                             </Button>
-                          )}
+                          </>
+                        ) : (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              setDeactivateDialogPrescriptionId(
-                                prescription._id,
-                              )
-                            }
+                            onClick={() => handleActivate(prescription._id)}
                           >
-                            <Pause className="h-4 w-4 mr-1" />
-                            無効化
+                            <Play className="h-4 w-4 mr-1" />
+                            有効化
                           </Button>
-                        </>
-                      ) : (
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleExpanded(prescription._id)}
+                        >
+                          {isExpanded ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              閉じる
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              詳細
+                            </>
+                          )}
+                        </Button>
                         <Button
                           variant="outline"
-                          size="sm"
-                          onClick={() => handleActivate(prescription._id)}
+                          size="icon"
+                          onClick={() =>
+                            setDeleteDialogPrescriptionId(prescription._id)
+                          }
                         >
-                          <Play className="h-4 w-4 mr-1" />
-                          有効化
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleExpanded(prescription._id)}
-                      >
-                        {isExpanded ? (
-                          <>
-                            <ChevronUp className="h-4 w-4 mr-1" />
-                            閉じる
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="h-4 w-4 mr-1" />
-                            詳細
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          setDeleteDialogPrescriptionId(prescription._id)
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                {(prescription.notes || isExpanded) && (
-                  <CardContent className="space-y-4">
-                    {prescription.notes && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {prescription.notes}
-                      </p>
-                    )}
-                    {isExpanded && (
-                      <PrescriptionMedicinesList
-                        prescriptionId={prescription._id}
-                      />
-                    )}
-                  </CardContent>
-                )}
-              </Card>
-            );
-          })}
+                  </CardHeader>
+                  {(prescription.notes || isExpanded) && (
+                    <CardContent className="space-y-4">
+                      {prescription.notes && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {prescription.notes}
+                        </p>
+                      )}
+                      {isExpanded && (
+                        <PrescriptionMedicinesList
+                          prescriptionId={prescription._id}
+                        />
+                      )}
+                    </CardContent>
+                  )}
+                </Card>
+              );
+            },
+          )}
         </div>
       )}
 

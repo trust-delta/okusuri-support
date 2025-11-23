@@ -38,8 +38,12 @@ export function InviteSection({ groupId }: Props) {
     return null;
   }
 
-  const activeInvitations = invitations.filter((inv) => !inv.isUsed);
-  const usedInvitations = invitations.filter((inv) => inv.isUsed);
+  const activeInvitations = invitations.filter(
+    (inv: (typeof invitations)[number]) => !inv.isUsed,
+  );
+  const usedInvitations = invitations.filter(
+    (inv: (typeof invitations)[number]) => inv.isUsed,
+  );
 
   const handleCopyLink = async (link: string, code: string) => {
     try {
@@ -79,69 +83,71 @@ export function InviteSection({ groupId }: Props) {
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {activeInvitations.map((invitation) => (
-                    <div
-                      key={invitation._id}
-                      className="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <code className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                              {invitation.code}
-                            </code>
-                            {isExpired(invitation.expiresAt) && (
-                              <Badge variant="destructive">期限切れ</Badge>
+                  {activeInvitations.map(
+                    (invitation: (typeof activeInvitations)[number]) => (
+                      <div
+                        key={invitation._id}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <code className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                {invitation.code}
+                              </code>
+                              {isExpired(invitation.expiresAt) && (
+                                <Badge variant="destructive">期限切れ</Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <span>
+                                  有効期限:{" "}
+                                  {format(
+                                    new Date(invitation.expiresAt),
+                                    "PPP p",
+                                    { locale: ja },
+                                  )}
+                                </span>
+                              </div>
+                              <div>
+                                許可ロール:{" "}
+                                {invitation.allowedRoles
+                                  .map((r: string) =>
+                                    r === "patient" ? "患者" : "支援者",
+                                  )
+                                  .join("、")}
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleCopyLink(
+                                invitation.invitationLink,
+                                invitation.code,
+                              )
+                            }
+                            className="gap-2 shrink-0"
+                          >
+                            {copiedCode === invitation.code ? (
+                              <>
+                                <Check className="h-4 w-4" />
+                                コピー済み
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4" />
+                                リンクをコピー
+                              </>
                             )}
-                          </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              <span>
-                                有効期限:{" "}
-                                {format(
-                                  new Date(invitation.expiresAt),
-                                  "PPP p",
-                                  { locale: ja },
-                                )}
-                              </span>
-                            </div>
-                            <div>
-                              許可ロール:{" "}
-                              {invitation.allowedRoles
-                                .map((r) =>
-                                  r === "patient" ? "患者" : "支援者",
-                                )
-                                .join("、")}
-                            </div>
-                          </div>
+                          </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleCopyLink(
-                              invitation.invitationLink,
-                              invitation.code,
-                            )
-                          }
-                          className="gap-2 shrink-0"
-                        >
-                          {copiedCode === invitation.code ? (
-                            <>
-                              <Check className="h-4 w-4" />
-                              コピー済み
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4" />
-                              リンクをコピー
-                            </>
-                          )}
-                        </Button>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               )}
             </AccordionContent>
@@ -162,31 +168,33 @@ export function InviteSection({ groupId }: Props) {
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {usedInvitations.map((invitation) => (
-                    <div
-                      key={invitation._id}
-                      className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 opacity-60"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <code className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                              {invitation.code}
-                            </code>
-                            <Badge variant="secondary">使用済み</Badge>
-                          </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            使用日時:{" "}
-                            {invitation.usedAt
-                              ? format(new Date(invitation.usedAt), "PPP p", {
-                                  locale: ja,
-                                })
-                              : "不明"}
+                  {usedInvitations.map(
+                    (invitation: (typeof usedInvitations)[number]) => (
+                      <div
+                        key={invitation._id}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 opacity-60"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <code className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                {invitation.code}
+                              </code>
+                              <Badge variant="secondary">使用済み</Badge>
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              使用日時:{" "}
+                              {invitation.usedAt
+                                ? format(new Date(invitation.usedAt), "PPP p", {
+                                    locale: ja,
+                                  })
+                                : "不明"}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               )}
             </AccordionContent>

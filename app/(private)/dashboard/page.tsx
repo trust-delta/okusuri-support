@@ -46,7 +46,9 @@ export default async function DashboardPage({
     groupStatusResult.activeGroupId ||
     groupStatusResult.groups[0]?.groupId;
   const activeGroup = groupStatusResult.groups.find(
-    (g): g is NonNullable<(typeof groupStatusResult.groups)[number]> =>
+    (
+      g: (typeof groupStatusResult.groups)[number],
+    ): g is NonNullable<(typeof groupStatusResult.groups)[number]> =>
       g !== null && g.groupId === activeGroupId,
   );
 

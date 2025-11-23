@@ -60,25 +60,10 @@ export const checkMedicationReminders = internalAction({
       // 各記録について通知を送信
       for (const record of pendingRecords) {
         try {
-          // グループのサブスクリプションを取得
-          const subscriptions = await ctx.runQuery(
-            api.push.queries.listByGroup,
-            {
-              groupId: record.groupId,
-            },
-          );
-
-          if (subscriptions.length === 0) {
-            console.log(
-              `[Medication Reminders] No subscriptions for group ${record.groupId}`,
-            );
-            continue;
-          }
-
           // 通知内容を作成
           const payload = createNotificationPayload(record, currentTiming);
 
-          // グループに通知を送信
+          // グループに通知を送信（sendToGroupが内部的にメンバーのサブスクリプションを取得）
           const result = await ctx.runAction(api.push.actions.sendToGroup, {
             groupId: record.groupId,
             payload,

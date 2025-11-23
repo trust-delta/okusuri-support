@@ -144,16 +144,22 @@ export function MedicationGroupedRecordsList({
   }
 
   // 薬ごとにタイミング別に展開
-  const medicationItems = medications.flatMap((med) =>
-    med.timings.map((timing) => ({
-      medicineId: med.medicineId,
-      scheduleId: med.scheduleId,
-      medicineName: med.medicineName,
-      prescriptionId: med.prescriptionId,
-      prescriptionName: med.prescriptionName,
-      timing: timing as "morning" | "noon" | "evening" | "bedtime" | "asNeeded",
-      dosage: med.dosage,
-    })),
+  const medicationItems = medications.flatMap(
+    (med: (typeof medications)[number]) =>
+      med.timings.map((timing: string) => ({
+        medicineId: med.medicineId,
+        scheduleId: med.scheduleId,
+        medicineName: med.medicineName,
+        prescriptionId: med.prescriptionId,
+        prescriptionName: med.prescriptionName,
+        timing: timing as
+          | "morning"
+          | "noon"
+          | "evening"
+          | "bedtime"
+          | "asNeeded",
+        dosage: med.dosage,
+      })),
   );
 
   // グルーピング処理
@@ -162,7 +168,10 @@ export function MedicationGroupedRecordsList({
       ? // 時間帯でグルーピング
         Object.entries(
           medicationItems.reduce(
-            (acc, item) => {
+            (
+              acc: Record<string, typeof medicationItems>,
+              item: (typeof medicationItems)[number],
+            ) => {
               if (!acc[item.timing]) acc[item.timing] = [];
               acc[item.timing].push(item);
               return acc;
@@ -177,7 +186,10 @@ export function MedicationGroupedRecordsList({
       : // 処方箋でグルーピング
         Object.entries(
           medicationItems.reduce(
-            (acc, item) => {
+            (
+              acc: Record<string, typeof medicationItems>,
+              item: (typeof medicationItems)[number],
+            ) => {
               if (!acc[item.prescriptionName]) acc[item.prescriptionName] = [];
               acc[item.prescriptionName].push(item);
               return acc;
@@ -225,19 +237,22 @@ export function MedicationGroupedRecordsList({
       )}
 
       {/* グループごとの薬リスト */}
-      {grouped.map(([groupName, items]) => {
+      {grouped.map(([groupName, items]: [string, typeof medicationItems]) => {
         // グループ内の薬の記録状態を取得
-        const itemsWithRecordStatus = items.map((item) => {
-          const record = records?.find(
-            (r) => r.medicineId === item.medicineId && r.timing === item.timing,
-          );
-          return {
-            medicineId: item.medicineId,
-            scheduleId: item.scheduleId,
-            medicineName: item.medicineName,
-            hasRecord: !!record,
-          };
-        });
+        const itemsWithRecordStatus = items.map(
+          (item: (typeof items)[number]) => {
+            const record = records?.find(
+              (r: (typeof records)[number]) =>
+                r.medicineId === item.medicineId && r.timing === item.timing,
+            );
+            return {
+              medicineId: item.medicineId,
+              scheduleId: item.scheduleId,
+              medicineName: item.medicineName,
+              hasRecord: !!record,
+            };
+          },
+        );
 
         return (
           <div key={groupName} className="space-y-3">
@@ -266,9 +281,9 @@ export function MedicationGroupedRecordsList({
 
             {/* グループ内の薬 */}
             <div className="space-y-2">
-              {items.map((item, index) => {
+              {items.map((item: (typeof items)[number], index: number) => {
                 const record = records?.find(
-                  (r) =>
+                  (r: (typeof records)[number]) =>
                     r.medicineId === item.medicineId &&
                     r.timing === item.timing,
                 );

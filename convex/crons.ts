@@ -7,7 +7,7 @@ const crons = cronJobs();
 crons.interval(
   "medication-reminders",
   { minutes: 15 },
-  internal.notifications.scheduler.checkMedicationReminders,
+  internal.scheduler.checkMedicationReminders,
 );
 
 export default crons;

@@ -267,7 +267,8 @@ describe("パフォーマンステスト - 招待機能", () => {
       // クライアント側でのフィルタリング（有効な招待のみ）
       const startTimeFilter = performance.now();
       const validInvitations = allInvitations.filter(
-        (inv) => !inv.isUsed && inv.expiresAt > Date.now(),
+        (inv: (typeof allInvitations)[number]) =>
+          !inv.isUsed && inv.expiresAt > Date.now(),
       );
       const endTimeFilter = performance.now();
       const latencyFilter = endTimeFilter - startTimeFilter;
@@ -346,7 +347,7 @@ describe("パフォーマンステスト - 招待機能", () => {
       const totalLatency = endTime - startTime;
 
       // 全員が正常に参加できたことを確認
-      results.forEach((result, index) => {
+      results.forEach((result: (typeof results)[number], index: number) => {
         expect(result.isSuccess).toBe(true);
         console.log(`ユーザー${index + 1}が参加完了`);
       });
