@@ -10,7 +10,12 @@ import { internalAction } from "./_generated/server";
  */
 export const checkMedicationReminders = internalAction({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<{
+    sent: number;
+    checked?: number;
+    errors?: string[];
+    message: string;
+  }> => {
     console.log("[Medication Reminders] Checking for reminders...");
 
     try {
@@ -43,7 +48,7 @@ export const checkMedicationReminders = internalAction({
 
       // 該当する服薬記録を検索
       const pendingRecords = await ctx.runQuery(
-        internal["notifications/queries"].getPendingRecordsByTiming,
+        internal.notifications.queries.getPendingRecordsByTiming,
         {
           date: jstDate,
           timing: currentTiming,

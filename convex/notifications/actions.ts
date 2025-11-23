@@ -9,7 +9,14 @@ import { action } from "../_generated/server";
  */
 export const testMedicationReminders = action({
   args: {},
-  handler: async (ctx) => {
+  handler: async (
+    ctx,
+  ): Promise<{
+    sent: number;
+    checked?: number;
+    errors?: string[];
+    message: string;
+  }> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("認証が必要です");

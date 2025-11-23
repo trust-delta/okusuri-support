@@ -186,7 +186,17 @@ export const sendToGroup = action({
     groupId: v.id("groups"),
     payload: pushPayloadValidator,
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    sent: number;
+    total?: number;
+    memberCount?: number;
+    errors?: string[];
+  }> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("認証が必要です");
