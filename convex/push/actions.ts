@@ -3,17 +3,22 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import webpush from "web-push";
-import { action, internalAction } from "../_generated/server";
 import { api, internal } from "../_generated/api";
+import { action } from "../_generated/server";
 
 // VAPID設定
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = "mailto:support@okusuri-support.example.com";
 
 if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-  console.warn(
+  console.error(
     "⚠️ VAPID keys are not configured. Push notifications will not work.",
+  );
+  console.error("VAPID_PUBLIC_KEY:", VAPID_PUBLIC_KEY ? "設定済み" : "未設定");
+  console.error(
+    "VAPID_PRIVATE_KEY:",
+    VAPID_PRIVATE_KEY ? "設定済み" : "未設定",
   );
 }
 
