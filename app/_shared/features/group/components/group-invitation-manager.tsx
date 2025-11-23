@@ -115,7 +115,9 @@ export function GroupInvitationManager({
     );
   }
 
-  const activeInvitations = invitations.filter((inv) => !inv.isUsed);
+  const activeInvitations = invitations.filter(
+    (inv: (typeof invitations)[number]) => !inv.isUsed,
+  );
 
   return (
     <div className="space-y-4">
@@ -137,67 +139,74 @@ export function GroupInvitationManager({
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
             有効な招待コード
           </h3>
-          {activeInvitations.map((invitation) => {
-            const expiryDate = new Date(invitation.expiresAt);
-            const now = new Date();
-            const isExpired = expiryDate < now;
+          {activeInvitations.map(
+            (invitation: (typeof activeInvitations)[number]) => {
+              const expiryDate = new Date(invitation.expiresAt);
+              const now = new Date();
+              const isExpired = expiryDate < now;
 
-            return (
-              <div
-                key={invitation._id}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <code className="text-lg font-mono font-bold text-gray-900 dark:text-gray-100">
-                        {invitation.code}
-                      </code>
-                      {isExpired && (
-                        <span className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded">
-                          期限切れ
-                        </span>
-                      )}
+              return (
+                <div
+                  key={invitation._id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <code className="text-lg font-mono font-bold text-gray-900 dark:text-gray-100">
+                          {invitation.code}
+                        </code>
+                        {isExpired && (
+                          <span className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded">
+                            期限切れ
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                        <p>
+                          有効期限: {expiryDate.toLocaleDateString("ja-JP")}{" "}
+                          {expiryDate.toLocaleTimeString("ja-JP")}
+                        </p>
+                        <p>
+                          許可ロール:{" "}
+                          {invitation.allowedRoles
+                            .map((role: string) =>
+                              role === "patient" ? "患者" : "サポーター",
+                            )
+                            .join(", ")}
+                        </p>
+                      </div>
                     </div>
-                    <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                      <p>
-                        有効期限: {expiryDate.toLocaleDateString("ja-JP")}{" "}
-                        {expiryDate.toLocaleTimeString("ja-JP")}
-                      </p>
-                      <p>
-                        許可ロール:{" "}
-                        {invitation.allowedRoles
-                          .map((role) =>
-                            role === "patient" ? "患者" : "サポーター",
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          handleCopyLink(invitation.invitationLink)
+                        }
+                        title="リンクをコピー"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          handleShare(
+                            invitation.invitationLink,
+                            invitation.code,
                           )
-                          .join(", ")}
-                      </p>
+                        }
+                        title="共有"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleCopyLink(invitation.invitationLink)}
-                      title="リンクをコピー"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        handleShare(invitation.invitationLink, invitation.code)
-                      }
-                      title="共有"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            },
+          )}
         </div>
       ) : (
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
@@ -205,15 +214,16 @@ export function GroupInvitationManager({
         </p>
       )}
 
-      {invitations.filter((inv) => inv.isUsed).length > 0 && (
+      {invitations.filter((inv: (typeof invitations)[number]) => inv.isUsed)
+        .length > 0 && (
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             使用済みの招待コード
           </h3>
           <div className="space-y-2">
             {invitations
-              .filter((inv) => inv.isUsed)
-              .map((invitation) => (
+              .filter((inv: (typeof invitations)[number]) => inv.isUsed)
+              .map((invitation: (typeof invitations)[number]) => (
                 <div
                   key={invitation._id}
                   className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 opacity-60"

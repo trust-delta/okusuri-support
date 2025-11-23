@@ -184,8 +184,12 @@ describe("招待機能 - 統合テスト", () => {
       );
 
       expect(invitations).toHaveLength(2);
-      expect(invitations.map((i) => i.code)).toContain("FIRST");
-      expect(invitations.map((i) => i.code)).toContain("SECOND");
+      expect(
+        invitations.map((i: (typeof invitations)[number]) => i.code),
+      ).toContain("FIRST");
+      expect(
+        invitations.map((i: (typeof invitations)[number]) => i.code),
+      ).toContain("SECOND");
     });
   });
 

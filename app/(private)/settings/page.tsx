@@ -3,6 +3,7 @@ import { preloadQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
 import { api } from "@/api";
 import { AccountCard } from "./_components/AccountCard";
+import { NotificationSettingsCard } from "./_components/NotificationSettingsCard";
 import { ProfileCard } from "./_components/ProfileCard";
 import { ThemeCard } from "./_components/ThemeCard";
 
@@ -39,6 +40,9 @@ export default async function SettingsPage() {
 
           {/* テーマ設定 */}
           <ThemeCard />
+
+          {/* 通知設定 */}
+          <NotificationSettingsCard />
 
           {/* アカウント設定 */}
           <AccountCard />

@@ -58,7 +58,9 @@ export function TimingGroupActions({
       );
 
       // エラーチェック
-      const errors = results.filter((result) => !result.isSuccess);
+      const errors = results.filter(
+        (result: (typeof results)[number]) => !result.isSuccess,
+      );
 
       if (errors.length > 0) {
         toast.error(`${errors.length}件の記録に失敗しました`);

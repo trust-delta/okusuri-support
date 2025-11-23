@@ -52,28 +52,30 @@ export default function HistoryPage() {
     filters.status !== "all" ||
     filters.timing !== "all";
 
-  const filteredRecords = monthlyRecords?.filter((record) => {
-    // 薬名検索
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      const medicineName = record.simpleMedicineName || "";
-      if (!medicineName.toLowerCase().includes(query)) {
+  const filteredRecords = monthlyRecords?.filter(
+    (record: (typeof monthlyRecords)[number]) => {
+      // 薬名検索
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase();
+        const medicineName = record.simpleMedicineName || "";
+        if (!medicineName.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+
+      // ステータスフィルター
+      if (filters.status !== "all" && record.status !== filters.status) {
         return false;
       }
-    }
 
-    // ステータスフィルター
-    if (filters.status !== "all" && record.status !== filters.status) {
-      return false;
-    }
+      // タイミングフィルター
+      if (filters.timing !== "all" && record.timing !== filters.timing) {
+        return false;
+      }
 
-    // タイミングフィルター
-    if (filters.timing !== "all" && record.timing !== filters.timing) {
-      return false;
-    }
-
-    return true;
-  });
+      return true;
+    },
+  );
 
   // ローディング中
   if (groupStatus === undefined) {

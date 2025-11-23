@@ -63,37 +63,39 @@ export function MedicineStatsList({
             <p>
               以下の薬は名前が似ています。同じ薬の場合は統合することで、より正確な統計を表示できます。
             </p>
-            {similarMedicines.slice(0, 3).map((suggestion) => (
-              <div
-                key={suggestion.medicineNames.join("-")}
-                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
-              >
-                <div className="flex items-center gap-2">
-                  {suggestion.medicineNames.map((name) => (
-                    <span key={name}>
-                      <Badge variant="outline">{name}</Badge>
-                      {name !==
-                        suggestion.medicineNames[
-                          suggestion.medicineNames.length - 1
-                        ] && " ≈ "}
-                    </span>
-                  ))}
-                  <span className="text-sm text-gray-500">
-                    (類似度: {(suggestion.similarity * 100).toFixed(0)}%)
-                  </span>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedMedicines(suggestion.medicineNames);
-                    setShowGroupDialog(true);
-                  }}
+            {similarMedicines
+              .slice(0, 3)
+              .map((suggestion: (typeof similarMedicines)[number]) => (
+                <div
+                  key={suggestion.medicineNames.join("-")}
+                  className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
                 >
-                  統合する
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-2">
+                    {suggestion.medicineNames.map((name: string) => (
+                      <span key={name}>
+                        <Badge variant="outline">{name}</Badge>
+                        {name !==
+                          suggestion.medicineNames[
+                            suggestion.medicineNames.length - 1
+                          ] && " ≈ "}
+                      </span>
+                    ))}
+                    <span className="text-sm text-gray-500">
+                      (類似度: {(suggestion.similarity * 100).toFixed(0)}%)
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedMedicines(suggestion.medicineNames);
+                      setShowGroupDialog(true);
+                    }}
+                  >
+                    統合する
+                  </Button>
+                </div>
+              ))}
           </AlertDescription>
         </Alert>
       )}
