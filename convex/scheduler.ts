@@ -10,7 +10,9 @@ import { internalAction } from "./_generated/server";
  */
 export const checkMedicationReminders = internalAction({
   args: {},
-  handler: async (ctx): Promise<{
+  handler: async (
+    ctx,
+  ): Promise<{
     sent: number;
     checked?: number;
     errors?: string[];
