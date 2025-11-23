@@ -117,7 +117,7 @@ function getAllDecisionFiles(decisionsDir: string): string[] {
 function parseDecisionFile(filePath: string): DecisionMetadata | null {
   try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
-    const parsed = matter(fileContent);
+    const _parsed = matter(fileContent);
 
     const titleMatch = fileContent.match(/^#\s+(.+)$/m);
     const title = titleMatch ? titleMatch[1].replace(/^決定記録:\s*/, "") : "";

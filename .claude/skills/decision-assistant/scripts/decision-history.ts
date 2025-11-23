@@ -59,7 +59,7 @@ function getAllDecisionFiles(decisionsDir: string): string[] {
 function parseDecisionFile(filePath: string): DecisionMetadata | null {
   try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
-    const parsed = matter(fileContent);
+    const _parsed = matter(fileContent);
 
     const titleMatch = fileContent.match(/^#\s+(.+)$/m);
     const title = titleMatch ? titleMatch[1].replace(/^決定記録:\s*/, "") : "";
@@ -205,7 +205,7 @@ export function displayHistoryChain(targetFileName: string): void {
     process.exit(1);
   }
 
-  const projectRoot = process.cwd();
+  const _projectRoot = process.cwd();
 
   console.log("📜 決定記録の履歴\n");
   console.log(`━━━ 現在の決定 ━━━`);

@@ -66,7 +66,7 @@ function getAllDecisionFiles(decisionsDir: string): string[] {
 function parseDecisionFile(filePath: string): DecisionMetadata | null {
   try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
-    const parsed = matter(fileContent);
+    const _parsed = matter(fileContent);
 
     // タイトルを抽出（最初の # 見出し）
     const titleMatch = fileContent.match(/^#\s+(.+)$/m);
