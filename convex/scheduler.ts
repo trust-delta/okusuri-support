@@ -1,6 +1,6 @@
 import { formatInTimeZone } from "date-fns-tz";
-import { api, internal } from "../_generated/api";
-import { internalAction } from "../_generated/server";
+import { api, internal } from "./_generated/api";
+import { internalAction } from "./_generated/server";
 
 /**
  * 服薬リマインダーをチェックして通知を送信
@@ -43,7 +43,7 @@ export const checkMedicationReminders = internalAction({
 
       // 該当する服薬記録を検索
       const pendingRecords = await ctx.runQuery(
-        internal.notifications.queries.getPendingRecordsByTiming,
+        internal["notifications/queries"].getPendingRecordsByTiming,
         {
           date: jstDate,
           timing: currentTiming,

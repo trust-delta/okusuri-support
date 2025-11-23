@@ -17,7 +17,7 @@ export const testMedicationReminders = action({
 
     // 内部actionを呼び出し
     const result = await ctx.runAction(
-      internal.notifications.scheduler.checkMedicationReminders,
+      internal.scheduler.checkMedicationReminders,
       {},
     );
 
