@@ -154,10 +154,26 @@ export function usePushNotifications(): UsePushNotificationsResult {
       setIsSubscribed(true);
       console.log("[Push] サブスクリプション登録完了");
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "サブスクリプション登録に失敗しました";
+      // エラーメッセージをユーザーフレンドリーに変換
+      let message = "サブスクリプション登録に失敗しました";
+
+      if (err instanceof Error) {
+        // Convexのバリデーションエラーを検出
+        if (err.message.includes("ArgumentValidationError")) {
+          message =
+            "通知設定の更新中にエラーが発生しました。ページを再読み込みしてお試しください。";
+        } else if (err.message.includes("通知許可が拒否されました")) {
+          message =
+            "通知許可が拒否されました。ブラウザの設定から通知を許可してください。";
+        } else if (err.message.includes("VAPID")) {
+          message =
+            "通知サービスの設定に問題があります。しばらくしてからお試しください。";
+        } else {
+          // その他のエラーは一般的なメッセージ
+          message = "通知の設定に失敗しました。もう一度お試しください。";
+        }
+      }
+
       setError(message);
       console.error("サブスクリプション登録エラー:", err);
     } finally {
