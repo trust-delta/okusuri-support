@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { subDays } from "date-fns";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -8,22 +9,20 @@ import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import {
-  CalendarView,
-  DailyRecordDetail,
-  FilteredRecordsList,
-  RecordFilters,
   type FilterState,
+  RecordDetailView,
+  RecordFilters,
 } from "./_components";
 
 export default function HistoryPage() {
   const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(today);
+  const oneWeekAgo = subDays(today, 7);
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: "",
     status: "all",
     timing: "all",
+    dateRange: { from: oneWeekAgo, to: today }, // デフォルトで過去1週間を選択
+    sortOrder: "desc", // デフォルトで新しい順
   });
   const searchParams = useSearchParams();
 
@@ -35,39 +34,48 @@ export default function HistoryPage() {
   const activeGroupId =
     urlGroupId || groupStatus?.activeGroupId || groupStatus?.groups[0]?.groupId;
 
-  // カレンダー表示用の日別統計を取得
-  const stats = useQuery(
-    api.medications.getMonthlyStats,
-    activeGroupId
-      ? {
-          groupId: activeGroupId,
-          year,
-          month,
-        }
-      : "skip",
-  );
-
-  // フィルター用の月別記録を取得
+  // 当月の記録を取得（フィルター用）
   const monthlyRecords = useQuery(
     api.medications.getMonthlyRecords,
     activeGroupId
       ? {
           groupId: activeGroupId,
-          year,
-          month,
+          year: today.getFullYear(),
+          month: today.getMonth() + 1,
         }
       : "skip",
   );
 
-  const handleMonthChange = (newYear: number, newMonth: number) => {
-    setYear(newYear);
-    setMonth(newMonth);
-    setSelectedDate(undefined); // 月が変わったら選択をクリア
-  };
+  // フィルター適用済みの記録を取得
+  const hasActiveFilter =
+    filters.searchQuery !== "" ||
+    filters.status !== "all" ||
+    filters.timing !== "all";
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
-  };
+  const filteredRecords = monthlyRecords?.filter(
+    (record: (typeof monthlyRecords)[number]) => {
+      // 薬名検索
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase();
+        const medicineName = record.simpleMedicineName || "";
+        if (!medicineName.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+
+      // ステータスフィルター
+      if (filters.status !== "all" && record.status !== filters.status) {
+        return false;
+      }
+
+      // タイミングフィルター
+      if (filters.timing !== "all" && record.timing !== filters.timing) {
+        return false;
+      }
+
+      return true;
+    },
+  );
 
   // ローディング中
   if (groupStatus === undefined) {
@@ -110,35 +118,20 @@ export default function HistoryPage() {
           記録履歴
         </h1>
 
-        {/* フィルター */}
-        <RecordFilters filters={filters} onFiltersChange={setFilters} />
+        {/* 1カラムレイアウト */}
+        <div className="space-y-6">
+          {/* 検索・フィルター */}
+          <RecordFilters filters={filters} onFiltersChange={setFilters} />
 
-        {/* 2カラムレイアウト */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* カレンダービュー */}
-          <div>
-            <CalendarView
-              year={year}
-              month={month}
-              dailyStats={stats?.dailyStats || {}}
-              onDateSelect={handleDateSelect}
-              onMonthChange={handleMonthChange}
-            />
-          </div>
-
-          {/* フィルター結果 */}
-          <div>
-            <FilteredRecordsList records={monthlyRecords} filters={filters} />
-          </div>
-        </div>
-
-        {/* 日別詳細（選択時のみ表示） */}
-        {selectedDate && (
-          <DailyRecordDetail
+          {/* 記録詳細 */}
+          <RecordDetailView
             groupId={activeGroupId}
-            selectedDate={selectedDate}
+            dateRange={hasActiveFilter ? {} : filters.dateRange}
+            filterMode={hasActiveFilter}
+            filteredRecords={filteredRecords}
+            sortOrder={filters.sortOrder}
           />
-        )}
+        </div>
       </div>
     </div>
   );

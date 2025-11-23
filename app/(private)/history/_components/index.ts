@@ -1,5 +1,3 @@
-export { CalendarView } from "./CalendarView";
-export { DailyRecordDetail } from "./DailyRecordDetail";
-export { RecordFilters } from "./RecordFilters";
+export { RecordDetailView } from "./RecordDetailView";
 export type { FilterState } from "./RecordFilters";
-export { FilteredRecordsList } from "./FilteredRecordsList";
+export { RecordFilters } from "./RecordFilters";

@@ -83,10 +83,12 @@ export async function applyMedicineGrouping(
     }
 
     // データがある場合のみ結果に追加
-    if (hasData && mergedStats.totalDoses > 0) {
-      // 服用率を再計算
-      mergedStats.adherenceRate =
-        (mergedStats.takenCount / mergedStats.totalDoses) * 100;
+    if (hasData) {
+      // 服用率を再計算（頓服のみの場合はtotalDosesが0なので計算しない）
+      if (mergedStats.totalDoses > 0) {
+        mergedStats.adherenceRate =
+          (mergedStats.takenCount / mergedStats.totalDoses) * 100;
+      }
 
       result[group.canonicalName] = mergedStats as MedicineStats;
     }
@@ -102,7 +104,10 @@ export async function applyMedicineGrouping(
  * @param endDate - YYYY-MM-DD形式の終了日
  * @returns 日付文字列の配列
  */
-export function generateDateRange(startDate: string, endDate: string): string[] {
+export function generateDateRange(
+  startDate: string,
+  endDate: string,
+): string[] {
   const dates: string[] = [];
   const start = new Date(startDate);
   const end = new Date(endDate);

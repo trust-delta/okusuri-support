@@ -5,7 +5,7 @@ import { BarChart3 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
 import { MedicineStatsList } from "./_components/MedicineStatsList";

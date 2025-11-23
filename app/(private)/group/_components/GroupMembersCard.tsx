@@ -25,7 +25,7 @@ export function GroupMembersCard({ preloadedMembers }: Props) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {members.map((member) => (
+          {members.map((member: (typeof members)[number]) => (
             <div
               key={member.userId}
               className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800"

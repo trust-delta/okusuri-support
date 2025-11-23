@@ -6,13 +6,17 @@
 
 - `.context/` は本プロジェクトの最重要ドキュメント群です
 - **実装内容より `.context/` の内容が優先されます**
-- プロジェクト概要、アーキテクチャ、技術スタック、設計判断(ADR)、仕様書、手順書、実装計画・進捗などが全て記載されています
+- プロジェクト概要、アーキテクチャ、技術スタック、決定記録、仕様書、手順書、実装計画・進捗などが全て記載されています
 - ユーザからの指示を受けた際は、まず関連する `.context/` 内のドキュメントを読むこと
 
 ### 参照すべきドキュメント
 
-- [.context/context/](./.context/context/) - プロジェクト情報、アーキテクチャ、技術スタック
-- [.context/decisions/](./.context/decisions/) - ADR
+- [.context/project.md](./.context/project.md) - プロジェクト情報、技術スタック
+- [.context/architecture.md](./.context/architecture.md) - アーキテクチャ
+- [.context/coding-style.md](./.context/coding-style.md) - コーディング規則
+- [.context/coding-style.md](./.context/error-handling.md) - エラーハンドリング
+- [.context/testing-strategy.md](./.context/testing-strategy.md) - テスト戦略
+- [.context/decisions/](./.context/decisions/) - 決定記録
 - [.context/runbook/](./.context/runbook/) - 作業手順書
 - [.context/spec/](./.context/spec/) - 詳細仕様書
 
@@ -28,9 +32,9 @@
 
 ## アーキテクチャ・設計判断
 
-- `.context/decisions/` に記載されたArchitecture Decision Record (ADR)を尊重すること
-- ADRで決定された技術選定や設計方針に従うこと
-- 新たな技術的決定を行う場合は、ADRとして記録することを提案すること
+- `.context/decisions/` に記載された決定記録を尊重すること
+- 決定記録で決定された技術選定や設計方針に従うこと
+- 新たな技術的決定を行う場合は、決定記録として記録することを提案すること
 
 ## 仕様書の作成と同期
 

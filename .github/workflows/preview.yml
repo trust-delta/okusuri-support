@@ -1,0 +1,68 @@
+name: Preview Deployment
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types: [opened, synchronize, reopened]
+
+jobs:
+  preview-info:
+    name: プレビューデプロイ情報
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: PR にコメント
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `## 🚀 プレビューデプロイ
+
+            このPRの変更は以下の環境でプレビューできます：
+
+            ### Vercel プレビュー
+            Vercel が自動的にプレビュー環境をデプロイします。
+            プレビューURLはこのPRのコメントに自動的に投稿されます。
+
+            ### Convex
+            現在、Convex は本番環境を使用しています。
+            プレビュー専用の Convex デプロイメントが必要な場合は、手動で作成してください。
+
+            ---
+
+            📝 **注意**: プレビュー環境は本番データベースを使用します。テストデータの混入に注意してください。
+            `;
+
+            // 既存のコメントを検索
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('プレビューデプロイ')
+            );
+
+            if (botComment) {
+              // 既存のコメントを更新
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              // 新しいコメントを作成
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }

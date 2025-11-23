@@ -66,7 +66,10 @@ export const findSimilarMedicineNames = query({
         const name2 = uniqueMedicineNames[j];
 
         // 既にグループ化されている薬名はスキップ
-        if (groupedMedicineNames.has(name1) && groupedMedicineNames.has(name2)) {
+        if (
+          groupedMedicineNames.has(name1) &&
+          groupedMedicineNames.has(name2)
+        ) {
           continue;
         }
 

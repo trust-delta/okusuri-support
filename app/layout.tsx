@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { RegisterServiceWorker } from "@/components/register-service-worker";
+import { IOSPWAInstallBanner } from "@/features/push-notifications/components/ios-pwa-install-banner";
 import { ClientProvider, ServerProvider } from "@/providers";
 
 const geistSans = Geist({
@@ -14,8 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "お薬サポート",
-  description: "服薬管理アプリケーション",
+  title: "おくすりサポート",
+  description: "服薬管理を支援するアプリケーション",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "おくすりサポート",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +40,11 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <ClientProvider>{children}</ClientProvider>
+          <RegisterServiceWorker />
+          <ClientProvider>
+            <IOSPWAInstallBanner />
+            {children}
+          </ClientProvider>
         </body>
       </html>
     </ServerProvider>

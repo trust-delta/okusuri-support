@@ -23,7 +23,8 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
   const getRecordByTiming = (timing: string) => {
     if (!records) return null;
     return records.find(
-      (r) => r.timing === timing && r.scheduledDate === today,
+      (r: (typeof records)[number]) =>
+        r.timing === timing && r.scheduledDate === today,
     );
   };
 
@@ -95,7 +96,7 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
               記録履歴
             </h3>
             <div className="space-y-2">
-              {records.map((rec) => (
+              {records.map((rec: (typeof records)[number]) => (
                 <div
                   key={rec._id}
                   className="text-sm text-gray-600 dark:text-gray-400"

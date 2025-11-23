@@ -5,7 +5,6 @@ import { Check, Copy, Link, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
-import type { Id } from "@/schema";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Id } from "@/schema";
 
 type Props = {
   open: boolean;

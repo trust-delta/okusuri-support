@@ -3,6 +3,7 @@ import { defineSchema } from "convex/server";
 import { groupsSchema } from "./groups/schema";
 import { invitationsSchema } from "./invitations/schema";
 import { medicinesSchema } from "./medications/schema";
+import { pushSchema } from "./push/schema";
 import { usersSchema } from "./users/schema";
 
 export default defineSchema({
@@ -19,4 +20,7 @@ export default defineSchema({
 
   // 薬剤・服薬記録関連のスキーマ
   ...medicinesSchema,
+
+  // プッシュ通知関連のスキーマ
+  ...pushSchema,
 });

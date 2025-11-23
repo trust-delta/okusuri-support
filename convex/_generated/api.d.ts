@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
 import type * as groups_mutations from "../groups/mutations.js";
 import type * as groups_queries from "../groups/queries.js";
 import type * as groups from "../groups.js";
@@ -34,9 +35,17 @@ import type * as medications_statistics_helpers from "../medications/statistics/
 import type * as medications_statistics_index from "../medications/statistics/index.js";
 import type * as medications_statistics_queries from "../medications/statistics/queries.js";
 import type * as medications from "../medications.js";
+import type * as notifications_actions from "../notifications/actions.js";
+import type * as notifications_index from "../notifications/index.js";
+import type * as notifications_queries from "../notifications/queries.js";
+import type * as push_actions from "../push/actions.js";
+import type * as push_index from "../push/index.js";
+import type * as push_mutations from "../push/mutations.js";
+import type * as push_queries from "../push/queries.js";
 import type * as resend_otp from "../resend/otp.js";
 import type * as resend_passwordReset from "../resend/passwordReset.js";
 import type * as resend from "../resend.js";
+import type * as scheduler from "../scheduler.js";
 import type * as types_result from "../types/result.js";
 import type * as users_mutations from "../users/mutations.js";
 import type * as users_queries from "../users/queries.js";
@@ -58,6 +67,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  crons: typeof crons;
   "groups/mutations": typeof groups_mutations;
   "groups/queries": typeof groups_queries;
   groups: typeof groups;
@@ -83,9 +93,17 @@ declare const fullApi: ApiFromModules<{
   "medications/statistics/index": typeof medications_statistics_index;
   "medications/statistics/queries": typeof medications_statistics_queries;
   medications: typeof medications;
+  "notifications/actions": typeof notifications_actions;
+  "notifications/index": typeof notifications_index;
+  "notifications/queries": typeof notifications_queries;
+  "push/actions": typeof push_actions;
+  "push/index": typeof push_index;
+  "push/mutations": typeof push_mutations;
+  "push/queries": typeof push_queries;
   "resend/otp": typeof resend_otp;
   "resend/passwordReset": typeof resend_passwordReset;
   resend: typeof resend;
+  scheduler: typeof scheduler;
   "types/result": typeof types_result;
   "users/mutations": typeof users_mutations;
   "users/queries": typeof users_queries;

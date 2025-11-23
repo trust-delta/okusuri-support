@@ -63,34 +63,39 @@ export function MedicineStatsList({
             <p>
               以下の薬は名前が似ています。同じ薬の場合は統合することで、より正確な統計を表示できます。
             </p>
-            {similarMedicines.slice(0, 3).map((suggestion, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
-              >
-                <div className="flex items-center gap-2">
-                  {suggestion.medicineNames.map((name, i) => (
-                    <span key={i}>
-                      <Badge variant="outline">{name}</Badge>
-                      {i < suggestion.medicineNames.length - 1 && " ≈ "}
-                    </span>
-                  ))}
-                  <span className="text-sm text-gray-500">
-                    (類似度: {(suggestion.similarity * 100).toFixed(0)}%)
-                  </span>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedMedicines(suggestion.medicineNames);
-                    setShowGroupDialog(true);
-                  }}
+            {similarMedicines
+              .slice(0, 3)
+              .map((suggestion: (typeof similarMedicines)[number]) => (
+                <div
+                  key={suggestion.medicineNames.join("-")}
+                  className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
                 >
-                  統合する
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-2">
+                    {suggestion.medicineNames.map((name: string) => (
+                      <span key={name}>
+                        <Badge variant="outline">{name}</Badge>
+                        {name !==
+                          suggestion.medicineNames[
+                            suggestion.medicineNames.length - 1
+                          ] && " ≈ "}
+                      </span>
+                    ))}
+                    <span className="text-sm text-gray-500">
+                      (類似度: {(suggestion.similarity * 100).toFixed(0)}%)
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedMedicines(suggestion.medicineNames);
+                      setShowGroupDialog(true);
+                    }}
+                  >
+                    統合する
+                  </Button>
+                </div>
+              ))}
           </AlertDescription>
         </Alert>
       )}
@@ -111,7 +116,9 @@ export function MedicineStatsList({
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{medicine.medicineName}</h3>
+                  <h3 className="font-semibold text-lg">
+                    {medicine.medicineName}
+                  </h3>
                   <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
                     {medicine.totalAmount > 0 && (
                       <span>
@@ -119,7 +126,9 @@ export function MedicineStatsList({
                         {medicine.unit}
                       </span>
                     )}
-                    <span>服用予定: {medicine.totalDoses}回</span>
+                    {medicine.totalDoses > 0 && (
+                      <span>服用予定: {medicine.totalDoses}回</span>
+                    )}
                     <span className="text-green-600 dark:text-green-400">
                       服用: {medicine.takenCount}回
                     </span>
@@ -135,29 +144,43 @@ export function MedicineStatsList({
                     )}
                   </div>
                 </div>
-                <Badge
-                  variant={
-                    medicine.adherenceRate >= 80
-                      ? "default"
-                      : medicine.adherenceRate >= 50
-                        ? "secondary"
-                        : "destructive"
-                  }
-                  className="text-base px-3 py-1"
-                >
-                  {medicine.adherenceRate.toFixed(1)}%
-                </Badge>
+                {medicine.totalDoses > 0 ? (
+                  <Badge
+                    variant={
+                      medicine.adherenceRate >= 80
+                        ? "default"
+                        : medicine.adherenceRate >= 50
+                          ? "secondary"
+                          : "destructive"
+                    }
+                    className="text-base px-3 py-1"
+                  >
+                    {medicine.adherenceRate.toFixed(1)}%
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-base px-3 py-1">
+                    頓服
+                  </Badge>
+                )}
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">服用率</span>
-                  <span className="font-medium">
-                    {medicine.takenCount} / {medicine.totalDoses}回
-                  </span>
+              {medicine.totalDoses > 0 ? (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      服用率
+                    </span>
+                    <span className="font-medium">
+                      {medicine.takenCount} / {medicine.totalDoses}回
+                    </span>
+                  </div>
+                  <Progress value={medicine.adherenceRate} className="h-2" />
                 </div>
-                <Progress value={medicine.adherenceRate} className="h-2" />
-              </div>
+              ) : (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  頓服のみの薬（服用率は表示されません）
+                </div>
+              )}
             </div>
           ))}
         </CardContent>
