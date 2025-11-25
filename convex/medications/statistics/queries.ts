@@ -49,23 +49,20 @@ export const getMedicationStatsByPeriod = query({
     };
     const asNeededStats = { taken: 0, skipped: 0, pending: 0, total: 0 };
 
-    // 各日付について処理
-    for (const date of dates) {
-      // その日に有効な処方箋を取得
-      const allPrescriptions = await ctx.db
-        .query("prescriptions")
-        .withIndex("by_groupId_isActive", (q) =>
-          q.eq("groupId", args.groupId).eq("isActive", true),
-        )
-        .filter((q) => q.eq(q.field("deletedAt"), undefined))
-        .collect();
+    // ==== N+1問題を回避するため、必要なデータを一括取得 ====
 
-      const activePrescriptions = allPrescriptions.filter((prescription) =>
-        isDateInRange(date, prescription.startDate, prescription.endDate),
-      );
+    // 1. 全ての有効な処方箋を1回で取得
+    const allPrescriptions = await ctx.db
+      .query("prescriptions")
+      .withIndex("by_groupId_isActive", (q) =>
+        q.eq("groupId", args.groupId).eq("isActive", true),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
 
-      // 各処方箋の薬を処理
-      for (const prescription of activePrescriptions) {
+    // 2. 全ての薬を並列で取得
+    const medicinesByPrescription = await Promise.all(
+      allPrescriptions.map(async (prescription) => {
         const medicines = await ctx.db
           .query("medicines")
           .withIndex("by_prescriptionId", (q) =>
@@ -73,6 +70,52 @@ export const getMedicationStatsByPeriod = query({
           )
           .filter((q) => q.eq(q.field("deletedAt"), undefined))
           .collect();
+        return { prescriptionId: prescription._id, medicines };
+      }),
+    );
+
+    // 処方箋IDから薬リストへのマップを作成
+    const medicinesMap = new Map(
+      medicinesByPrescription.map(({ prescriptionId, medicines }) => [
+        prescriptionId,
+        medicines,
+      ]),
+    );
+
+    // 3. 全ての薬IDを収集
+    const allMedicineIds = medicinesByPrescription.flatMap(({ medicines }) =>
+      medicines.map((m) => m._id),
+    );
+
+    // 4. 全てのスケジュールを並列で取得
+    const scheduleResults = await Promise.all(
+      allMedicineIds.map(async (medicineId) => {
+        const schedule = await ctx.db
+          .query("medicationSchedules")
+          .withIndex("by_medicineId", (q) => q.eq("medicineId", medicineId))
+          .filter((q) => q.eq(q.field("deletedAt"), undefined))
+          .first();
+        return { medicineId, schedule };
+      }),
+    );
+
+    // 薬IDからスケジュールへのマップを作成
+    const schedulesMap = new Map(
+      scheduleResults.map(({ medicineId, schedule }) => [medicineId, schedule]),
+    );
+
+    // ==== メモリ内で統計計算 ====
+
+    // 各日付について処理（DBクエリなし）
+    for (const date of dates) {
+      // その日に有効な処方箋をフィルタ
+      const activePrescriptions = allPrescriptions.filter((prescription) =>
+        isDateInRange(date, prescription.startDate, prescription.endDate),
+      );
+
+      // 各処方箋の薬を処理
+      for (const prescription of activePrescriptions) {
+        const medicines = medicinesMap.get(prescription._id) || [];
 
         for (const medicine of medicines) {
           // 特定の薬に絞る場合
@@ -80,12 +123,7 @@ export const getMedicationStatsByPeriod = query({
             continue;
           }
 
-          const schedule = await ctx.db
-            .query("medicationSchedules")
-            .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-            .filter((q) => q.eq(q.field("deletedAt"), undefined))
-            .first();
-
+          const schedule = schedulesMap.get(medicine._id);
           if (!schedule?.timings) continue;
 
           // 薬名をキーとして統計データを初期化
@@ -170,11 +208,30 @@ export const getMedicationStatsByPeriod = query({
     }
 
     // 記録を薬ごとに集計（頓服も含める）
+    // N+1問題を回避: レコードに含まれる全てのmedicineIdを収集し一括取得
+    const recordMedicineIds = [
+      ...new Set(
+        filteredRecords
+          .map((r) => r.medicineId)
+          .filter((id): id is NonNullable<typeof id> => id != null),
+      ),
+    ];
+
+    const recordMedicines = await Promise.all(
+      recordMedicineIds.map((id) => ctx.db.get(id)),
+    );
+
+    const recordMedicinesMap = new Map(
+      recordMedicineIds
+        .map((id, index) => [id, recordMedicines[index]] as const)
+        .filter(([, medicine]) => medicine != null),
+    );
+
     for (const record of filteredRecords) {
       if (!record.medicineId) continue;
 
-      // medicineIdから薬名を取得
-      const medicine = await ctx.db.get(record.medicineId);
+      // キャッシュから薬名を取得
+      const medicine = recordMedicinesMap.get(record.medicineId);
       if (!medicine) continue;
 
       // 薬が統計マップにない場合は初期化（頓服のみの薬など）

@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query } from "../../_generated/server";
 import { getActiveMedicationsForDate } from "./helpers";
 
@@ -13,7 +13,7 @@ export const getPrescriptions = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -24,7 +24,7 @@ export const getPrescriptions = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     // 処方箋一覧を取得（開始日の降順）
@@ -51,7 +51,7 @@ export const getDeletedPrescriptions = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -62,7 +62,7 @@ export const getDeletedPrescriptions = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     // 削除された処方箋一覧を取得（削除日の降順）
@@ -93,12 +93,12 @@ export const getPrescription = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription || prescription.deletedAt !== undefined) {
-      throw new Error("処方箋が見つかりません");
+      throw new ConvexError("処方箋が見つかりません");
     }
 
     // グループメンバーか確認
@@ -109,7 +109,7 @@ export const getPrescription = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     return prescription;
@@ -126,12 +126,12 @@ export const getPrescriptionMedicines = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription || prescription.deletedAt !== undefined) {
-      throw new Error("処方箋が見つかりません");
+      throw new ConvexError("処方箋が見つかりません");
     }
 
     // グループメンバーか確認
@@ -142,7 +142,7 @@ export const getPrescriptionMedicines = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     // この処方箋に紐付く薬を取得
@@ -185,7 +185,7 @@ export const getActiveMedicationsForDateQuery = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -196,7 +196,7 @@ export const getActiveMedicationsForDateQuery = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     return await getActiveMedicationsForDate(ctx, args.groupId, args.date);

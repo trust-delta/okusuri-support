@@ -1,4 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { ConvexError } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 
@@ -19,7 +20,7 @@ export const testMedicationReminders = action({
   }> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // 内部actionを呼び出し

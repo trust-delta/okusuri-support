@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation } from "../../_generated/server";
 
 /**
@@ -12,13 +12,13 @@ export const restoreMedicationRecord = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // 履歴レコードを取得
     const historyRecord = await ctx.db.get(args.historyId);
     if (!historyRecord) {
-      throw new Error("履歴が見つかりません");
+      throw new ConvexError("履歴が見つかりません");
     }
 
     // グループメンバーか確認
@@ -29,7 +29,7 @@ export const restoreMedicationRecord = mutation({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     const now = Date.now();
@@ -61,7 +61,7 @@ export const restoreMedicationRecord = mutation({
       // 現在のレコードを取得
       const currentRecord = await ctx.db.get(historyRecord.originalRecordId);
       if (!currentRecord) {
-        throw new Error("元のレコードが見つかりません");
+        throw new ConvexError("元のレコードが見つかりません");
       }
 
       // 現在の状態を履歴に保存
@@ -101,6 +101,6 @@ export const restoreMedicationRecord = mutation({
       return { success: true, recordId: historyRecord.originalRecordId };
     }
 
-    throw new Error("不明な履歴タイプです");
+    throw new ConvexError("不明な履歴タイプです");
   },
 });

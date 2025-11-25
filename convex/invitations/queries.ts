@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query } from "../_generated/server";
 
 /**
@@ -80,7 +80,7 @@ export const listGroupInvitations = query({
     // 1. 認証確認
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // 2. グループメンバーシップ確認
@@ -91,7 +91,7 @@ export const listGroupInvitations = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     // 3. グループの招待一覧取得

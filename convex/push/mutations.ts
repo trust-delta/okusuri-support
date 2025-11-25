@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 
 /**
@@ -19,7 +19,7 @@ export const subscribe = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     const now = Date.now();
@@ -68,7 +68,7 @@ export const unsubscribe = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // エンドポイントで検索
@@ -87,7 +87,7 @@ export const unsubscribe = mutation({
 
     // 自分のサブスクリプションのみ削除可能
     if (subscription.userId !== userId) {
-      throw new Error("このサブスクリプションを削除する権限がありません");
+      throw new ConvexError("このサブスクリプションを削除する権限がありません");
     }
 
     await ctx.db.delete(subscription._id);
@@ -104,7 +104,7 @@ export const unsubscribeAll = mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     const subscriptions = await ctx.db
