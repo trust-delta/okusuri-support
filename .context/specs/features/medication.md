@@ -1,6 +1,6 @@
 # 服薬管理機能仕様
 
-**最終更新**: 2025年11月14日
+**最終更新**: 2025年11月27日
 
 ## 概要
 
@@ -330,21 +330,39 @@
 - `isActive` を `true` に設定
 - 無効化した処方箋を再度有効にする
 
-#### 処方箋の終了日設定
-**既存の機能**: `prescriptions.mutations.updatePrescription`
+#### 処方箋の更新
+**API**: `prescriptions.mutations.updatePrescription`
 ```typescript
 {
   args: {
     prescriptionId: Id<"prescriptions">,
-    endDate: string,  // YYYY-MM-DD
+    name?: string,
+    startDate?: string,     // YYYY-MM-DD
+    endDate?: string,       // YYYY-MM-DD
+    clearEndDate?: boolean, // trueの場合、終了日を削除
+    notes?: string,
   },
   returns: Id<"prescriptions">
 }
 ```
 
 **用途**:
+- 処方箋名の変更
+- 開始日・終了日の変更
 - 継続中（`endDate` 未設定）の処方箋に終了日を設定
-- 期限が明確な処方に変更する
+- 終了日が設定されている処方箋の終了日を削除（継続中に戻す）
+- 備考の変更
+
+**終了日の操作**:
+| 操作 | 引数 |
+|------|------|
+| 終了日を設定 | `endDate: "2025-12-31"` |
+| 終了日を変更 | `endDate: "2026-01-31"` |
+| 終了日を削除（継続中に戻す） | `clearEndDate: true` |
+
+**バリデーション**:
+- 終了日は開始日より後である必要がある
+- `clearEndDate: true` と `endDate` が同時に指定された場合、`clearEndDate` が優先される
 
 ### 2. デフォルト処方箋機能
 

@@ -113,6 +113,7 @@ export const updatePrescription = mutation({
     name: v.optional(v.string()),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
+    clearEndDate: v.optional(v.boolean()), // trueの場合、終了日を削除
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -139,10 +140,14 @@ export const updatePrescription = mutation({
 
     // 更新後の値を計算
     const newStartDate = args.startDate ?? prescription.startDate;
-    const newEndDate =
-      args.endDate !== undefined ? args.endDate : prescription.endDate;
+    // clearEndDateがtrueの場合は終了日を削除
+    const newEndDate = args.clearEndDate
+      ? undefined
+      : args.endDate !== undefined
+        ? args.endDate
+        : prescription.endDate;
 
-    // 日付の妥当性チェック
+    // 日付の妥当性チェック（終了日がある場合のみ）
     if (newEndDate && newStartDate > newEndDate) {
       throw new ConvexError("終了日は開始日より後である必要があります");
     }
@@ -160,7 +165,12 @@ export const updatePrescription = mutation({
 
     if (args.name !== undefined) updates.name = args.name;
     if (args.startDate !== undefined) updates.startDate = args.startDate;
-    if (args.endDate !== undefined) updates.endDate = args.endDate ?? undefined;
+    // 終了日の更新: clearEndDateがtrueなら削除、endDateが指定されていれば更新
+    if (args.clearEndDate) {
+      updates.endDate = undefined;
+    } else if (args.endDate !== undefined) {
+      updates.endDate = args.endDate;
+    }
     if (args.notes !== undefined) updates.notes = args.notes;
 
     await ctx.db.patch(args.prescriptionId, updates);
