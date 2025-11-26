@@ -18,7 +18,7 @@
 - [.context/testing-strategy.md](./.context/testing-strategy.md) - テスト戦略
 - [.context/decisions/](./.context/decisions/) - 決定記録
 - [.context/runbook/](./.context/runbook/) - 作業手順書
-- [.context/spec/](./.context/spec/) - 詳細仕様書
+- [.context/specs/](./.context/specs/) - 詳細仕様書
 
 ## 言語について
 

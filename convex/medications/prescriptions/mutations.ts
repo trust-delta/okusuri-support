@@ -113,6 +113,7 @@ export const updatePrescription = mutation({
     name: v.optional(v.string()),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
+    clearEndDate: v.optional(v.boolean()), // trueの場合、終了日を削除
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -139,10 +140,14 @@ export const updatePrescription = mutation({
 
     // 更新後の値を計算
     const newStartDate = args.startDate ?? prescription.startDate;
-    const newEndDate =
-      args.endDate !== undefined ? args.endDate : prescription.endDate;
+    // clearEndDateがtrueの場合は終了日を削除
+    const newEndDate = args.clearEndDate
+      ? undefined
+      : args.endDate !== undefined
+        ? args.endDate
+        : prescription.endDate;
 
-    // 日付の妥当性チェック
+    // 日付の妥当性チェック（終了日がある場合のみ）
     if (newEndDate && newStartDate > newEndDate) {
       throw new ConvexError("終了日は開始日より後である必要があります");
     }
@@ -160,7 +165,12 @@ export const updatePrescription = mutation({
 
     if (args.name !== undefined) updates.name = args.name;
     if (args.startDate !== undefined) updates.startDate = args.startDate;
-    if (args.endDate !== undefined) updates.endDate = args.endDate ?? undefined;
+    // 終了日の更新: clearEndDateがtrueなら削除、endDateが指定されていれば更新
+    if (args.clearEndDate) {
+      updates.endDate = undefined;
+    } else if (args.endDate !== undefined) {
+      updates.endDate = args.endDate;
+    }
     if (args.notes !== undefined) updates.notes = args.notes;
 
     await ctx.db.patch(args.prescriptionId, updates);
@@ -515,5 +525,112 @@ export const restorePrescription = mutation({
         }
       }
     }
+  },
+});
+
+/**
+ * 処方箋を複製
+ * 既存の処方箋を元に、新しい処方箋と薬・スケジュールを作成
+ */
+export const duplicatePrescription = mutation({
+  args: {
+    prescriptionId: v.id("prescriptions"),
+    name: v.optional(v.string()), // 省略時は「（元の名前）のコピー」
+    startDate: v.string(), // YYYY-MM-DD（必須）
+    endDate: v.optional(v.string()), // YYYY-MM-DD
+    notes: v.optional(v.string()), // 省略時は元の処方箋の備考をコピー
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("認証が必要です");
+    }
+
+    // 元の処方箋を取得
+    const sourcePrescription = await ctx.db.get(args.prescriptionId);
+    if (!sourcePrescription) {
+      throw new ConvexError("処方箋が見つかりません");
+    }
+
+    // 論理削除されている場合はエラー
+    if (sourcePrescription.deletedAt !== undefined) {
+      throw new ConvexError("削除された処方箋は複製できません");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), sourcePrescription.groupId))
+      .first();
+
+    if (!membership) {
+      throw new ConvexError("このグループのメンバーではありません");
+    }
+
+    // 日付の妥当性チェック
+    if (args.endDate && args.startDate > args.endDate) {
+      throw new ConvexError("終了日は開始日より後である必要があります");
+    }
+
+    const now = Date.now();
+
+    // 新しい処方箋を作成
+    const newPrescriptionId = await ctx.db.insert("prescriptions", {
+      groupId: sourcePrescription.groupId,
+      name: args.name ?? `${sourcePrescription.name}のコピー`,
+      startDate: args.startDate,
+      endDate: args.endDate,
+      isActive: true,
+      notes: args.notes !== undefined ? args.notes : sourcePrescription.notes,
+      createdBy: userId,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // 元の処方箋に紐付く薬を取得（論理削除されていないもの）
+    const sourceMedicines = await ctx.db
+      .query("medicines")
+      .withIndex("by_prescriptionId", (q) =>
+        q.eq("prescriptionId", args.prescriptionId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+
+    // 薬とスケジュールをコピー
+    for (const medicine of sourceMedicines) {
+      // 薬を作成
+      const newMedicineId = await ctx.db.insert("medicines", {
+        groupId: sourcePrescription.groupId,
+        prescriptionId: newPrescriptionId,
+        name: medicine.name,
+        description: medicine.description,
+        createdBy: userId,
+        createdAt: now,
+      });
+
+      // 元の薬のスケジュールを取得（論理削除されていないもの）
+      const sourceSchedules = await ctx.db
+        .query("medicationSchedules")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
+        .collect();
+
+      // スケジュールをコピー
+      for (const schedule of sourceSchedules) {
+        await ctx.db.insert("medicationSchedules", {
+          medicineId: newMedicineId,
+          groupId: sourcePrescription.groupId,
+          timings: schedule.timings,
+          dosage: schedule.dosage,
+          notes: schedule.notes,
+          createdBy: userId,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    }
+
+    return newPrescriptionId;
   },
 });
