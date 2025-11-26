@@ -364,6 +364,36 @@
 - 終了日は開始日より後である必要がある
 - `clearEndDate: true` と `endDate` が同時に指定された場合、`clearEndDate` が優先される
 
+#### 処方箋の複製
+**API**: `prescriptions.mutations.duplicatePrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+    name?: string,      // 省略時は「（元の名前）のコピー」
+    startDate: string,  // YYYY-MM-DD（必須）
+    endDate?: string,   // YYYY-MM-DD
+    notes?: string,     // 省略時は元の処方箋の備考をコピー
+  },
+  returns: Id<"prescriptions">
+}
+```
+
+**挙動**:
+- 既存の処方箋を元に新しい処方箋を作成
+- 元の処方箋に紐付く薬とスケジュールも全てコピー
+- 服薬記録はコピーされない（新しい処方箋として開始）
+- 新しい処方箋は `isActive: true` で作成される
+
+**用途**:
+- 同じ薬を継続処方される場合（「今回も同じ薬」）
+- 開始日・終了日のみ変更して他は引き継ぐ
+- 処方箋の入力の手間を削減
+
+**制限**:
+- 論理削除された処方箋は複製できない
+- グループメンバーのみが複製可能
+
 ### 2. デフォルト処方箋機能
 
 #### 概要

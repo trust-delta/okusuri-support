@@ -527,3 +527,110 @@ export const restorePrescription = mutation({
     }
   },
 });
+
+/**
+ * 処方箋を複製
+ * 既存の処方箋を元に、新しい処方箋と薬・スケジュールを作成
+ */
+export const duplicatePrescription = mutation({
+  args: {
+    prescriptionId: v.id("prescriptions"),
+    name: v.optional(v.string()), // 省略時は「（元の名前）のコピー」
+    startDate: v.string(), // YYYY-MM-DD（必須）
+    endDate: v.optional(v.string()), // YYYY-MM-DD
+    notes: v.optional(v.string()), // 省略時は元の処方箋の備考をコピー
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("認証が必要です");
+    }
+
+    // 元の処方箋を取得
+    const sourcePrescription = await ctx.db.get(args.prescriptionId);
+    if (!sourcePrescription) {
+      throw new ConvexError("処方箋が見つかりません");
+    }
+
+    // 論理削除されている場合はエラー
+    if (sourcePrescription.deletedAt !== undefined) {
+      throw new ConvexError("削除された処方箋は複製できません");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), sourcePrescription.groupId))
+      .first();
+
+    if (!membership) {
+      throw new ConvexError("このグループのメンバーではありません");
+    }
+
+    // 日付の妥当性チェック
+    if (args.endDate && args.startDate > args.endDate) {
+      throw new ConvexError("終了日は開始日より後である必要があります");
+    }
+
+    const now = Date.now();
+
+    // 新しい処方箋を作成
+    const newPrescriptionId = await ctx.db.insert("prescriptions", {
+      groupId: sourcePrescription.groupId,
+      name: args.name ?? `${sourcePrescription.name}のコピー`,
+      startDate: args.startDate,
+      endDate: args.endDate,
+      isActive: true,
+      notes: args.notes !== undefined ? args.notes : sourcePrescription.notes,
+      createdBy: userId,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // 元の処方箋に紐付く薬を取得（論理削除されていないもの）
+    const sourceMedicines = await ctx.db
+      .query("medicines")
+      .withIndex("by_prescriptionId", (q) =>
+        q.eq("prescriptionId", args.prescriptionId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+
+    // 薬とスケジュールをコピー
+    for (const medicine of sourceMedicines) {
+      // 薬を作成
+      const newMedicineId = await ctx.db.insert("medicines", {
+        groupId: sourcePrescription.groupId,
+        prescriptionId: newPrescriptionId,
+        name: medicine.name,
+        description: medicine.description,
+        createdBy: userId,
+        createdAt: now,
+      });
+
+      // 元の薬のスケジュールを取得（論理削除されていないもの）
+      const sourceSchedules = await ctx.db
+        .query("medicationSchedules")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
+        .collect();
+
+      // スケジュールをコピー
+      for (const schedule of sourceSchedules) {
+        await ctx.db.insert("medicationSchedules", {
+          medicineId: newMedicineId,
+          groupId: sourcePrescription.groupId,
+          timings: schedule.timings,
+          dosage: schedule.dosage,
+          notes: schedule.notes,
+          createdBy: userId,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    }
+
+    return newPrescriptionId;
+  },
+});
