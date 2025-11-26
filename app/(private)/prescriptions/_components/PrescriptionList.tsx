@@ -256,6 +256,20 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
     }
   };
 
+  const handleClearEndDate = async (prescriptionId: Id<"prescriptions">) => {
+    try {
+      await updatePrescription({
+        prescriptionId,
+        clearEndDate: true,
+      });
+      toast.success("継続中に変更しました");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "終了日の削除に失敗しました",
+      );
+    }
+  };
+
   const openDuplicateDialog = (
     prescriptionId: Id<"prescriptions">,
     prescriptionName: string,
@@ -377,10 +391,10 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                           </span>
                         </CardDescription>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {prescription.isActive ? (
                           <>
-                            {!prescription.endDate && (
+                            {!prescription.endDate ? (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -392,6 +406,16 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                                 }}
                               >
                                 終了日を設定
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleClearEndDate(prescription._id)
+                                }
+                              >
+                                継続中に変更
                               </Button>
                             )}
                             <Button
