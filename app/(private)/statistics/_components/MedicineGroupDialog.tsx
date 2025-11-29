@@ -48,7 +48,10 @@ export function MedicineGroupDialog({
     if (initialMedicineNames.length > 0) {
       setSelectedMedicines(new Set(initialMedicineNames));
       // 最初の薬名を代表名として提案
-      setCanonicalName(initialMedicineNames[0]);
+      const firstName = initialMedicineNames[0];
+      if (firstName) {
+        setCanonicalName(firstName);
+      }
     }
   }, [initialMedicineNames]);
 

@@ -56,12 +56,14 @@ describe("useGroupMembers", () => {
     expect(result.current.members).toHaveLength(3);
 
     // 患者が最初に来る
-    expect(result.current.members[0].role).toBe("patient");
-    expect(result.current.members[0].name).toBe("患者1");
+    const firstMember = result.current.members[0];
+    expect(firstMember).toBeDefined();
+    expect(firstMember?.role).toBe("patient");
+    expect(firstMember?.name).toBe("患者1");
 
     // サポーターはjoinedAt順（150 < 200）
-    expect(result.current.members[1].name).toBe("サポーター2");
-    expect(result.current.members[2].name).toBe("サポーター1");
+    expect(result.current.members[1]?.name).toBe("サポーター2");
+    expect(result.current.members[2]?.name).toBe("サポーター1");
   });
 
   it("メンバーが空配列の場合、空配列を返す", () => {
@@ -99,8 +101,8 @@ describe("useGroupMembers", () => {
 
     const { result } = renderHook(() => useGroupMembers(mockGroupId));
 
-    expect(result.current.members[0].name).toBe("患者1");
-    expect(result.current.members[1].name).toBe("患者2");
-    expect(result.current.members[2].name).toBe("患者3");
+    expect(result.current.members[0]?.name).toBe("患者1");
+    expect(result.current.members[1]?.name).toBe("患者2");
+    expect(result.current.members[2]?.name).toBe("患者3");
   });
 });

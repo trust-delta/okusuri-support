@@ -139,12 +139,19 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
       // サブスクリプション情報をサーバーに保存
       console.log("[Push] Convex mutationを呼び出し中...");
+      const p256dhKey = subscription.getKey("p256dh");
+      const authKey = subscription.getKey("auth");
+
+      if (!p256dhKey || !authKey) {
+        throw new Error("サブスクリプションキーの取得に失敗しました");
+      }
+
       await subscribeMutation({
         subscription: {
           endpoint: subscription.endpoint,
           keys: {
-            p256dh: arrayBufferToBase64(subscription.getKey("p256dh")),
-            auth: arrayBufferToBase64(subscription.getKey("auth")),
+            p256dh: arrayBufferToBase64(p256dhKey),
+            auth: arrayBufferToBase64(authKey),
           },
         },
         userAgent: navigator.userAgent,
@@ -245,13 +252,14 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 // ユーティリティ関数: ArrayBufferをBase64に変換
-function arrayBufferToBase64(buffer: ArrayBuffer | null): string {
-  if (!buffer) return "";
-
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+    const byte = bytes[i];
+    if (byte !== undefined) {
+      binary += String.fromCharCode(byte);
+    }
   }
   return window.btoa(binary);
 }

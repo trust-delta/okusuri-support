@@ -82,7 +82,7 @@ export async function createDefaultPrescription(
   userId: string,
 ): Promise<Id<"prescriptions">> {
   const now = Date.now();
-  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const today = new Date().toISOString().split("T")[0] ?? ""; // YYYY-MM-DD
 
   // デフォルト処方箋を作成
   const prescriptionId = await ctx.db.insert("prescriptions", {

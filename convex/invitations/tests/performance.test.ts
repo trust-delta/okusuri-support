@@ -335,8 +335,12 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       const joinPromises = setup.newUserIds.map(async (userId, index) => {
         const asUser = t.withIdentity({ subject: userId });
+        const invitationCode = setup.invitationCodes[index];
+        if (!invitationCode) {
+          throw new Error(`Invitation code not found for index ${index}`);
+        }
         return asUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
-          invitationCode: setup.invitationCodes[index],
+          invitationCode,
           role: "supporter",
           displayName: `ユーザー${index + 1}`,
         });
@@ -502,11 +506,15 @@ describe("パフォーマンステスト - 招待機能", () => {
       // 5人が同時にPatientロールで参加を試みる（異なる招待コード使用）
       const joinPromises = setup.newUserIds.map(async (userId, index) => {
         const asUser = t.withIdentity({ subject: userId });
+        const invitationCode = setup.invitationCodes[index];
+        if (!invitationCode) {
+          throw new Error(`Invitation code not found for index ${index}`);
+        }
         try {
           const result = await asUser.mutation(
             api.groups.mutations.joinGroupWithInvitation,
             {
-              invitationCode: setup.invitationCodes[index],
+              invitationCode,
               role: "patient",
               displayName: `Patient候補${index + 1}`,
             },
