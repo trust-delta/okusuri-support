@@ -32,6 +32,10 @@ model: sonnet
 
 ## 基本フロー
 
+### 0. 準備
+必須ドキュメントを確認：
+- `.context/testing-strategy.md` - テスト戦略、テスト種別、カバレッジ目標
+
 ### 1. テスト実行
 
 #### Vitest（単体テスト）

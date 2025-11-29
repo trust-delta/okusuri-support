@@ -19,13 +19,58 @@
 
 サブエージェントは特定の役割に特化したエージェントで、親エージェントから Task ツールで呼び出されます。
 
+### 利用可能なエージェント一覧
+
+| エージェント | 用途 | モデル | 定義ファイル |
+|-------------|------|--------|--------------|
+| error-fixer | エラー修正 | sonnet | [.claude/agents/error-fixer.md](../../.claude/agents/error-fixer.md) |
+| code-implementer | コード実装 | sonnet | [.claude/agents/code-implementer.md](../../.claude/agents/code-implementer.md) |
+| test-runner | テスト実行・分析 | sonnet | [.claude/agents/test-runner.md](../../.claude/agents/test-runner.md) |
+
+### 選択フローチャート
+
+```
+ユーザーのリクエスト
+         │
+         ▼
+   ┌─────────────────┐
+   │ エラーが発生？   │
+   └────────┬────────┘
+            │
+     ┌──────┴──────┐
+     │             │
+   Yes            No
+     │             │
+     ▼             ▼
+┌─────────┐  ┌─────────────────┐
+│error-   │  │ テスト実行？     │
+│fixer    │  └────────┬────────┘
+└─────────┘           │
+                ┌─────┴─────┐
+                │           │
+              Yes          No
+                │           │
+                ▼           ▼
+          ┌──────────┐  ┌─────────────────┐
+          │test-     │  │ 新機能の実装？   │
+          │runner    │  └────────┬────────┘
+          └──────────┘           │
+                           ┌─────┴─────┐
+                           │           │
+                         Yes          No
+                           │           │
+                           ▼           ▼
+                     ┌──────────┐  メインエージェントで
+                     │code-     │  直接対応
+                     │implementer│
+                     └──────────┘
+```
+
 ### 1. error-fixer
 
-- **パス**: [.claude/agents/error-fixer.md](../.claude/agents/error-fixer.md)
 - **役割**: エラー修正専門
 - **対象**: 型エラー、Lintエラー、コンパイルエラー
 - **利用ツール**: Read, Write, Edit, Glob, Grep, Bash, Skill
-- **モデル**: sonnet
 - **責任範囲**:
   - ✅ 型エラーの修正
   - ✅ Lintエラーの修正
@@ -35,19 +80,100 @@
   - ❌ 仕様書の作成・更新
   - ❌ Git操作
 
+**使用する場面**:
+- `npm run type-check` でエラーが発生した
+- `npm run lint` でエラーが発生した
+- `npm run build` でコンパイルエラーが発生した
+- 既存コードに型エラーがある
+
+**呼び出し例**:
+```
+Task(subagent_type="error-fixer"):
+「以下の型エラーを修正してください:
+- src/features/medication/components/MedicationList.tsx:42
+  Type 'string' is not assignable to type 'number'
+」
+```
+
 ### 2. code-implementer
 
-- **パス**: [.claude/agents/code-implementer.md](../.claude/agents/code-implementer.md)
 - **役割**: コード実装専門
 - **対象**: 小規模な実装（1-3ファイル程度）
 - **利用ツール**: Read, Write, Edit, Glob, Grep, Bash, Skill
-- **モデル**: sonnet
 - **責任範囲**:
   - ✅ 新規機能の実装（小〜中規模）
   - ✅ 既存機能の拡張
   - ✅ リファクタリング
   - ❌ エラー修正のみ（error-fixerが担当）
   - ❌ 大規模な設計変更
+  - ❌ Git操作
+
+**使用する場面**:
+- 小規模な機能実装（1-3ファイル程度）
+- 既存パターンに従った新規コンポーネント作成
+- API関数（query/mutation/action）の追加
+- 既存コードの軽微な拡張
+
+**呼び出し例**:
+```
+Task(subagent_type="code-implementer"):
+「以下の機能を実装してください:
+- 機能: 処方箋の複製
+- 仕様: 既存の処方箋をコピーして新しい処方箋を作成
+- 参照: convex/prescription/mutations.ts の既存パターン
+」
+```
+
+### 3. test-runner
+
+- **役割**: テスト実行専門
+- **対象**: Playwright/Vitestテストの実行、結果分析、失敗原因の特定
+- **利用ツール**: Read, Glob, Grep, Bash
+- **責任範囲**:
+  - ✅ テストの実行（Playwright, Vitest）
+  - ✅ テスト結果の分析
+  - ✅ 失敗原因の特定
+  - ✅ 修正方法の提案
+  - ✅ テストカバレッジの確認
+  - ❌ テストコードの修正（error-fixerまたはcode-implementerが担当）
+  - ❌ 新規テストの作成（code-implementerが担当）
+  - ❌ 実装コードの変更
+
+**使用する場面**:
+- `npm run test` でテストを実行したい
+- `npx playwright test` でE2Eテストを実行したい
+- テスト失敗の原因を分析したい
+- テストカバレッジを確認したい
+
+**呼び出し例**:
+```
+Task(subagent_type="test-runner"):
+「以下のテストを実行して結果を分析してください:
+- npm run test
+- 失敗したテストがあれば原因を特定
+」
+```
+
+### メインエージェントで対応するケース
+
+以下の場合はサブエージェントを使用せず、メインエージェントが直接対応します：
+
+1. **大規模な機能実装**: 4ファイル以上の変更、アーキテクチャレベルの設計判断が必要
+2. **Git操作**: ブランチ作成、コミット、プッシュ、PR作成
+3. **技術決定の記録**: decision-assistant スキルを使用
+4. **仕様書の作成・更新**: spec-assistant スキルを使用
+5. **調査・分析タスク**: コードベースの調査、パフォーマンス分析、セキュリティ監査
+
+### 複合タスクの場合
+
+複数のエージェントが必要な場合は、順次呼び出します：
+
+**例: 新機能実装 + テスト + エラー修正**
+
+1. **code-implementer** で機能を実装
+2. **test-runner** でテストを実行・分析
+3. 実装後に `npm run type-check` を実行
+4. エラーがあれば **error-fixer** で修正
 
 ---
 
@@ -134,11 +260,9 @@
 
 ### 1. settings.json（プロジェクト共有設定）
 
-- **パス**: [.claude/settings.json](../.claude/settings.json)
+- **パス**: [.claude/settings.json](../../.claude/settings.json)
 - **共有**: リポジトリにコミットされ、チーム全体で共有
-- **内容**:
-  - **フック（Hooks）**:
-    - `Stop`: 作業完了時に仕様書との整合性確認を促すコマンドを実行
+- **内容**: 現在は空（`{}`）。プロジェクト共通のフックや設定を追加する場合に使用
 
 ### 2. settings.local.json（個人環境設定）
 
@@ -199,17 +323,18 @@
 
 1. **スキル呼び出し**: ユーザーが特定タスクを依頼
    - 例: 「通知機能の仕様書を作成して」→ `Skill(spec-assistant)`
-   - 例: 「型エラーを確認して」→ `Skill(type-check-lint)`
+   - 例: 「技術決定を記録して」→ `Skill(decision-assistant)`
 
 2. **サブエージェント呼び出し**: 親エージェントが Task ツールで専門エージェントに委譲
    - 例: エラー修正が必要 → `Task(subagent_type=error-fixer)`
    - 例: 小規模実装が必要 → `Task(subagent_type=code-implementer)`
+   - 例: テスト実行が必要 → `Task(subagent_type=test-runner)`
 
 3. **権限チェック**: settings.local.json の allow/deny リストで実行可否を判定
 
-4. **フック実行**: 特定イベント（Stop、Notification）発生時に自動実行
+4. **フック実行**: 特定イベント（Stop、Notification）発生時に自動実行（settings.local.json で定義）
 
-5. **仕様書同期**: Stop時のフックで整合性確認を促す
+5. **仕様書同期**: 実装変更後は手動で `Skill(doc-sync)` を呼び出して整合性を確認
 
 ---
 
