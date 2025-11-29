@@ -20,7 +20,7 @@ TZ='Asia/Tokyo' date '+%Y年%m月%d日 %H:%M:%S JST'
 
 **または**、スクリプトでテンプレート一覧を取得：
 ```bash
-./.claude/skills/spec-assistant/scripts/spec-list-templates.sh feature
+tsx ./.claude/skills/spec-assistant/scripts/spec-list-templates.ts feature
 ```
 
 #### 1-3. 既存仕様書の参照
@@ -30,7 +30,7 @@ TZ='Asia/Tokyo' date '+%Y年%m月%d日 %H:%M:%S JST'
 
 **または**、スクリプトで最新仕様書一覧を取得：
 ```bash
-./.claude/skills/spec-assistant/scripts/spec-list-recent.sh 5 features
+tsx ./.claude/skills/spec-assistant/scripts/spec-list-recent.ts 5 features
 ```
 
 ---
@@ -115,7 +115,7 @@ TZ='Asia/Tokyo' date '+%Y年%m月%d日 %H:%M:%S JST'
 
 **スクリプトで kebab-case 変換**:
 ```bash
-./.claude/skills/spec-assistant/scripts/spec-to-kebab-case.sh "通知機能"
+tsx ./.claude/skills/spec-assistant/scripts/spec-to-kebab-case.ts "通知機能"
 # 出力: notification
 ```
 
@@ -142,7 +142,7 @@ TZ='Asia/Tokyo' date '+%Y年%m月%d日 %H:%M:%S JST'
 
 **スクリプトで関連ドキュメント検索**:
 ```bash
-./.claude/skills/spec-assistant/scripts/spec-search-related.sh notification medication
+tsx ./.claude/skills/spec-assistant/scripts/spec-search-related.ts notification medication
 ```
 
 ---
@@ -177,7 +177,7 @@ TZ='Asia/Tokyo' date '+%Y年%m月%d日 %H:%M:%S JST'
 
 **スクリプトで検証**:
 ```bash
-./.claude/skills/spec-assistant/scripts/spec-validate.sh .context/specs/features/notification.md
+tsx ./.claude/skills/spec-assistant/scripts/spec-validate.ts .context/specs/features/notification.md
 ```
 
 ---

@@ -1,0 +1,109 @@
+# コミット作成
+
+コミットメッセージ規則に従ってコミットを作成します。
+
+## 実行フロー
+
+### 1. 変更内容の確認
+```bash
+git status
+git diff --staged
+git diff
+```
+
+### 2. 変更のステージング
+
+#### 全ての変更をステージ
+```bash
+git add .
+```
+
+#### 特定ファイルのみ
+```bash
+git add <file1> <file2>
+```
+
+### 3. コミットタイプの決定
+
+変更内容から適切なタイプを判断：
+
+| 変更内容 | タイプ |
+|----------|--------|
+| 新機能の追加 | `feat` |
+| バグの修正 | `fix` |
+| コードの改善（機能変更なし） | `refactor` |
+| ドキュメントの追加・修正 | `docs` |
+| テストの追加・修正 | `test` |
+| ビルド設定、依存関係 | `chore` |
+| フォーマット、空白 | `style` |
+| パフォーマンス改善 | `perf` |
+
+### 4. コミットメッセージの作成
+
+**フォーマット**:
+```
+<type>: <subject>
+
+<body>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**ルール**:
+- 件名は日本語で記述
+- 件名は50文字以内
+- 本文は変更の理由を説明
+
+### 5. コミット実行
+```bash
+git commit -m "$(cat <<'EOF'
+<type>: <subject>
+
+<body>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+### 6. 確認
+```bash
+git log -1
+```
+
+---
+
+## コミットメッセージ例
+
+### feat（新機能）
+```
+feat: 処方箋の複製機能を追加
+
+既存の処方箋をコピーして新しい処方箋を作成できるようにした。
+```
+
+### fix（バグ修正）
+```
+fix: ログイン時の認証エラーを修正
+
+セッショントークンの有効期限チェックが正しく動作していなかった問題を修正。
+```
+
+### refactor（リファクタリング）
+```
+refactor: 認証ロジックをカスタムフックに分離
+
+useAuth フックを作成し、認証関連のロジックを一箇所に集約。
+```
+
+---
+
+## 注意事項
+
+1. **コミット前の確認**: `npm run type-check && npm run lint`
+2. **機密情報の除外**: `.env`ファイルなどをコミットしない
+3. **原子的なコミット**: 1つのコミットは1つの論理的な変更

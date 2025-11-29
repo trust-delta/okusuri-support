@@ -93,9 +93,10 @@ API仕様書を対話形式で作成します。
 
 | スクリプト | 機能 | 使用コマンド |
 |----------|------|------------|
-| spec-list-recent.sh | 最新仕様書一覧 | `./.claude/skills/spec-assistant/scripts/spec-list-recent.sh 5 features` |
-| spec-list-templates.sh | テンプレート一覧 | `./.claude/skills/spec-assistant/scripts/spec-list-templates.sh feature` |
-| spec-to-kebab-case.sh | kebab-case変換 | `./.claude/skills/spec-assistant/scripts/spec-to-kebab-case.sh "通知機能"` |
-| spec-validate.sh | 仕様書検証 | `./.claude/skills/spec-assistant/scripts/spec-validate.sh <file>` |
-| spec-search-related.sh | 関連検索 | `./.claude/skills/spec-assistant/scripts/spec-search-related.sh <keywords>` |
-| spec-find-impl.sh | 実装ファイル検索 | `./.claude/skills/spec-assistant/scripts/spec-find-impl.sh <feature> 5` |
+| get-date.sh | JST日付取得 | `./.claude/skills/shared/scripts/get-date.sh [format]` |
+| spec-list-recent.ts | 最新仕様書一覧 | `tsx ./.claude/skills/spec-assistant/scripts/spec-list-recent.ts 5 features` |
+| spec-list-templates.ts | テンプレート一覧 | `tsx ./.claude/skills/spec-assistant/scripts/spec-list-templates.ts feature` |
+| spec-to-kebab-case.ts | kebab-case変換 | `tsx ./.claude/skills/spec-assistant/scripts/spec-to-kebab-case.ts "通知機能"` |
+| spec-validate.ts | 仕様書検証 | `tsx ./.claude/skills/spec-assistant/scripts/spec-validate.ts <file>` |
+| spec-search-related.ts | 関連検索 | `tsx ./.claude/skills/spec-assistant/scripts/spec-search-related.ts <keywords>` |
+| spec-find-impl.ts | 実装ファイル検索 | `tsx ./.claude/skills/spec-assistant/scripts/spec-find-impl.ts <feature> 5` |
