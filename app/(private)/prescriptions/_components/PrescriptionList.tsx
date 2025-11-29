@@ -5,6 +5,7 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
+  Copy,
   Pause,
   Pill,
   Play,
@@ -44,94 +45,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Id } from "@/schema";
+import { PrescriptionMedicinesList } from "./PrescriptionMedicinesList";
 
 interface PrescriptionListProps {
   groupId: Id<"groups">;
   filter: "active" | "inactive";
-}
-
-const TIMING_LABELS: Record<string, string> = {
-  morning: "朝",
-  noon: "昼",
-  evening: "晩",
-  bedtime: "就寝前",
-  asNeeded: "頓服",
-};
-
-// 処方箋に含まれる薬の一覧を表示するコンポーネント
-function PrescriptionMedicinesList({
-  prescriptionId,
-}: {
-  prescriptionId: Id<"prescriptions">;
-}) {
-  const medicines = useQuery(
-    api.medications.prescriptions.queries.getPrescriptionMedicines,
-    { prescriptionId },
-  );
-
-  if (medicines === undefined) {
-    return (
-      <div className="space-y-2">
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-16 w-full" />
-      </div>
-    );
-  }
-
-  if (medicines.length === 0) {
-    return (
-      <div className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
-        この処方箋には薬が登録されていません
-      </div>
-    );
-  }
-
-  return (
-    <div className="border-t pt-4">
-      <h4 className="text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300">
-        含まれる薬
-      </h4>
-      <div className="space-y-2">
-        {medicines.map((medicine: (typeof medicines)[number]) => (
-          <div
-            key={medicine._id}
-            className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="font-medium text-gray-900 dark:text-gray-100">
-                  {medicine.name}
-                </div>
-                {medicine.schedule && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {medicine.schedule.timings.map((timing: string) => (
-                      <span
-                        key={timing}
-                        className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
-                      >
-                        {TIMING_LABELS[timing] || timing}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {medicine.schedule?.dosage && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    用量: {medicine.schedule.dosage.amount}
-                    {medicine.schedule.dosage.unit}
-                  </div>
-                )}
-                {medicine.description && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {medicine.description}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
@@ -155,10 +73,23 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
   const updatePrescription = useMutation(
     api.medications.prescriptions.mutations.updatePrescription,
   );
+  const duplicatePrescription = useMutation(
+    api.medications.prescriptions.mutations.duplicatePrescription,
+  );
 
   const [endDateDialogPrescriptionId, setEndDateDialogPrescriptionId] =
     useState<Id<"prescriptions"> | null>(null);
   const [endDateInput, setEndDateInput] = useState("");
+
+  // 複製ダイアログ
+  const [duplicateDialogPrescription, setDuplicateDialogPrescription] =
+    useState<{
+      id: Id<"prescriptions">;
+      name: string;
+    } | null>(null);
+  const [duplicateStartDate, setDuplicateStartDate] = useState("");
+  const [duplicateEndDate, setDuplicateEndDate] = useState("");
+  const [duplicateName, setDuplicateName] = useState("");
 
   // 削除確認ダイアログ
   const [deleteDialogPrescriptionId, setDeleteDialogPrescriptionId] =
@@ -238,6 +169,55 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "終了日の設定に失敗しました",
+      );
+    }
+  };
+
+  const handleClearEndDate = async (prescriptionId: Id<"prescriptions">) => {
+    try {
+      await updatePrescription({
+        prescriptionId,
+        clearEndDate: true,
+      });
+      toast.success("継続中に変更しました");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "終了日の削除に失敗しました",
+      );
+    }
+  };
+
+  const openDuplicateDialog = (
+    prescriptionId: Id<"prescriptions">,
+    prescriptionName: string,
+  ) => {
+    setDuplicateDialogPrescription({
+      id: prescriptionId,
+      name: prescriptionName,
+    });
+    setDuplicateStartDate(today);
+    setDuplicateEndDate("");
+    setDuplicateName(`${prescriptionName}のコピー`);
+  };
+
+  const handleDuplicate = async () => {
+    if (!duplicateDialogPrescription || !duplicateStartDate) {
+      toast.error("開始日を入力してください");
+      return;
+    }
+
+    try {
+      await duplicatePrescription({
+        prescriptionId: duplicateDialogPrescription.id,
+        name: duplicateName || undefined,
+        startDate: duplicateStartDate,
+        endDate: duplicateEndDate || undefined,
+      });
+      toast.success("処方箋を複製しました");
+      setDuplicateDialogPrescription(null);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "処方箋の複製に失敗しました",
       );
     }
   };
@@ -328,10 +308,10 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                           </span>
                         </CardDescription>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {prescription.isActive ? (
                           <>
-                            {!prescription.endDate && (
+                            {!prescription.endDate ? (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -343,6 +323,16 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                                 }}
                               >
                                 終了日を設定
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleClearEndDate(prescription._id)
+                                }
+                              >
+                                継続中に変更
                               </Button>
                             )}
                             <Button
@@ -368,6 +358,19 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                             有効化
                           </Button>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            openDuplicateDialog(
+                              prescription._id,
+                              prescription.name,
+                            )
+                          }
+                        >
+                          <Copy className="h-4 w-4 mr-1" />
+                          複製
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -508,6 +511,69 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 複製ダイアログ */}
+      <Dialog
+        open={duplicateDialogPrescription !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDuplicateDialogPrescription(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>処方箋を複製</DialogTitle>
+            <DialogDescription>
+              「{duplicateDialogPrescription?.name}
+              」を複製して新しい処方箋を作成します。
+              薬とスケジュールもコピーされます。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="duplicateName">処方箋名</Label>
+              <Input
+                id="duplicateName"
+                type="text"
+                value={duplicateName}
+                onChange={(e) => setDuplicateName(e.target.value)}
+                placeholder="例: 12月分の処方箋"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="duplicateStartDate">開始日 *</Label>
+              <Input
+                id="duplicateStartDate"
+                type="date"
+                value={duplicateStartDate}
+                onChange={(e) => setDuplicateStartDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="duplicateEndDate">終了日（任意）</Label>
+              <Input
+                id="duplicateEndDate"
+                type="date"
+                value={duplicateEndDate}
+                onChange={(e) => setDuplicateEndDate(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">
+                未設定の場合は継続中として扱われます
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDuplicateDialogPrescription(null)}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handleDuplicate}>複製</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

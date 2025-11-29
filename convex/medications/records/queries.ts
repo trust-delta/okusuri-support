@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { type QueryCtx, query } from "../../_generated/server";
 
@@ -15,7 +15,7 @@ export const getTodayRecords = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -26,7 +26,7 @@ export const getTodayRecords = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     // patientIdが指定されている場合は、その患者の記録のみを取得
@@ -36,7 +36,7 @@ export const getTodayRecords = query({
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
       if (membership.role !== "supporter" && targetPatientId !== userId) {
-        throw new Error("他のユーザーの記録を閲覧する権限がありません");
+        throw new ConvexError("他のユーザーの記録を閲覧する権限がありません");
       }
       records = await ctx.db
         .query("medicationRecords")
@@ -75,7 +75,7 @@ export const getMonthlyRecords = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -86,7 +86,7 @@ export const getMonthlyRecords = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     // 月の範囲を計算（YYYY-MM-DD形式）
@@ -101,7 +101,7 @@ export const getMonthlyRecords = query({
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
       if (membership.role !== "supporter" && targetPatientId !== userId) {
-        throw new Error("他のユーザーの記録を閲覧する権限がありません");
+        throw new ConvexError("他のユーザーの記録を閲覧する権限がありません");
       }
       records = await ctx.db
         .query("medicationRecords")
@@ -218,7 +218,7 @@ export const getMonthlyStats = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -229,7 +229,7 @@ export const getMonthlyStats = query({
       .first();
 
     if (!membership) {
-      throw new Error("このグループのメンバーではありません");
+      throw new ConvexError("このグループのメンバーではありません");
     }
 
     // 月の範囲を計算
@@ -244,7 +244,7 @@ export const getMonthlyStats = query({
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
       if (membership.role !== "supporter" && targetPatientId !== userId) {
-        throw new Error("他のユーザーの記録を閲覧する権限がありません");
+        throw new ConvexError("他のユーザーの記録を閲覧する権限がありません");
       }
       records = await ctx.db
         .query("medicationRecords")

@@ -38,8 +38,13 @@ export function InviteSection({ groupId }: Props) {
     return null;
   }
 
+  const isExpired = (expiresAt: number) => {
+    return Date.now() > expiresAt;
+  };
+
   const activeInvitations = invitations.filter(
-    (inv: (typeof invitations)[number]) => !inv.isUsed,
+    (inv: (typeof invitations)[number]) =>
+      !inv.isUsed && !isExpired(inv.expiresAt),
   );
   const usedInvitations = invitations.filter(
     (inv: (typeof invitations)[number]) => inv.isUsed,
@@ -54,10 +59,6 @@ export function InviteSection({ groupId }: Props) {
     } catch (_error) {
       toast.error("コピーに失敗しました");
     }
-  };
-
-  const isExpired = (expiresAt: number) => {
-    return Date.now() > expiresAt;
   };
 
   return (

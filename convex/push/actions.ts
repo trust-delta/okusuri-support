@@ -1,7 +1,7 @@
 "use node";
 
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import webpush from "web-push";
 import { api, internal } from "../_generated/api";
 import { action } from "../_generated/server";
@@ -28,6 +28,17 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 }
 
 /**
+ * プッシュ通知のdata フィールド用バリデータ
+ * 通知クリック時の遷移先URLやアクション情報を含む
+ */
+const pushNotificationDataValidator = v.object({
+  url: v.optional(v.string()),
+  action: v.optional(v.string()),
+  groupId: v.optional(v.string()),
+  recordId: v.optional(v.string()),
+});
+
+/**
  * プッシュ通知ペイロード
  */
 const pushPayloadValidator = v.object({
@@ -36,7 +47,7 @@ const pushPayloadValidator = v.object({
   icon: v.optional(v.string()),
   badge: v.optional(v.string()),
   tag: v.optional(v.string()),
-  data: v.optional(v.any()),
+  data: v.optional(pushNotificationDataValidator),
 });
 
 /**
@@ -47,7 +58,7 @@ export const sendTestNotification = action({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // ユーザーのサブスクリプションを取得
@@ -125,7 +136,7 @@ export const sendToUser = action({
   handler: async (ctx, args) => {
     const currentUserId = await getAuthUserId(ctx);
     if (!currentUserId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // 対象ユーザーのサブスクリプションを取得
@@ -199,7 +210,7 @@ export const sendToGroup = action({
   }> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("認証が必要です");
+      throw new ConvexError("認証が必要です");
     }
 
     // グループメンバーを取得
