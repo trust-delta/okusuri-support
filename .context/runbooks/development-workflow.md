@@ -211,13 +211,22 @@ hotfix/<修正内容>   # 本番の緊急修正
 bugfix/<バグ内容>   # develop のバグ修正
 ```
 
+## Pre-commit Hook（自動実行）
+
+コミット時に **husky + lint-staged** により以下が自動実行されます：
+
+- ステージされたファイルに対して `biome check --write` が実行される
+- フォーマット違反は自動修正
+- lint エラーがある場合はコミットがブロックされる
+
+そのため、**手動でのフォーマットやリント実行は不要** です。
+
 ## チェックリスト
 
 ### コミット前
 
-- [ ] 型チェックが通る (`npm run type-check`)
-- [ ] Lint エラーがない (`npm run lint`)
-- [ ] ビルドが成功する (`npm run build`)
+- [x] フォーマット/Lint チェック → **自動実行（pre-commit hook）**
+- [ ] ビルドが成功する (`pnpm run build`)（大きな変更時に推奨）
 - [ ] 関連するテストが通る
 
 ### PR 作成前（feature → develop）
@@ -257,4 +266,4 @@ git push origin feature/your-feature
 
 ---
 
-最終更新: 2025年10月29日
+最終更新: 2025年11月30日
