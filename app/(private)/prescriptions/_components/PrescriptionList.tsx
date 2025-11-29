@@ -45,94 +45,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Id } from "@/schema";
+import { PrescriptionMedicinesList } from "./PrescriptionMedicinesList";
 
 interface PrescriptionListProps {
   groupId: Id<"groups">;
   filter: "active" | "inactive";
-}
-
-const TIMING_LABELS: Record<string, string> = {
-  morning: "朝",
-  noon: "昼",
-  evening: "晩",
-  bedtime: "就寝前",
-  asNeeded: "頓服",
-};
-
-// 処方箋に含まれる薬の一覧を表示するコンポーネント
-function PrescriptionMedicinesList({
-  prescriptionId,
-}: {
-  prescriptionId: Id<"prescriptions">;
-}) {
-  const medicines = useQuery(
-    api.medications.prescriptions.queries.getPrescriptionMedicines,
-    { prescriptionId },
-  );
-
-  if (medicines === undefined) {
-    return (
-      <div className="space-y-2">
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-16 w-full" />
-      </div>
-    );
-  }
-
-  if (medicines.length === 0) {
-    return (
-      <div className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
-        この処方箋には薬が登録されていません
-      </div>
-    );
-  }
-
-  return (
-    <div className="border-t pt-4">
-      <h4 className="text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300">
-        含まれる薬
-      </h4>
-      <div className="space-y-2">
-        {medicines.map((medicine: (typeof medicines)[number]) => (
-          <div
-            key={medicine._id}
-            className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="font-medium text-gray-900 dark:text-gray-100">
-                  {medicine.name}
-                </div>
-                {medicine.schedule && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {medicine.schedule.timings.map((timing: string) => (
-                      <span
-                        key={timing}
-                        className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
-                      >
-                        {TIMING_LABELS[timing] || timing}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {medicine.schedule?.dosage && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    用量: {medicine.schedule.dosage.amount}
-                    {medicine.schedule.dosage.unit}
-                  </div>
-                )}
-                {medicine.description && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {medicine.description}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
