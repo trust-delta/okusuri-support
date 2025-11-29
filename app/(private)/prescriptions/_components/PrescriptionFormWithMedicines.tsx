@@ -95,8 +95,7 @@ export function PrescriptionFormWithMedicines({
     }
 
     // 薬のバリデーション
-    for (let i = 0; i < medicines.length; i++) {
-      const med = medicines[i];
+    for (const [i, med] of medicines.entries()) {
       if (!med.name.trim()) {
         toast.error(`薬 ${i + 1} の薬名を入力してください`);
         return;

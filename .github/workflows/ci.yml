@@ -12,14 +12,13 @@ on:
       - develop
 
 jobs:
-  ci:
-    name: 型チェック・ビルド・テスト
+  # 型チェック・Lint・ビルド
+  build:
+    name: 型チェック・Lint・ビルド
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     permissions:
       contents: read
-      pull-requests: write
-      issues: write
 
     steps:
       - name: リポジトリをチェックアウト
@@ -45,19 +44,148 @@ jobs:
       - name: ビルドを実行
         run: pnpm run build
 
-      - name: Unit テストを実行
-        run: pnpm run test
+  # Unit テスト + カバレッジ
+  unit-test:
+    name: Unit テスト
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: pnpm をセットアップ
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Node.js をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+          cache: 'pnpm'
+
+      - name: 依存関係をインストール
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit テストを実行（カバレッジ付き）
+        run: pnpm run test:coverage
+
+      - name: カバレッジレポートをアップロード
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # E2E テスト
+  e2e-test:
+    name: E2E テスト
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: pnpm をセットアップ
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Node.js をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+          cache: 'pnpm'
+
+      - name: 依存関係をインストール
+        run: pnpm install --frozen-lockfile
+
+      - name: Playwright ブラウザをインストール
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E テストを実行
+        run: pnpm run test:e2e
+        env:
+          CI: true
+
+      - name: Playwright レポートをアップロード
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # セキュリティスキャン
+  security:
+    name: セキュリティスキャン
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: pnpm をセットアップ
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Node.js をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+          cache: 'pnpm'
+
+      - name: 依存関係をインストール
+        run: pnpm install --frozen-lockfile
+
+      - name: npm audit を実行
+        run: pnpm audit --audit-level=high
         continue-on-error: true
 
+  # CI 結果サマリー
+  summary:
+    name: CI サマリー
+    runs-on: ubuntu-latest
+    needs: [build, unit-test, e2e-test, security]
+    if: always() && github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      issues: write
+
+    steps:
       - name: CI 結果をコメント
-        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const jobStatus = '${{ job.status }}';
-            const body = jobStatus === 'success'
-              ? '✅ CI パイプラインが正常に完了しました。'
-              : '❌ CI パイプラインが失敗しました。詳細は [Actions タブ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) を確認してください。';
+            const buildStatus = '${{ needs.build.result }}';
+            const unitTestStatus = '${{ needs.unit-test.result }}';
+            const e2eTestStatus = '${{ needs.e2e-test.result }}';
+            const securityStatus = '${{ needs.security.result }}';
+
+            const statusEmoji = (status) => status === 'success' ? '✅' : status === 'skipped' ? '⏭️' : '❌';
+
+            const body = `## CI 結果サマリー
+
+            | ジョブ | 結果 |
+            |--------|------|
+            | 型チェック・Lint・ビルド | ${statusEmoji(buildStatus)} ${buildStatus} |
+            | Unit テスト | ${statusEmoji(unitTestStatus)} ${unitTestStatus} |
+            | E2E テスト | ${statusEmoji(e2eTestStatus)} ${e2eTestStatus} |
+            | セキュリティスキャン | ${statusEmoji(securityStatus)} ${securityStatus} |
+
+            詳細は [Actions タブ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) を確認してください。`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,

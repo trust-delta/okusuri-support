@@ -242,7 +242,7 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
   }
 
   // フィルタ適用
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0] ?? "";
   const filteredPrescriptions = prescriptions.filter(
     (prescription: (typeof prescriptions)[number]) => {
       const isExpired = prescription.endDate && prescription.endDate < today;
