@@ -20,11 +20,9 @@ export const generateInvitationCodeAction = action({
     // バイト列を62進数の文字セットにマッピング
     let code = "";
     for (let i = 0; i < codeLength; i++) {
-      const byte = randomBytesBuffer[i];
-      if (byte !== undefined) {
-        const randomIndex = byte % charset.length;
-        code += charset[randomIndex];
-      }
+      const byte = randomBytesBuffer[i] ?? 0;
+      const randomIndex = byte % charset.length;
+      code += charset[randomIndex];
     }
 
     return code;
