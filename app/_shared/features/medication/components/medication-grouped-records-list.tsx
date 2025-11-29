@@ -172,8 +172,9 @@ export function MedicationGroupedRecordsList({
               acc: Record<string, typeof medicationItems>,
               item: (typeof medicationItems)[number],
             ) => {
-              if (!acc[item.timing]) acc[item.timing] = [];
-              acc[item.timing].push(item);
+              const timingGroup = acc[item.timing] ?? [];
+              timingGroup.push(item);
+              acc[item.timing] = timingGroup;
               return acc;
             },
             {} as Record<string, typeof medicationItems>,
@@ -190,8 +191,9 @@ export function MedicationGroupedRecordsList({
               acc: Record<string, typeof medicationItems>,
               item: (typeof medicationItems)[number],
             ) => {
-              if (!acc[item.prescriptionName]) acc[item.prescriptionName] = [];
-              acc[item.prescriptionName].push(item);
+              const prescriptionGroup = acc[item.prescriptionName] ?? [];
+              prescriptionGroup.push(item);
+              acc[item.prescriptionName] = prescriptionGroup;
               return acc;
             },
             {} as Record<string, typeof medicationItems>,

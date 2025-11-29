@@ -313,11 +313,12 @@ export const getMonthlyStats = query({
           rate: 0,
         };
       }
-      if (record.status === "taken") dailyStats[record.scheduledDate].taken++;
-      else if (record.status === "skipped")
-        dailyStats[record.scheduledDate].skipped++;
-      else if (record.status === "pending")
-        dailyStats[record.scheduledDate].pending++;
+      const dailyStat = dailyStats[record.scheduledDate];
+      if (dailyStat) {
+        if (record.status === "taken") dailyStat.taken++;
+        else if (record.status === "skipped") dailyStat.skipped++;
+        else if (record.status === "pending") dailyStat.pending++;
+      }
 
       // タイミング別統計（定期服用のみ）
       if (record.timing in timingStats) {
@@ -362,27 +363,32 @@ export const getMonthlyStats = query({
         };
       } else {
         // レコードがある日: 実際のレコード数と期待値の差分を補正
-        const actualCount =
-          dailyStats[dateStr].taken +
-          dailyStats[dateStr].skipped +
-          dailyStats[dateStr].pending;
-        const missingCount = Math.max(0, expectedDailyCount - actualCount);
-        dailyStats[dateStr].pending += missingCount;
+        const dateStat = dailyStats[dateStr];
+        if (dateStat) {
+          const actualCount =
+            dateStat.taken + dateStat.skipped + dateStat.pending;
+          const missingCount = Math.max(0, expectedDailyCount - actualCount);
+          dateStat.pending += missingCount;
+        }
       }
     }
 
     // 日別服用率を計算（期待値反映後）
     for (const date in dailyStats) {
       const stats = dailyStats[date];
-      const total = stats.taken + stats.skipped + stats.pending;
-      stats.rate = total > 0 ? (stats.taken / total) * 100 : 0;
+      if (stats) {
+        const total = stats.taken + stats.skipped + stats.pending;
+        stats.rate = total > 0 ? (stats.taken / total) * 100 : 0;
+      }
     }
 
     // タイミング別服用率を計算（pending含む）
     for (const timing in timingStats) {
       const stats = timingStats[timing as keyof typeof timingStats];
-      const total = stats.taken + stats.skipped + stats.pending;
-      stats.rate = total > 0 ? (stats.taken / total) * 100 : 0;
+      if (stats) {
+        const total = stats.taken + stats.skipped + stats.pending;
+        stats.rate = total > 0 ? (stats.taken / total) * 100 : 0;
+      }
     }
 
     // レコードがない日の分を補正

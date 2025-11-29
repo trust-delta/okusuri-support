@@ -165,7 +165,7 @@ describe("招待機能 - 統合テスト", () => {
       );
 
       expect(invitations).toHaveLength(1);
-      expect(invitations[0].code).toBe("FIRST");
+      expect(invitations[0]?.code).toBe("FIRST");
 
       // 招待を2件目作成
       await asUser.mutation(

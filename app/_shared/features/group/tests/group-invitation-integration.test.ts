@@ -54,8 +54,8 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       });
 
       expect(members).toHaveLength(1);
-      expect(members[0].userId).toBe(userId);
-      expect(members[0].role).toBe("patient");
+      expect(members[0]?.userId).toBe(userId);
+      expect(members[0]?.role).toBe("patient");
     });
 
     it("Supporterロールでの新規グループ作成も正常動作する", async () => {
@@ -88,7 +88,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       });
 
       expect(members).toHaveLength(1);
-      expect(members[0].role).toBe("supporter");
+      expect(members[0]?.role).toBe("supporter");
     });
 
     it("既存のjoinGroup mutationが影響を受けていない（招待なし参加）", async () => {
@@ -288,8 +288,8 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       expect(status).toBeDefined();
       expect(status?.hasGroup).toBe(true);
       expect(status?.groups).toHaveLength(1);
-      expect(status?.groups[0].groupId).toBe(groupId);
-      expect(status?.groups[0].groupName).toBe("認証確認グループ");
+      expect(status?.groups[0]?.groupId).toBe(groupId);
+      expect(status?.groups[0]?.groupName).toBe("認証確認グループ");
     });
 
     it("認証済みユーザーは自分が参加していないグループの招待は作成できない", async () => {

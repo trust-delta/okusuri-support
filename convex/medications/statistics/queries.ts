@@ -145,12 +145,15 @@ export const getMedicationStatsByPeriod = query({
           const regularTimings = schedule.timings.filter(
             (t) => t !== "asNeeded",
           );
-          medicineStatsMap[medicine.name].totalDoses += regularTimings.length;
+          const medicineStats = medicineStatsMap[medicine.name];
+          if (medicineStats) {
+            medicineStats.totalDoses += regularTimings.length;
 
-          // 用量がある場合は合計用量を計算
-          if (schedule.dosage) {
-            medicineStatsMap[medicine.name].totalAmount +=
-              schedule.dosage.amount * regularTimings.length;
+            // 用量がある場合は合計用量を計算
+            if (schedule.dosage) {
+              medicineStats.totalAmount +=
+                schedule.dosage.amount * regularTimings.length;
+            }
           }
 
           // タイミング別の期待値を加算（頓服を除く）
@@ -250,18 +253,23 @@ export const getMedicationStatsByPeriod = query({
       }
 
       // ステータスに応じてカウント
-      if (record.status === "taken") {
-        medicineStatsMap[medicine.name].takenCount++;
-      } else if (record.status === "skipped") {
-        medicineStatsMap[medicine.name].skippedCount++;
-      } else if (record.status === "pending") {
-        medicineStatsMap[medicine.name].pendingCount++;
+      const stats = medicineStatsMap[medicine.name];
+      if (stats) {
+        if (record.status === "taken") {
+          stats.takenCount++;
+        } else if (record.status === "skipped") {
+          stats.skippedCount++;
+        } else if (record.status === "pending") {
+          stats.pendingCount++;
+        }
       }
     }
 
     // 各薬の服用率を計算
     for (const medicineName of Object.keys(medicineStatsMap)) {
       const stats = medicineStatsMap[medicineName];
+      if (!stats) continue;
+
       const actualRecords =
         stats.takenCount + stats.skippedCount + stats.pendingCount;
 
@@ -279,6 +287,8 @@ export const getMedicationStatsByPeriod = query({
     // タイミング別統計の服用率を計算
     for (const timing of Object.keys(timingStatsMap)) {
       const stats = timingStatsMap[timing];
+      if (!stats) continue;
+
       const actualRecords = stats.taken + stats.skipped + stats.pending;
 
       // 未記録分をpendingに追加

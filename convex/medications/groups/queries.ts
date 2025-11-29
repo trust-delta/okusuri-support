@@ -65,6 +65,11 @@ export const findSimilarMedicineNames = query({
         const name1 = uniqueMedicineNames[i];
         const name2 = uniqueMedicineNames[j];
 
+        // 配列アクセスの結果が undefined でないことを確認
+        if (!name1 || !name2) {
+          continue;
+        }
+
         // 既にグループ化されている薬名はスキップ
         if (
           groupedMedicineNames.has(name1) &&
@@ -145,24 +150,38 @@ function levenshteinDistance(str1: string, str2: string): number {
 
   // 初期化
   for (let i = 0; i <= len1; i++) {
-    matrix[i][0] = i;
+    const row = matrix[i];
+    if (row) {
+      row[0] = i;
+    }
   }
   for (let j = 0; j <= len2; j++) {
-    matrix[0][j] = j;
+    const firstRow = matrix[0];
+    if (firstRow) {
+      firstRow[j] = j;
+    }
   }
 
   // 動的計画法で距離を計算
   for (let i = 1; i <= len1; i++) {
     for (let j = 1; j <= len2; j++) {
-      const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      const char1 = str1[i - 1];
+      const char2 = str2[j - 1];
+      const cost = char1 === char2 ? 0 : 1;
 
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1, // 削除
-        matrix[i][j - 1] + 1, // 挿入
-        matrix[i - 1][j - 1] + cost, // 置換
-      );
+      const currentRow = matrix[i];
+      const prevRow = matrix[i - 1];
+
+      if (currentRow && prevRow) {
+        const deleteOp = (prevRow[j] ?? 0) + 1; // 削除
+        const insertOp = (currentRow[j - 1] ?? 0) + 1; // 挿入
+        const replaceOp = (prevRow[j - 1] ?? 0) + cost; // 置換
+
+        currentRow[j] = Math.min(deleteOp, insertOp, replaceOp);
+      }
     }
   }
 
-  return matrix[len1][len2];
+  const lastRow = matrix[len1];
+  return lastRow?.[len2] ?? 0;
 }
