@@ -1,6 +1,6 @@
 ---
 name: decision-assistant
-description: 技術的意思決定や重要な判断を構造化して記録する。背景・理由・代替案を整理し、将来の参照価値が高い決定記録を生成する。
+description: 技術的意思決定を構造化して記録する。重要な設計判断、技術選定、アーキテクチャ決定を記録する際に使用する。
 ---
 
 # Decision Assistant

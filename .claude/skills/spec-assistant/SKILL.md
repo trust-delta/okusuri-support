@@ -1,6 +1,6 @@
 ---
 name: spec-assistant
-description: 新機能の仕様書を対話形式で作成、または既存仕様書を実装に合わせて更新する。プロジェクトのテンプレートに準拠し、一貫性のある仕様書を生成する。
+description: .context/specs/ に仕様書を作成・更新・検証する。実装変更時の同期チェックも行う。新機能の仕様策定、実装後の仕様書更新、仕様と実装の不整合検出に使用する。
 ---
 
 # Spec Assistant
@@ -67,6 +67,18 @@ API仕様書を対話形式で作成します。
 
 ---
 
+### 6. 同期チェック
+仕様書と実装の同期状態をチェックし、不整合を検出します。
+
+**使用例**:
+- 「仕様書との整合性を確認」
+- 「ドキュメントの同期をチェック」
+- 「仕様と実装のズレを検出」
+
+**詳細**: [capabilities/sync-check.md](capabilities/sync-check.md)
+
+---
+
 ## 基本的な実行フロー
 
 ユーザーのリクエストに応じて、該当する機能のガイドを読み込んでください：
@@ -76,6 +88,7 @@ API仕様書を対話形式で作成します。
 3. **仕様を更新/同期** → `capabilities/update.md` を読み込む
 4. **仕様を検証/チェック** → `capabilities/validate.md` を読み込む
 5. **仕様を検索/探す** → `capabilities/search.md` を読み込む
+6. **同期チェック** → `capabilities/sync-check.md` を読み込む
 
 ---
 
@@ -100,3 +113,5 @@ API仕様書を対話形式で作成します。
 | spec-validate.ts | 仕様書検証 | `tsx ./.claude/skills/spec-assistant/scripts/spec-validate.ts <file>` |
 | spec-search-related.ts | 関連検索 | `tsx ./.claude/skills/spec-assistant/scripts/spec-search-related.ts <keywords>` |
 | spec-find-impl.ts | 実装ファイル検索 | `tsx ./.claude/skills/spec-assistant/scripts/spec-find-impl.ts <feature> 5` |
+| find-related-specs.ts | 関連仕様書検索 | `tsx ./.claude/skills/spec-assistant/scripts/find-related-specs.ts <file>` |
+| check-sync.ts | 同期チェック | `tsx ./.claude/skills/spec-assistant/scripts/check-sync.ts` |

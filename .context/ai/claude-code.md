@@ -21,11 +21,13 @@
 
 ### 利用可能なエージェント一覧
 
-| エージェント | 用途 | モデル | 定義ファイル |
-|-------------|------|--------|--------------|
-| error-fixer | エラー修正 | sonnet | [.claude/agents/error-fixer.md](../../.claude/agents/error-fixer.md) |
-| code-implementer | コード実装 | sonnet | [.claude/agents/code-implementer.md](../../.claude/agents/code-implementer.md) |
-| test-runner | テスト実行・分析 | sonnet | [.claude/agents/test-runner.md](../../.claude/agents/test-runner.md) |
+| エージェント | 説明 | モデル |
+|-------------|------|--------|
+| error-fixer | 型エラー、Lintエラー、コンパイルエラーを修正する。npm run type-check/lint/build でエラーが発生した際に使用する。 | opus |
+| code-implementer | 小規模なコード実装（1-3ファイル程度）を行う。新規コンポーネント作成、API関数追加、既存コードの拡張に使用する。 | opus |
+| test-runner | Vitest/Playwrightテストを実行し、結果を分析する。テスト実行、失敗原因の特定、カバレッジ確認に使用する。 | opus |
+| security-audit | コードベースのセキュリティリスクを検出してレポートする。認証・認可の保護範囲、機密情報のハードコード、脆弱性パターンを監査する際に使用する。 | opus |
+| dependency-checker | 依存関係の脆弱性と更新状況を検出してレポートする。pnpm audit、outdated確認、本番リリース前のセキュリティチェックに使用する。 | sonnet |
 
 ### 選択フローチャート
 
@@ -43,7 +45,7 @@
      │             │
      ▼             ▼
 ┌─────────┐  ┌─────────────────┐
-│error-   │  │ テスト実行？     │
+│error-   │  │ 新機能の実装？   │
 │fixer    │  └────────┬────────┘
 └─────────┘           │
                 ┌─────┴─────┐
@@ -51,40 +53,21 @@
               Yes          No
                 │           │
                 ▼           ▼
-          ┌──────────┐  ┌─────────────────┐
-          │test-     │  │ 新機能の実装？   │
-          │runner    │  └────────┬────────┘
-          └──────────┘           │
-                           ┌─────┴─────┐
-                           │           │
-                         Yes          No
-                           │           │
-                           ▼           ▼
-                     ┌──────────┐  メインエージェントで
-                     │code-     │  直接対応
-                     │implementer│
-                     └──────────┘
+          ┌──────────┐  メインエージェントで
+          │code-     │  直接対応
+          │implementer│
+          └──────────┘
 ```
 
 ### 1. error-fixer
 
 - **役割**: エラー修正専門
-- **対象**: 型エラー、Lintエラー、コンパイルエラー
 - **利用ツール**: Read, Write, Edit, Glob, Grep, Bash, Skill
 - **責任範囲**:
   - ✅ 型エラーの修正
   - ✅ Lintエラーの修正
   - ✅ コンパイルエラーの修正
-  - ✅ 既存コードの型安全性向上
   - ❌ 新規機能の実装（code-implementerが担当）
-  - ❌ 仕様書の作成・更新
-  - ❌ Git操作
-
-**使用する場面**:
-- `npm run type-check` でエラーが発生した
-- `npm run lint` でエラーが発生した
-- `npm run build` でコンパイルエラーが発生した
-- 既存コードに型エラーがある
 
 **呼び出し例**:
 ```
@@ -98,21 +81,12 @@ Task(subagent_type="error-fixer"):
 ### 2. code-implementer
 
 - **役割**: コード実装専門
-- **対象**: 小規模な実装（1-3ファイル程度）
 - **利用ツール**: Read, Write, Edit, Glob, Grep, Bash, Skill
 - **責任範囲**:
   - ✅ 新規機能の実装（小〜中規模）
   - ✅ 既存機能の拡張
   - ✅ リファクタリング
   - ❌ エラー修正のみ（error-fixerが担当）
-  - ❌ 大規模な設計変更
-  - ❌ Git操作
-
-**使用する場面**:
-- 小規模な機能実装（1-3ファイル程度）
-- 既存パターンに従った新規コンポーネント作成
-- API関数（query/mutation/action）の追加
-- 既存コードの軽微な拡張
 
 **呼び出し例**:
 ```
@@ -127,23 +101,12 @@ Task(subagent_type="code-implementer"):
 ### 3. test-runner
 
 - **役割**: テスト実行専門
-- **対象**: Playwright/Vitestテストの実行、結果分析、失敗原因の特定
 - **利用ツール**: Read, Glob, Grep, Bash
 - **責任範囲**:
   - ✅ テストの実行（Playwright, Vitest）
   - ✅ テスト結果の分析
   - ✅ 失敗原因の特定
-  - ✅ 修正方法の提案
-  - ✅ テストカバレッジの確認
   - ❌ テストコードの修正（error-fixerまたはcode-implementerが担当）
-  - ❌ 新規テストの作成（code-implementerが担当）
-  - ❌ 実装コードの変更
-
-**使用する場面**:
-- `npm run test` でテストを実行したい
-- `npx playwright test` でE2Eテストを実行したい
-- テスト失敗の原因を分析したい
-- テストカバレッジを確認したい
 
 **呼び出し例**:
 ```
@@ -151,6 +114,47 @@ Task(subagent_type="test-runner"):
 「以下のテストを実行して結果を分析してください:
 - npm run test
 - 失敗したテストがあれば原因を特定
+」
+```
+
+### 4. security-audit
+
+- **役割**: セキュリティ監査専門
+- **利用ツール**: Read, Glob, Grep, Bash
+- **責任範囲**:
+  - ✅ 認証・認可の保護範囲確認
+  - ✅ セキュリティヘッダー設定確認
+  - ✅ 機密情報のハードコード検出
+  - ✅ 脆弱性パターンの検出
+  - ❌ コードの修正（報告のみ）
+
+**呼び出し例**:
+```
+Task(subagent_type="security-audit"):
+「コードベース全体のセキュリティ監査を実施してください:
+- 認証・認可の保護範囲
+- セキュリティヘッダー設定
+- 機密情報のハードコード検出
+」
+```
+
+### 5. dependency-checker
+
+- **役割**: 依存関係チェック専門
+- **利用ツール**: Read, Glob, Grep, Bash
+- **責任範囲**:
+  - ✅ npm audit の実行と結果分析
+  - ✅ 脆弱性の重大度分類
+  - ✅ 更新可能なパッケージの検出
+  - ❌ パッケージの自動更新（報告のみ）
+
+**呼び出し例**:
+```
+Task(subagent_type="dependency-checker"):
+「依存関係の脆弱性と更新状況を確認してください:
+- pnpm audit の実行
+- 更新可能なパッケージの一覧
+- 推奨アクションの提案
 」
 ```
 
@@ -162,7 +166,7 @@ Task(subagent_type="test-runner"):
 2. **Git操作**: ブランチ作成、コミット、プッシュ、PR作成
 3. **技術決定の記録**: decision-assistant スキルを使用
 4. **仕様書の作成・更新**: spec-assistant スキルを使用
-5. **調査・分析タスク**: コードベースの調査、パフォーマンス分析、セキュリティ監査
+5. **調査・分析タスク**: コードベースの調査、パフォーマンス分析
 
 ### 複合タスクの場合
 
@@ -181,6 +185,16 @@ Task(subagent_type="test-runner"):
 
 スキルは特定のタスク領域を自動化・支援するためのツールで、Skill ツールで呼び出されます。
 
+### 利用可能なスキル一覧
+
+| スキル | 説明 |
+|--------|------|
+| decision-assistant | 技術的意思決定を構造化して記録する。重要な設計判断、技術選定、アーキテクチャ決定を記録する際に使用する。 |
+| spec-assistant | .context/specs/ に仕様書を作成・更新・検証する。実装変更時の同期チェックも行う。新機能の仕様策定、実装後の仕様書更新、仕様と実装の不整合検出に使用する。 |
+| review-assistant | 変更コードの品質・セキュリティ・パフォーマンスをチェックする。PR作成前のセルフレビュー、デプロイ前確認、プライバシーチェックに使用する。 |
+| git-workflow | プロジェクトのGit規則に従ってブランチ・コミット・PRを作成する。新機能開発、バグ修正、リファクタリングのワークフローで使用する。 |
+| production-readiness | 本番環境への準備状況を包括的にチェックする。初回リリース前、大規模機能追加後、定期的な健全性チェックに使用する。 |
+
 ### スキル設計原則（Claude公式ベストプラクティス準拠）
 
 本プロジェクトのスキルは、Claude公式の[Agent Skills Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices)に基づいて設計されています：
@@ -192,59 +206,32 @@ Task(subagent_type="test-runner"):
 
 ### 1. decision-assistant
 
-- **パス**: [.claude/skills/decision-assistant/SKILL.md](../.claude/skills/decision-assistant/SKILL.md)
-- **説明**: 技術的意思決定や重要な判断を構造化して記録
-- **SKILL.md**: 87行（元716行から87%削減）
-- **構造**:
-  ```
-  .claude/skills/decision-assistant/
-  ├── SKILL.md              # 機能索引（87行）
-  ├── capabilities/         # 機能別ガイド
-  │   ├── create.md        # 新規作成（297行）
-  │   ├── search.md        # 検索（137行）
-  │   ├── validate.md      # 検証（230行）
-  │   └── analyze.md       # 分析（261行）
-  └── scripts/             # ユーティリティスクリプト
-  ```
-- **利用可能な機能**:
-  1. **新規作成**: 技術的決定を構造化して記録（詳細: capabilities/create.md）
-  2. **検索**: 既存決定を検索・参照（詳細: capabilities/search.md）
-  3. **検証**: 決定記録の形式を検証（詳細: capabilities/validate.md）
-  4. **分析**: 統計・履歴・競合を分析（詳細: capabilities/analyze.md）
+- **説明**: 技術的意思決定を構造化して記録する
+- **利用可能な機能**: 新規作成、検索、検証、分析
 - **出力先**: `.context/decisions/YYYY-MM-DD-[topic].md`
-- **テンプレート**: `.context/decisions/templates/decision-template.md`
-- **スクリプト**: get-date.sh、search-decisions.ts、find-related.ts、find-conflicts.ts、validate-decisions.ts、decision-stats.ts、decision-history.ts
 
 ### 2. spec-assistant
 
-- **パス**: [.claude/skills/spec-assistant/SKILL.md](../.claude/skills/spec-assistant/SKILL.md)
-- **説明**: 新機能の仕様書を対話形式で作成、または既存仕様書を実装に合わせて更新
-- **SKILL.md**: 101行（元602行から90%削減）
-- **構造**:
-  ```
-  .claude/skills/spec-assistant/
-  ├── SKILL.md              # 機能索引（101行）
-  ├── capabilities/         # 機能別ガイド
-  │   ├── create-feature.md  # 機能仕様作成（246行）
-  │   ├── create-api.md      # API仕様作成（291行）
-  │   ├── update.md          # 仕様書更新（207行）
-  │   ├── validate.md        # 仕様書検証（249行）
-  │   └── search.md          # 関連検索（255行）
-  └── scripts/             # ユーティリティスクリプト
-  ```
-- **利用可能な機能**:
-  1. **機能仕様作成**: 新機能の仕様書を作成（詳細: capabilities/create-feature.md）
-  2. **API仕様作成**: API仕様書を作成（詳細: capabilities/create-api.md）
-  3. **仕様書更新**: 実装変更に合わせて更新（詳細: capabilities/update.md）
-  4. **仕様書検証**: 形式や必須項目を検証（詳細: capabilities/validate.md）
-  5. **関連検索**: 関連仕様書・実装を検索（詳細: capabilities/search.md）
+- **説明**: 仕様書を作成・更新・検証し、実装との同期をチェックする
+- **利用可能な機能**: 機能仕様作成、API仕様作成、仕様書更新、仕様書検証、関連検索、同期チェック
 - **出力先**:
   - 機能仕様: `.context/specs/features/[feature-name].md`
   - API仕様: `.context/specs/api/[feature-name]-api.md`
-- **テンプレート**:
-  - `.context/specs/templates/feature.template.md`（機能仕様）
-  - `.context/specs/templates/api.template.md`（API仕様）
-- **スクリプト**: spec-list-recent.sh、spec-list-templates.sh、spec-to-kebab-case.sh、spec-validate.sh、spec-search-related.sh、spec-find-impl.sh
+
+### 3. review-assistant
+
+- **説明**: 変更コードの品質・セキュリティ・パフォーマンスをチェックする
+- **利用可能な機能**: コード品質チェック、セキュリティチェック、パフォーマンスチェック、本番デプロイ前チェック、プライバシーチェック
+
+### 4. git-workflow
+
+- **説明**: プロジェクトのGit規則に従ってブランチ・コミット・PRを作成する
+- **利用可能な機能**: ブランチ作成、コミット作成、PR作成
+
+### 5. production-readiness
+
+- **説明**: 本番環境への準備状況を包括的にチェックする
+- **チェックカテゴリ**: セキュリティ、監視・ロギング、パフォーマンス、品質、運用
 
 ---
 
@@ -334,7 +321,7 @@ Task(subagent_type="test-runner"):
 
 4. **フック実行**: 特定イベント（Stop、Notification）発生時に自動実行（settings.local.json で定義）
 
-5. **仕様書同期**: 実装変更後は手動で `Skill(doc-sync)` を呼び出して整合性を確認
+5. **仕様書同期**: 実装変更後は `Skill(spec-assistant)` の同期チェック機能で整合性を確認
 
 ---
 

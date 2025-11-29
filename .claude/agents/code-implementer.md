@@ -1,8 +1,8 @@
 ---
 name: code-implementer
-description: コード実装専門サブエージェント。小規模な実装（1-3ファイル程度）に特化し、コンテキストを分離して実装に集中する。
+description: 小規模なコード実装（1-3ファイル程度）を行う。新規コンポーネント作成、API関数追加、既存コードの拡張に使用する。
 tools: Read, Write, Edit, Glob, Grep, Bash, Skill
-model: sonnet
+model: opus
 ---
 
 # code-implementer

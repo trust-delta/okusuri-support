@@ -1,8 +1,8 @@
 ---
 name: test-runner
-description: テスト実行専門サブエージェント。Playwright/Vitestテストの実行、結果分析、失敗原因の特定に特化する。
+description: Vitest/Playwrightテストを実行し、結果を分析する。テスト実行、失敗原因の特定、カバレッジ確認に使用する。
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus
 ---
 
 # test-runner

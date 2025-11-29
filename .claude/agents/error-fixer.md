@@ -1,8 +1,8 @@
 ---
 name: error-fixer
-description: エラー修正専門サブエージェント。型エラー、Lintエラー、コンパイルエラーの修正に特化し、コンテキストを分離してエラー修正に集中する。
+description: 型エラー、Lintエラー、コンパイルエラーを修正する。npm run type-check/lint/build でエラーが発生した際に使用する。
 tools: Read, Write, Edit, Glob, Grep, Bash, Skill
-model: sonnet
+model: opus
 ---
 
 # error-fixer
