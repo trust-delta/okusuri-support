@@ -71,7 +71,10 @@ function findTsFiles(
         if (!excludeDirs.includes(entry.name)) {
           traverse(fullPath);
         }
-      } else if (entry.isFile() && (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))) {
+      } else if (
+        entry.isFile() &&
+        (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))
+      ) {
         files.push(fullPath);
       }
     }
@@ -106,14 +109,16 @@ function getFileSummary(filePath: string): string[] {
 /**
  * 関連実装ファイルを検索
  */
-export function findImplementation(featureName: string, maxCount: number): FileResult[] {
+export function findImplementation(
+  featureName: string,
+  maxCount: number,
+): FileResult[] {
   const projectRoot = process.cwd();
   const results: FileResult[] = [];
   const foundPaths = new Set<string>();
 
   const featureKebab = toKebabCase(featureName);
   const featureCamel = toCamelCase(featureName);
-  const featurePascal = toPascalCase(featureName);
 
   // 優先検索ディレクトリ
   const priorityDirs = [
@@ -229,7 +234,9 @@ if (require.main === module) {
     console.log("");
     console.log("確認事項:");
     console.log("  - 機能名が正しいか確認してください");
-    console.log("  - src/features/ または convex/ 配下にディレクトリが存在するか確認してください");
+    console.log(
+      "  - src/features/ または convex/ 配下にディレクトリが存在するか確認してください",
+    );
     process.exit(0);
   }
 

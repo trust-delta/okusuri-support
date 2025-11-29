@@ -20,7 +20,9 @@ export function listTemplates(type: TemplateType): string[] {
   const templatesDir = path.join(projectRoot, ".context", "specs", "templates");
 
   if (!fs.existsSync(templatesDir)) {
-    console.error(`エラー: テンプレートディレクトリが見つかりません: ${templatesDir}`);
+    console.error(
+      `エラー: テンプレートディレクトリが見つかりません: ${templatesDir}`,
+    );
     return [];
   }
 
@@ -61,7 +63,9 @@ if (require.main === module) {
   const type = (args[0] || "all") as TemplateType;
 
   if (!["feature", "api", "all"].includes(type)) {
-    console.error("エラー: 不正なタイプです。'feature', 'api', または 'all' を指定してください。");
+    console.error(
+      "エラー: 不正なタイプです。'feature', 'api', または 'all' を指定してください。",
+    );
     process.exit(1);
   }
 

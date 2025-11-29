@@ -92,7 +92,7 @@ if (require.main === module) {
 
   if (args.length === 0) {
     console.error("エラー: 変換する文字列を指定してください。");
-    console.error("使い方: tsx spec-to-kebab-case.ts \"機能名\"");
+    console.error('使い方: tsx spec-to-kebab-case.ts "機能名"');
     process.exit(1);
   }
 

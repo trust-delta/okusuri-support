@@ -20,7 +20,10 @@ interface FileInfo {
 /**
  * ディレクトリ内の.mdファイルを再帰的に取得
  */
-function getMdFiles(dir: string, excludeDirs: string[] = ["templates"]): FileInfo[] {
+function getMdFiles(
+  dir: string,
+  excludeDirs: string[] = ["templates"],
+): FileInfo[] {
   const files: FileInfo[] = [];
 
   function traverse(currentDir: string) {
@@ -93,7 +96,9 @@ if (require.main === module) {
   const type = (args[1] || "all") as SpecType;
 
   if (!["features", "api", "all"].includes(type)) {
-    console.error("エラー: 不正なタイプです。'features', 'api', または 'all' を指定してください。");
+    console.error(
+      "エラー: 不正なタイプです。'features', 'api', または 'all' を指定してください。",
+    );
     process.exit(1);
   }
 

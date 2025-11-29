@@ -1,21 +1,14 @@
 #!/usr/bin/env node
 
+import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { execSync } from "node:child_process";
 
 /**
  * 同期チェックスクリプト
  * 使い方: tsx check-sync.ts
  * 変更されたファイルと関連仕様書の同期状態をチェックします
  */
-
-interface SyncResult {
-  file: string;
-  featureName: string;
-  relatedSpecs: SpecInfo[];
-  issues: SyncIssue[];
-}
 
 interface SpecInfo {
   path: string;
@@ -90,12 +83,20 @@ function getSpecInfo(featureName: string): SpecInfo[] {
   specs.push({
     path: `.context/specs/features/${featureName}.md`,
     type: "feature",
-    lastModified: featureExists ? fs.statSync(featureSpecPath).mtime : new Date(0),
+    lastModified: featureExists
+      ? fs.statSync(featureSpecPath).mtime
+      : new Date(0),
     exists: featureExists,
   });
 
   // API仕様書
-  const apiSpecPath = path.join(projectRoot, ".context", "specs", "api", `${featureName}-api.md`);
+  const apiSpecPath = path.join(
+    projectRoot,
+    ".context",
+    "specs",
+    "api",
+    `${featureName}-api.md`,
+  );
   const apiExists = fs.existsSync(apiSpecPath);
   specs.push({
     path: `.context/specs/api/${featureName}-api.md`,
@@ -134,7 +135,8 @@ function checkSync(filePath: string, specs: SpecInfo[]): SyncIssue[] {
 
     // 日数差を計算
     const daysDiff = Math.floor(
-      (fileModified.getTime() - spec.lastModified.getTime()) / (1000 * 60 * 60 * 24),
+      (fileModified.getTime() - spec.lastModified.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
 
     if (daysDiff > 7) {
@@ -213,14 +215,20 @@ function main() {
 
     // 重複を削除
     const uniqueIssues = issues.filter(
-      (issue, index, self) => index === self.findIndex((i) => i.message === issue.message),
+      (issue, index, self) =>
+        index === self.findIndex((i) => i.message === issue.message),
     );
 
     if (uniqueIssues.length > 0) {
       hasIssues = true;
       console.log(`   問題:`);
       for (const issue of uniqueIssues) {
-        const icon = issue.severity === "error" ? "🔴" : issue.severity === "warning" ? "🟡" : "🔵";
+        const icon =
+          issue.severity === "error"
+            ? "🔴"
+            : issue.severity === "warning"
+              ? "🟡"
+              : "🔵";
         console.log(`     ${icon} ${issue.message}`);
         console.log(`        → ${issue.recommendation}`);
       }

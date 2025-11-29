@@ -19,7 +19,10 @@ interface SearchResult {
 /**
  * ディレクトリ内の.mdファイルを再帰的に取得
  */
-function getMdFiles(dir: string, excludeDirs: string[] = ["node_modules", ".git"]): string[] {
+function getMdFiles(
+  dir: string,
+  excludeDirs: string[] = ["node_modules", ".git"],
+): string[] {
   const files: string[] = [];
 
   function traverse(currentDir: string) {
@@ -80,7 +83,9 @@ export function searchRelated(keywords: string[]): SearchResult[] {
   const contextDir = path.join(projectRoot, ".context");
 
   if (!fs.existsSync(contextDir)) {
-    console.error(`エラー: .contextディレクトリが見つかりません: ${contextDir}`);
+    console.error(
+      `エラー: .contextディレクトリが見つかりません: ${contextDir}`,
+    );
     return [];
   }
 
@@ -116,7 +121,9 @@ if (require.main === module) {
 
   if (args.length === 0) {
     console.error("エラー: 検索キーワードを指定してください。");
-    console.error("使い方: tsx spec-search-related.ts <キーワード1> [キーワード2] [...]");
+    console.error(
+      "使い方: tsx spec-search-related.ts <キーワード1> [キーワード2] [...]",
+    );
     process.exit(1);
   }
 

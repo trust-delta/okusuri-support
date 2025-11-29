@@ -65,7 +65,13 @@ function findRelatedSpecs(featureName: string): SpecFile[] {
   }
 
   // API仕様書
-  const apiSpecPath = path.join(projectRoot, ".context", "specs", "api", `${featureName}-api.md`);
+  const apiSpecPath = path.join(
+    projectRoot,
+    ".context",
+    "specs",
+    "api",
+    `${featureName}-api.md`,
+  );
   if (fs.existsSync(apiSpecPath)) {
     const stat = fs.statSync(apiSpecPath);
     specs.push({
@@ -119,16 +125,24 @@ if (require.main === module) {
     console.log("関連する仕様書が見つかりませんでした。");
     console.log("");
     console.log("推奨アクション:");
-    console.log(`  - 機能仕様書を作成: .context/specs/features/${featureName}.md`);
-    console.log(`  - API仕様書を作成: .context/specs/api/${featureName}-api.md`);
+    console.log(
+      `  - 機能仕様書を作成: .context/specs/features/${featureName}.md`,
+    );
+    console.log(
+      `  - API仕様書を作成: .context/specs/api/${featureName}-api.md`,
+    );
     process.exit(0);
   }
 
   console.log("=== 検索結果 ===");
   for (const spec of specs) {
     console.log(`📄 ${spec.path}`);
-    console.log(`   タイプ: ${spec.type === "feature" ? "機能仕様" : "API仕様"}`);
-    console.log(`   最終更新: ${spec.lastModified.toISOString().split("T")[0]}`);
+    console.log(
+      `   タイプ: ${spec.type === "feature" ? "機能仕様" : "API仕様"}`,
+    );
+    console.log(
+      `   最終更新: ${spec.lastModified.toISOString().split("T")[0]}`,
+    );
     console.log("");
   }
 }

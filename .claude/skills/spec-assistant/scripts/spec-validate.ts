@@ -51,7 +51,10 @@ function detectSpecType(filePath: string): SpecType {
 /**
  * 仕様書をバリデーション
  */
-export function validateSpec(filePath: string, type?: SpecType): ValidationResult {
+export function validateSpec(
+  filePath: string,
+  type?: SpecType,
+): ValidationResult {
   const result: ValidationResult = {
     errors: [],
     warnings: [],
@@ -77,7 +80,9 @@ export function validateSpec(filePath: string, type?: SpecType): ValidationResul
 
   // API仕様書のファイル名チェック
   if (specType === "api" && !basename.endsWith("-api.md")) {
-    result.warnings.push("API仕様書のファイル名は '[feature-name]-api.md' 形式が推奨されます");
+    result.warnings.push(
+      "API仕様書のファイル名は '[feature-name]-api.md' 形式が推奨されます",
+    );
   }
 
   // 共通セクションチェック
@@ -88,7 +93,9 @@ export function validateSpec(filePath: string, type?: SpecType): ValidationResul
   if (/最終更新.*20[0-9]{2}年[0-9]{1,2}月[0-9]{1,2}日/.test(content)) {
     result.passes.push("最終更新日 (YYYY年MM月DD日形式)");
   } else {
-    result.errors.push("最終更新日が見つからないか、形式が不正です (YYYY年MM月DD日形式が必要)");
+    result.errors.push(
+      "最終更新日が見つからないか、形式が不正です (YYYY年MM月DD日形式が必要)",
+    );
   }
 
   // タイプ別の必須セクション
@@ -109,7 +116,9 @@ export function validateSpec(filePath: string, type?: SpecType): ValidationResul
     if (/^##\s+(Queries|Mutations|Actions)/m.test(content)) {
       result.passes.push("API関数定義 (Queries/Mutations/Actions)");
     } else {
-      result.errors.push("API関数定義が見つかりません (Queries/Mutations/Actions)");
+      result.errors.push(
+        "API関数定義が見つかりません (Queries/Mutations/Actions)",
+      );
     }
 
     checkSection(content, "データモデル", /^##\s+データモデル/m, result);
