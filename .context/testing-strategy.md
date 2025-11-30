@@ -190,6 +190,69 @@ jobs:
 
 ---
 
+## フロントエンドテストの注意点
+
+### Radix UI / shadcn コンポーネントのテスト制限
+
+jsdom環境では以下の制限があります：
+
+| コンポーネント | 問題 | 対策 |
+|---------------|------|------|
+| **Select** | `hasPointerCapture` エラー、ドロップダウンが開かない | 基本レンダリングのみテスト、または子コンポーネントをモック |
+| **Dialog** | ポータル経由でコンテンツが見つからない | `open={true}` で直接表示確認、ポータルを無視 |
+| **RadioGroup** | FormLabelが非labellable要素に関連付けられる | `getByText` を使用（`getByLabelText` は避ける） |
+
+### 推奨モックパターン
+
+```typescript
+// Convex mutation のモック
+const mockMutation = vi.fn();
+vi.mock("convex/react", () => ({
+  useMutation: () => mockMutation,
+  useQuery: () => undefined,
+}));
+
+// sonner トースト（vi.mockの後にimport）
+vi.mock("sonner", () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
+const { toast } = await import("sonner");
+
+// next/navigation のモック
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
+  usePathname: () => "/dashboard",
+  useSearchParams: () => new URLSearchParams(),
+}));
+```
+
+### Result型のモック
+
+```typescript
+// 成功
+mockMutation.mockResolvedValue({ isSuccess: true, data: { id: "123" } });
+
+// 失敗
+mockMutation.mockResolvedValue({ isSuccess: false, errorMessage: "エラー" });
+
+// 例外
+mockMutation.mockRejectedValue(new Error("ネットワークエラー"));
+```
+
+### maxLength属性のあるフィールド
+
+HTMLの`maxLength`属性はブラウザレベルで入力を制限するため、超過文字数のバリデーションテストは不可。サーバーサイドで確認が必要。
+
+```typescript
+// ❌ このテストは動作しない（HTMLが入力を制限）
+await user.type(input, "あ".repeat(51)); // maxLength={50}の場合
+
+// ✅ 代替: サーバーサイドバリデーションをテスト
+```
+
+---
+
 ## 関連ドキュメント
 
 - [プロジェクト概要](project.md)

@@ -1,7 +1,7 @@
 ---
 name: test-generator
 description: コンポーネントや関数のテストコードを並列生成する。複数ファイルのテスト追加、テストカバレッジ向上に使用する。
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 model: opus
 ---
 
@@ -215,6 +215,37 @@ describe('medication queries', () => {
 - **Glob**: ファイル検索
 - **Grep**: パターン検索
 - **Bash**: npm run test（検証用）
+- **Skill**: 専門スキルの呼び出し
+
+---
+
+## 利用可能なスキル
+
+テスト生成時に以下のスキルを呼び出して専門知識を取得できます：
+
+### convex-test-guide
+Convexバックエンドのテスト作成ガイド。
+
+**使用タイミング**:
+- Convex関数（queries, mutations）のテストを生成する場合
+- `convex-test` パッケージの使い方を確認したい場合
+- Result型のテストパターンを確認したい場合
+
+```
+Skill: convex-test-guide
+```
+
+### radix-ui-test-patterns
+Radix UI/shadcn コンポーネントのテストパターン。
+
+**使用タイミング**:
+- Select, Dialog, RadioGroup などのRadixコンポーネントをテストする場合
+- jsdomの制限を回避する方法を確認したい場合
+- Convex + sonner + next/navigation のモックパターンを確認したい場合
+
+```
+Skill: radix-ui-test-patterns
+```
 
 ---
 
