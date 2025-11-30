@@ -132,9 +132,11 @@ export function MemoEditDialog({
               {hasMemo ? "メモを編集" : "メモを追加"}
             </span>
           </DialogTitle>
-          {medicineName && (
-            <DialogDescription>{medicineName} の服薬記録</DialogDescription>
-          )}
+          <DialogDescription>
+            {medicineName
+              ? `${medicineName} の服薬記録`
+              : "服薬記録にメモを追加・編集できます"}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
