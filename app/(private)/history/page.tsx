@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import {
   type FilterState,
+  MonthlyStatsCard,
   RecordDetailView,
   RecordFilters,
 } from "./_components";
@@ -117,6 +118,13 @@ export default function HistoryPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
           記録履歴
         </h1>
+
+        {/* 月別統計カード */}
+        <MonthlyStatsCard
+          groupId={activeGroupId}
+          year={today.getFullYear()}
+          month={today.getMonth() + 1}
+        />
 
         {/* 1カラムレイアウト */}
         <div className="space-y-6">
