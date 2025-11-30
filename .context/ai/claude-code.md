@@ -21,13 +21,18 @@
 
 ### 利用可能なエージェント一覧
 
-| エージェント | 説明 | モデル |
-|-------------|------|--------|
-| error-fixer | 型エラー、Lintエラー、コンパイルエラーを修正する。npm run type-check/lint/build でエラーが発生した際に使用する。 | opus |
-| code-implementer | 小規模なコード実装（1-3ファイル程度）を行う。新規コンポーネント作成、API関数追加、既存コードの拡張に使用する。 | opus |
-| test-runner | Vitest/Playwrightテストを実行し、結果を分析する。テスト実行、失敗原因の特定、カバレッジ確認に使用する。 | opus |
-| security-audit | コードベースのセキュリティリスクを検出してレポートする。認証・認可の保護範囲、機密情報のハードコード、脆弱性パターンを監査する際に使用する。 | opus |
-| dependency-checker | 依存関係の脆弱性と更新状況を検出してレポートする。pnpm audit、outdated確認、本番リリース前のセキュリティチェックに使用する。 | sonnet |
+| エージェント | 説明 | モデル | 並列化 |
+|-------------|------|--------|:------:|
+| error-fixer | 型エラー、Lintエラー、コンパイルエラーを修正する。npm run type-check/lint/build でエラーが発生した際に使用する。 | opus | ◎ |
+| code-implementer | 小規模なコード実装（1-3ファイル程度）を行う。新規コンポーネント作成、API関数追加、既存コードの拡張に使用する。 | opus | △ |
+| test-runner | Vitest/Playwrightテストを実行し、結果を分析する。テスト実行、失敗原因の特定、カバレッジ確認に使用する。 | opus | ○ |
+| security-audit | コードベースのセキュリティリスクを検出してレポートする。認証・認可の保護範囲、機密情報のハードコード、脆弱性パターンを監査する際に使用する。 | opus | ◎ |
+| dependency-checker | 依存関係の脆弱性と更新状況を検出してレポートする。pnpm audit、outdated確認、本番リリース前のセキュリティチェックに使用する。 | sonnet | × |
+| file-migrator | 複数ファイルに同じパターンの変更を並列適用する。importパス変更、API移行、命名規則統一などの一括変更に使用する。 | opus | ◎ |
+| test-generator | コンポーネントや関数のテストコードを並列生成する。複数ファイルのテスト追加、テストカバレッジ向上に使用する。 | opus | ◎ |
+| doc-generator | コードのJSDoc/ドキュメントを並列生成する。複数ファイルへのJSDoc追加、API仕様書生成に使用する。 | opus | ◎ |
+
+> **並列化凡例**: ◎高（大量タスクで劇的効果）/ ○中（中程度の効果）/ △低 / ×なし
 
 ### 選択フローチャート
 
@@ -155,6 +160,87 @@ Task(subagent_type="dependency-checker"):
 - pnpm audit の実行
 - 更新可能なパッケージの一覧
 - 推奨アクションの提案
+」
+```
+
+### 6. file-migrator
+
+- **役割**: ファイル一括変更専門
+- **利用ツール**: Read, Write, Edit, Glob, Grep, Bash
+- **責任範囲**:
+  - ✅ import パスの一括変更
+  - ✅ API の移行（旧→新）
+  - ✅ 命名規則の統一
+  - ✅ 設定ファイルの一括更新
+  - ❌ ロジックの変更（code-implementerが担当）
+
+**呼び出し例**:
+```
+# 並列実行: 複数の file-migrator を同時起動
+Task(subagent_type="file-migrator"):
+「以下のファイルのimportパスを変更してください:
+- 対象: src/features/medication/**/*.ts
+- 変更: @/lib/utils → @/shared/utils
+」
+
+Task(subagent_type="file-migrator"):
+「以下のファイルのimportパスを変更してください:
+- 対象: src/features/prescription/**/*.ts
+- 変更: @/lib/utils → @/shared/utils
+」
+```
+
+### 7. test-generator
+
+- **役割**: テストコード生成専門
+- **利用ツール**: Read, Write, Edit, Glob, Grep, Bash
+- **責任範囲**:
+  - ✅ コンポーネントテストの生成
+  - ✅ ユーティリティ関数テストの生成
+  - ✅ Convex関数テストの生成
+  - ✅ テストパターンの分析・適用
+  - ❌ テストの実行・分析（test-runnerが担当）
+
+**呼び出し例**:
+```
+# 並列実行: 複数の test-generator を同時起動
+Task(subagent_type="test-generator"):
+「以下のコンポーネントのテストを生成してください:
+- src/features/medication/components/MedicationList.tsx
+- src/features/medication/components/MedicationCard.tsx
+」
+
+Task(subagent_type="test-generator"):
+「以下のコンポーネントのテストを生成してください:
+- src/features/prescription/components/PrescriptionList.tsx
+- src/features/prescription/components/PrescriptionCard.tsx
+」
+```
+
+### 8. doc-generator
+
+- **役割**: ドキュメント生成専門
+- **利用ツール**: Read, Write, Edit, Glob, Grep
+- **責任範囲**:
+  - ✅ 関数・メソッドのJSDoc生成
+  - ✅ TypeScript型のドキュメントコメント生成
+  - ✅ Convex関数のJSDoc生成
+  - ✅ Reactコンポーネントのpropsドキュメント生成
+  - ❌ 仕様書の作成（spec-assistantスキルが担当）
+
+**呼び出し例**:
+```
+# 並列実行: 複数の doc-generator を同時起動
+Task(subagent_type="doc-generator"):
+「以下のファイルにJSDocを追加してください:
+- convex/medication/queries.ts
+- convex/medication/mutations.ts
+」
+
+Task(subagent_type="doc-generator"):
+「以下のファイルにJSDocを追加してください:
+- convex/prescription/queries.ts
+- convex/prescription/mutations.ts
 」
 ```
 
