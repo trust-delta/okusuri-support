@@ -1,9 +1,4 @@
----
-name: radix-ui-test-patterns
-description: Radix UI/shadcn コンポーネントのテストパターン。jsdomの制限と回避策、推奨モックパターンを提供する。
----
-
-# Radix UI / shadcn Test Patterns
+# テストパターン
 
 Radix UIとshadcn/uiコンポーネントのテストパターンガイド。
 
@@ -273,3 +268,7 @@ it("送信中は「作成中...」が表示される", async () => {
 - [ ] API成功時の処理（トースト、遷移）
 - [ ] API失敗時のエラーハンドリング
 - [ ] 送信中の状態表示
+
+---
+
+**最終更新**: 2025年11月30日
