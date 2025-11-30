@@ -26,15 +26,35 @@ interface MonthlyStatsCardProps {
   month: number;
 }
 
-const TIMING_LABELS: Record<string, string> = {
+const TIMING_LABELS = {
   morning: "朝",
   noon: "昼",
   evening: "晩",
   bedtime: "就寝前",
-};
+} as const;
 
 // 表示順序を明示的に定義（朝→昼→晩→就寝前）
 const TIMING_ORDER = ["morning", "noon", "evening", "bedtime"] as const;
+
+// 服用率に応じた色を決定（コンポーネント外で定義してパフォーマンス向上）
+const getAdherenceColor = (rate: number): string => {
+  if (rate >= 80) return "text-green-600 dark:text-green-400";
+  if (rate >= 50) return "text-yellow-600 dark:text-yellow-400";
+  return "text-red-600 dark:text-red-400";
+};
+
+const getProgressColor = (rate: number): string => {
+  if (rate >= 80) return "bg-green-500";
+  if (rate >= 50) return "bg-yellow-500";
+  return "bg-red-500";
+};
+
+const getTimingColor = (rate: number, total: number): string => {
+  if (total === 0) return "text-gray-400";
+  if (rate >= 80) return "text-green-600 dark:text-green-400";
+  if (rate >= 50) return "text-yellow-600 dark:text-yellow-400";
+  return "text-red-600 dark:text-red-400";
+};
 
 export function MonthlyStatsCard({
   groupId,
@@ -51,6 +71,24 @@ export function MonthlyStatsCard({
     return <MonthlyStatsCardSkeleton />;
   }
 
+  if (stats === null) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            {month}月の統計
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="py-8 text-center text-gray-500 dark:text-gray-400">
+            データの取得に失敗しました
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const {
     totalScheduled,
     totalTaken,
@@ -60,19 +98,6 @@ export function MonthlyStatsCard({
     timingStats,
     asNeeded,
   } = stats;
-
-  // 服用率に応じた色を決定
-  const getAdherenceColor = (rate: number) => {
-    if (rate >= 80) return "text-green-600 dark:text-green-400";
-    if (rate >= 50) return "text-yellow-600 dark:text-yellow-400";
-    return "text-red-600 dark:text-red-400";
-  };
-
-  const getProgressColor = (rate: number) => {
-    if (rate >= 80) return "bg-green-500";
-    if (rate >= 50) return "bg-yellow-500";
-    return "bg-red-500";
-  };
 
   return (
     <Card>
@@ -98,7 +123,14 @@ export function MonthlyStatsCard({
               {adherenceRate.toFixed(1)}%
             </span>
           </div>
-          <div className="relative h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+          <div
+            role="progressbar"
+            aria-valuenow={Math.round(adherenceRate)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="服薬継続率"
+            className="relative h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"
+          >
             <div
               className={`h-full transition-all duration-500 ${getProgressColor(adherenceRate)}`}
               style={{ width: `${Math.min(adherenceRate, 100)}%` }}
@@ -142,10 +174,11 @@ export function MonthlyStatsCard({
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {TIMING_ORDER.map((timing) => {
               const stat = timingStats[timing];
+              if (!stat) return null;
               return (
                 <TimingStat
                   key={timing}
-                  label={TIMING_LABELS[timing] ?? timing}
+                  label={TIMING_LABELS[timing]}
                   taken={stat.taken}
                   total={stat.taken + stat.skipped + stat.pending}
                   rate={stat.rate}
@@ -159,7 +192,7 @@ export function MonthlyStatsCard({
         {asNeeded.total > 0 && (
           <div className="border-t pt-4">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-4 w-4" aria-hidden="true" />
               <span>頓服（参考）:</span>
               <span>
                 服用 {asNeeded.taken}回 / スキップ {asNeeded.skipped}回
@@ -186,7 +219,7 @@ function StatItem({
   return (
     <div className="flex flex-col items-center rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
       <div className="flex items-center gap-1.5">
-        {icon}
+        <span aria-hidden="true">{icon}</span>
         <span className="text-xs text-gray-600 dark:text-gray-400">
           {label}
         </span>
@@ -210,17 +243,10 @@ function TimingStat({
   total: number;
   rate: number;
 }) {
-  const getColor = (r: number) => {
-    if (r >= 80) return "text-green-600 dark:text-green-400";
-    if (r >= 50) return "text-yellow-600 dark:text-yellow-400";
-    if (total === 0) return "text-gray-400";
-    return "text-red-600 dark:text-red-400";
-  };
-
   return (
     <div className="rounded-lg border p-2 text-center">
       <div className="text-xs text-gray-600 dark:text-gray-400">{label}</div>
-      <div className={`text-sm font-semibold ${getColor(rate)}`}>
+      <div className={`text-sm font-semibold ${getTimingColor(rate, total)}`}>
         {total > 0 ? `${rate.toFixed(0)}%` : "-"}
       </div>
       <div className="text-xs text-gray-500">
