@@ -1,6 +1,6 @@
 # 服薬管理機能仕様
 
-**最終更新**: 2025年11月27日
+**最終更新**: 2025年11月30日
 
 ## 概要
 
@@ -394,6 +394,83 @@
 - 論理削除された処方箋は複製できない
 - グループメンバーのみが複製可能
 
+#### 処方箋内の薬の管理
+
+処方箋作成後も、薬の追加・編集・削除が可能。
+
+##### 薬の追加
+**API**: `medicines.mutations.addMedicineToPrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+    name: string,
+    description?: string,
+    dosage?: {
+      amount: number,
+      unit: string,
+    },
+    timings: Timing[],
+  },
+  returns: Id<"medicines">
+}
+```
+
+##### 薬の編集
+**API**: `medicines.mutations.updateMedicine`
+```typescript
+{
+  args: {
+    medicineId: Id<"medicines">,
+    name?: string,
+    description?: string,
+    dosage?: {
+      amount: number,
+      unit: string,
+    },
+    timings?: Timing[],
+    clearDescription?: boolean,  // trueの場合、説明を削除
+    clearDosage?: boolean,       // trueの場合、用量を削除
+  },
+  returns: Id<"medicines">
+}
+```
+
+##### 薬の削除
+**API**: `medicines.mutations.deleteMedicine`
+```typescript
+{
+  args: {
+    medicineId: Id<"medicines">,
+  },
+  returns: void
+}
+```
+
+**挙動**:
+- 薬を論理削除（deletedAt, deletedByをセット）
+- 関連するスケジュール（medicationSchedules）も論理削除
+- 関連する服薬記録（medicationRecords）も論理削除
+- 処方箋をゴミ箱から復元すると、関連データも復元される
+
+**削除確認ダイアログ**:
+- 服薬記録がある場合は記録件数を表示
+- 「この薬に紐付く服薬記録（N件）も削除されます」と警告
+- 削除した記録は履歴から確認可能
+
+##### 薬の記録件数取得
+**API**: `medicines.queries.getMedicineRecordCount`
+```typescript
+{
+  args: {
+    medicineId: Id<"medicines">,
+  },
+  returns: number
+}
+```
+
+**用途**: 薬削除時の確認ダイアログで記録件数を表示するため
+
 ### 2. デフォルト処方箋機能
 
 #### 概要
@@ -747,9 +824,25 @@ adherenceRate = (taken / (taken + skipped + pending)) * 100
   - キャンセル・登録ボタンと同じ行に配置
   - 左側に配置し、右側にキャンセル・登録ボタンを配置
 - 登録時の確認ダイアログを実装
-  - 処方箋は作成後に編集できないため、登録前に確認を求める
   - AlertDialogコンポーネントを使用
-  - 「登録後は処方箋の編集ができません。内容を確認してから登録してください。」のメッセージを表示
+  - 登録内容の最終確認を促す
+
+#### 処方箋詳細画面の薬管理UI（PrescriptionMedicinesList）
+
+処方箋詳細画面で薬の追加・編集・削除が可能。
+
+**機能**:
+- **薬の追加**: 「薬を追加」ボタンから新しい薬を追加
+- **薬の編集**: 各薬の編集アイコンをクリックして編集ダイアログを開く
+- **薬の削除**: 各薬の削除アイコンをクリックして削除確認ダイアログを表示
+
+**編集ダイアログ**:
+- 薬名、用量（数量・単位）、服用タイミング、備考を編集可能
+- バリデーション: 薬名は必須、タイミングは1つ以上選択必須
+
+**削除確認ダイアログ**:
+- 記録がある場合は記録件数を表示して警告
+- 「削除した記録は履歴から確認できます」と案内
 
 ### 服薬記録ダッシュボード
 
