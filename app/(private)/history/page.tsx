@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import {
   type FilterState,
+  MemoExportButton,
   MonthlyStatsCard,
   RecordDetailView,
   RecordFilters,
@@ -24,6 +25,7 @@ export default function HistoryPage() {
     timing: "all",
     dateRange: { from: oneWeekAgo, to: today }, // デフォルトで過去1週間を選択
     sortOrder: "desc", // デフォルトで新しい順
+    memoOnly: false, // メモ付きのみフィルター
   });
   const searchParams = useSearchParams();
 
@@ -51,7 +53,8 @@ export default function HistoryPage() {
   const hasActiveFilter =
     filters.searchQuery !== "" ||
     filters.status !== "all" ||
-    filters.timing !== "all";
+    filters.timing !== "all" ||
+    filters.memoOnly;
 
   const filteredRecords = monthlyRecords?.filter(
     (record: (typeof monthlyRecords)[number]) => {
@@ -71,6 +74,11 @@ export default function HistoryPage() {
 
       // タイミングフィルター
       if (filters.timing !== "all" && record.timing !== filters.timing) {
+        return false;
+      }
+
+      // メモ付きのみフィルター
+      if (filters.memoOnly && !record.notes) {
         return false;
       }
 
@@ -130,6 +138,14 @@ export default function HistoryPage() {
         <div className="space-y-6">
           {/* 検索・フィルター */}
           <RecordFilters filters={filters} onFiltersChange={setFilters} />
+
+          {/* メモエクスポートボタン */}
+          <div className="flex justify-end">
+            <MemoExportButton
+              records={filteredRecords}
+              dateRange={filters.dateRange}
+            />
+          </div>
 
           {/* 記録詳細 */}
           <RecordDetailView

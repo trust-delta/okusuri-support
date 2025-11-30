@@ -7,6 +7,7 @@ import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import type { MedicationTiming } from "../types/timing";
+import { MemoEditDialog } from "./memo-edit-dialog";
 
 interface MedicationRecordActionsProps {
   groupId: Id<"groups">;
@@ -17,6 +18,10 @@ interface MedicationRecordActionsProps {
   simpleMedicineName?: string; // 簡易記録の場合に使用
   recordId?: Id<"medicationRecords">;
   recordStatus?: "taken" | "skipped" | "pending";
+  /** 記録済みの場合のメモ内容 */
+  recordNotes?: string;
+  /** メモダイアログに表示する薬名 */
+  medicineName?: string;
 }
 
 export function MedicationRecordActions({
@@ -28,6 +33,8 @@ export function MedicationRecordActions({
   simpleMedicineName,
   recordId,
   recordStatus,
+  recordNotes,
+  medicineName,
 }: MedicationRecordActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const recordMutation = useMutation(api.medications.recordSimpleMedication);
@@ -69,7 +76,7 @@ export function MedicationRecordActions({
 
   if (recordStatus && recordId) {
     return (
-      <>
+      <div className="flex items-center gap-2">
         <span
           className={`px-3 py-1 rounded-full text-sm ${
             recordStatus === "taken"
@@ -79,17 +86,22 @@ export function MedicationRecordActions({
         >
           {recordStatus === "taken" ? "服用済み" : "スキップ"}
         </span>
+        <MemoEditDialog
+          recordId={recordId}
+          currentMemo={recordNotes}
+          medicineName={medicineName}
+        />
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={handleDelete}
           disabled={isLoading}
-          className="ml-auto text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
         >
           取消し
         </Button>
-      </>
+      </div>
     );
   }
 
