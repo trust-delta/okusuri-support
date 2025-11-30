@@ -20,20 +20,9 @@
    - Convex スキーマに変更が必要か確認
    - 既存フィールドで対応可能か判断
 
-### Step 2: 仕様書作成
+### Step 2: ブランチ作成
 
-**spec-assistant スキルを使用**:
-
-```
-Skill(spec-assistant)
-→ 「機能仕様を作成」を選択
-```
-
-出力先: `.context/specs/features/<feature-name>.md`
-
-### Step 3: ブランチ作成
-
-**git-workflow スキルを使用**:
+**git-workflow スキルを使用**（仕様書作成前にブランチを切る）:
 
 ```
 Skill(git-workflow)
@@ -44,6 +33,20 @@ Skill(git-workflow)
 ```bash
 git checkout -b feature/<feature-name>
 ```
+
+> **理由**: 仕様書も変更の一部。機能が実装されない場合に develop を汚さないため、
+> また仕様書と実装を同一PRにまとめるため、先にブランチを作成する。
+
+### Step 3: 仕様書作成
+
+**spec-assistant スキルを使用**:
+
+```
+Skill(spec-assistant)
+→ 「機能仕様を作成」を選択
+```
+
+出力先: `.context/specs/features/<feature-name>.md`
 
 ### Step 4: 実装計画の策定
 
@@ -181,8 +184,8 @@ skills_to_use:
 計画策定時に確認すべき項目:
 
 - [ ] 要件は明確か
-- [ ] 仕様書は作成されたか
 - [ ] ブランチは作成されたか
+- [ ] 仕様書は作成されたか
 - [ ] スキーマ変更は必要か
 - [ ] 並列グループは適切に分類されたか
 - [ ] 依存関係は正しく設定されたか
