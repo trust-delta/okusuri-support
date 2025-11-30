@@ -153,7 +153,10 @@ describe("GroupInvitationManager", () => {
     vi.mocked(useQuery).mockReturnValue([]);
 
     const mockResult = {
-      invitationLink: "https://example.com/invite/NEW123",
+      isSuccess: true,
+      data: {
+        invitationLink: "https://example.com/invite/NEW123",
+      },
     };
     mockCreateInvitation.mockResolvedValue(mockResult);
 
@@ -183,7 +186,10 @@ describe("GroupInvitationManager", () => {
           setTimeout(
             () =>
               resolve({
-                invitationLink: "https://example.com/invite/NEW123",
+                isSuccess: true,
+                data: {
+                  invitationLink: "https://example.com/invite/NEW123",
+                },
               }),
             100,
           ),

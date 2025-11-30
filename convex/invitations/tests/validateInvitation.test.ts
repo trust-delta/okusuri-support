@@ -2,11 +2,12 @@ import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { api } from "../../_generated/api";
 import schema from "../../schema";
+import { modules } from "../../test.setup";
 
 describe("validateInvitationCode - 招待コード検証ロジック", () => {
   describe("招待コードの存在確認", () => {
     it("存在しないコードの場合はinvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const result = await t.query(
         api.invitations.queries.validateInvitationCode,
@@ -22,7 +23,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
     });
 
     it("有効な招待コードの場合はvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // テストデータの準備
       const { groupId } = await t.run(async (ctx) => {
@@ -79,7 +80,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
 
   describe("有効期限チェック", () => {
     it("有効期限切れのコードはinvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // 有効期限切れの招待を作成
       await t.run(async (ctx) => {
@@ -117,7 +118,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
     });
 
     it("有効期限内のコードはvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
@@ -153,7 +154,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
 
   describe("使用済みチェック", () => {
     it("使用済みのコードはinvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
@@ -192,7 +193,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
     });
 
     it("未使用のコードはvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
@@ -228,7 +229,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
 
   describe("グループ情報の取得", () => {
     it("グループが存在しない場合はinvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
@@ -268,7 +269,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
     });
 
     it("グループの詳細情報を返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       await t.run(async (ctx) => {
         const userId1 = await ctx.db.insert("users", {});
@@ -328,7 +329,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
 
   describe("エッジケース", () => {
     it("空文字列のコードはinvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const result = await t.query(
         api.invitations.queries.validateInvitationCode,
@@ -341,7 +342,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
     });
 
     it("非常に長いコードはinvalidを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const result = await t.query(
         api.invitations.queries.validateInvitationCode,
@@ -354,7 +355,7 @@ describe("validateInvitationCode - 招待コード検証ロジック", () => {
     });
 
     it("大文字小文字が異なるコードは別のコードとして扱う", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});

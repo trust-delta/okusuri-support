@@ -2,11 +2,12 @@ import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { api } from "../../_generated/api";
 import schema from "../../schema";
+import { modules } from "../../test.setup";
 
 describe("createInvitationInternal - 招待コード生成ロジック", () => {
   describe("認証とメンバーシップ検証", () => {
     it("認証されていない場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // グループを作成
       const groupId = await t.run(async (ctx) => {
@@ -33,7 +34,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
     });
 
     it("グループメンバーでない場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーを作成
       const userId = await t.run(async (ctx) => {
@@ -70,7 +71,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
   describe("Patient在籍状況に基づくロール制御", () => {
     it("Patient不在時は両ロール（patient、supporter）を許可", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーとグループを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -112,7 +113,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
     });
 
     it("Patient存在時はSupporterのみを許可", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーとグループを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -166,7 +167,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
   describe("招待コードの一意性確保", () => {
     it("コードが重複している場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーとグループを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -220,7 +221,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
   describe("有効期限設定", () => {
     it("有効期限が7日後に設定される", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーとグループを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -272,7 +273,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
   describe("招待レコード作成", () => {
     it("正しい招待レコードが作成される", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーとグループを作成
       const { userId, groupId } = await t.run(async (ctx) => {

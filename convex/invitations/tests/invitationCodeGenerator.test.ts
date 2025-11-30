@@ -2,10 +2,11 @@ import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { api } from "../../_generated/api";
 import schema from "../../schema";
+import { modules } from "../../test.setup";
 
 describe("generateInvitationCodeAction", () => {
   it("8文字のコードを生成する", async () => {
-    const t = convexTest(schema);
+    const t = convexTest(schema, modules);
 
     const code = await t.action(
       api.invitationCodeGenerator.generateInvitationCodeAction,
@@ -17,7 +18,7 @@ describe("generateInvitationCodeAction", () => {
   });
 
   it("英数字のみでコードを生成する", async () => {
-    const t = convexTest(schema);
+    const t = convexTest(schema, modules);
 
     const code = await t.action(
       api.invitationCodeGenerator.generateInvitationCodeAction,
@@ -28,7 +29,7 @@ describe("generateInvitationCodeAction", () => {
   });
 
   it("複数回の呼び出しで一意のコードを生成する", async () => {
-    const t = convexTest(schema);
+    const t = convexTest(schema, modules);
 
     // 複数回生成して一意性を確認
     const codes = await Promise.all([

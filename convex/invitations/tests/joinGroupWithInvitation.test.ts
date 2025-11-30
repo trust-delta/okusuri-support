@@ -2,11 +2,12 @@ import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { api } from "../../_generated/api";
 import schema from "../../schema";
+import { modules } from "../../test.setup";
 
 describe("joinGroupWithInvitation - グループ参加処理", () => {
   describe("認証確認", () => {
     it("認証されていない場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // グループと招待を作成
       await t.run(async (ctx) => {
@@ -47,7 +48,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
   describe("表示名の検証", () => {
     it("表示名が空の場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーとグループを作成
       const setup = await t.run(async (ctx) => {
@@ -102,7 +103,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
     });
 
     it("表示名が50文字を超える場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -155,7 +156,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
     });
 
     it("既存のdisplayNameがある場合は引数を省略可能", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId, groupId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -209,7 +210,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
   describe("招待コード検証", () => {
     it("存在しない招待コードの場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const userId = await t.run(async (ctx) => {
         return await ctx.db.insert("users", {
@@ -234,7 +235,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
     });
 
     it("有効期限切れの招待コードの場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -280,7 +281,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
     });
 
     it("使用済みの招待コードの場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -330,7 +331,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
   describe("許可ロールの検証", () => {
     it("許可されていないロールで参加しようとするとエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -381,7 +382,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
   describe("重複参加防止", () => {
     it("既にグループに参加している場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { userId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {
@@ -435,7 +436,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
   describe("Patient単一性制約", () => {
     it("既にPatientが存在する場合、Patientロールでの参加を拒否", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -502,7 +503,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
     });
 
     it("Patient不在の場合、Patientロールでの参加を許可", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId, groupId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -563,7 +564,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
     });
 
     it("Supporterロールは常に参加可能", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId, groupId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});
@@ -629,7 +630,7 @@ describe("joinGroupWithInvitation - グループ参加処理", () => {
 
   describe("グループメンバーシップ作成と招待の使用済み更新", () => {
     it("正常にグループに参加できる", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { newUserId, groupId, invitationId } = await t.run(async (ctx) => {
         const creatorId = await ctx.db.insert("users", {});

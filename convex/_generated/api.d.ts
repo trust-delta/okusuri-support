@@ -25,6 +25,9 @@ import type * as medications_groups_queries from "../medications/groups/queries.
 import type * as medications_history_index from "../medications/history/index.js";
 import type * as medications_history_mutations from "../medications/history/mutations.js";
 import type * as medications_history_queries from "../medications/history/queries.js";
+import type * as medications_medicines_index from "../medications/medicines/index.js";
+import type * as medications_medicines_mutations from "../medications/medicines/mutations.js";
+import type * as medications_medicines_queries from "../medications/medicines/queries.js";
 import type * as medications_prescriptions_helpers from "../medications/prescriptions/helpers.js";
 import type * as medications_prescriptions_mutations from "../medications/prescriptions/mutations.js";
 import type * as medications_prescriptions_queries from "../medications/prescriptions/queries.js";
@@ -83,6 +86,9 @@ declare const fullApi: ApiFromModules<{
   "medications/history/index": typeof medications_history_index;
   "medications/history/mutations": typeof medications_history_mutations;
   "medications/history/queries": typeof medications_history_queries;
+  "medications/medicines/index": typeof medications_medicines_index;
+  "medications/medicines/mutations": typeof medications_medicines_mutations;
+  "medications/medicines/queries": typeof medications_medicines_queries;
   "medications/prescriptions/helpers": typeof medications_prescriptions_helpers;
   "medications/prescriptions/mutations": typeof medications_prescriptions_mutations;
   "medications/prescriptions/queries": typeof medications_prescriptions_queries;

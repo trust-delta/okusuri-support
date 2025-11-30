@@ -14,11 +14,12 @@ import { describe, expect, it } from "vitest";
 import { api } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import schema from "../../schema";
+import { modules } from "../../test.setup";
 
 describe("パフォーマンステスト - 招待機能", () => {
   describe("Task 17.1: 招待コード生成のレイテンシ測定", () => {
     it("Patient不在グループでの招待コード生成が500ms以内で完了", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループとメンバーを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -59,7 +60,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("Patient存在グループでの招待コード生成が500ms以内で完了", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: Patient存在グループを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -107,7 +108,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("複数回の招待コード生成で一貫したパフォーマンスを維持", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { userId, groupId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
@@ -158,7 +159,7 @@ describe("パフォーマンステスト - 招待機能", () => {
 
   describe("Task 17.2: 大量招待の一覧表示パフォーマンス確認", () => {
     it("100件の招待レコードの一覧取得が2秒以内で完了", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: 100件の招待レコードを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -214,7 +215,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("有効な招待のみフィルタリングした一覧取得が高速", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: 100件の招待レコード（半分は期限切れ）
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -284,7 +285,7 @@ describe("パフォーマンステスト - 招待機能", () => {
 
   describe("Task 17.3: 並行参加処理の負荷テスト", () => {
     it("10人が同時に異なる招待コードで参加できる", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループと10件の招待コードを作成
       const setup = await t.run(async (ctx) => {
@@ -370,7 +371,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("同一招待コードへの並行アクセスは1人のみ成功する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループと1件の招待コードを作成
       const setup = await t.run(async (ctx) => {
@@ -460,7 +461,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("Patient枠への競合アクセスは1人のみ成功する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: Patient不在グループと招待コードを作成
       const setup = await t.run(async (ctx) => {

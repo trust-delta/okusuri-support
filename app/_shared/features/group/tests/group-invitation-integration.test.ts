@@ -8,11 +8,12 @@ import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { api } from "@/api";
 import schema from "../../../../../convex/schema";
+import { modules } from "../../../../../convex/test.setup";
 
 describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
   describe("Task 18.1: 既存グループ作成フローとの共存確認", () => {
     it("オンボーディング時の新規グループ作成が正常動作する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // ユーザーを作成
       const userId = await t.run(async (ctx) => {
@@ -59,7 +60,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
     });
 
     it("Supporterロールでの新規グループ作成も正常動作する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const userId = await t.run(async (ctx) => {
         return await ctx.db.insert("users", {});
@@ -92,7 +93,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
     });
 
     it("既存のjoinGroup mutationが影響を受けていない（招待なし参加）", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループとメンバーを作成
       const { groupId, newUserId } = await t.run(async (ctx) => {
@@ -143,7 +144,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
     });
 
     it("既存のjoinGroupは重複参加を防止する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループとメンバーを作成
       const { groupId, userId } = await t.run(async (ctx) => {
@@ -181,7 +182,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
 
   describe("Task 18.2: 認証フローとの統合確認", () => {
     it("未認証ユーザーは招待コードを検証できない", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: 招待コードを作成
       await t.run(async (ctx) => {
@@ -217,7 +218,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
     });
 
     it("未認証ユーザーは招待コードで参加できない", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: 招待コードを作成
       await t.run(async (ctx) => {
@@ -259,7 +260,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
     });
 
     it("認証済みユーザーは自身が作成したグループを取得できる", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -293,7 +294,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
     });
 
     it("認証済みユーザーは自分が参加していないグループの招待は作成できない", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: 2人のユーザーとグループを作成
       const setup = await t.run(async (ctx) => {
@@ -330,7 +331,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
     });
 
     it("グループメンバーのみがグループの招待一覧を取得できる", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ
       const { memberId, nonMemberId, groupId } = await t.run(async (ctx) => {
