@@ -2,11 +2,13 @@
 
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { CalendarIcon, Search, X } from "lucide-react";
+import { CalendarIcon, MessageSquare, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -29,6 +31,8 @@ export interface FilterState {
     to?: Date;
   };
   sortOrder: "asc" | "desc";
+  /** メモ付きの記録のみ表示 */
+  memoOnly: boolean;
 }
 
 interface RecordFiltersProps {
@@ -99,6 +103,13 @@ export function RecordFilters({
     onFiltersChange({
       ...filters,
       sortOrder: value as FilterState["sortOrder"],
+    });
+  };
+
+  const handleMemoOnlyChange = (checked: boolean) => {
+    onFiltersChange({
+      ...filters,
+      memoOnly: checked,
     });
   };
 
@@ -242,6 +253,22 @@ export function RecordFilters({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* メモ付きのみフィルター */}
+        <div className="flex items-center space-x-2 pt-2 border-t">
+          <Checkbox
+            id="memoOnly"
+            checked={filters.memoOnly}
+            onCheckedChange={handleMemoOnlyChange}
+          />
+          <Label
+            htmlFor="memoOnly"
+            className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+          >
+            <MessageSquare className="h-4 w-4 text-amber-500" />
+            メモ付きの記録のみ表示
+          </Label>
         </div>
       </CardContent>
     </Card>

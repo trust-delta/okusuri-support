@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { Edit } from "lucide-react";
+import { Edit, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/api";
 import { Badge } from "@/components/ui/badge";
@@ -327,6 +327,13 @@ export function MedicationGroupedRecordsList({
                                 {getTimingLabel(item.timing)}
                               </span>
                             )}
+                          {/* メモ付きバッジ */}
+                          {record?.notes && (
+                            <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded">
+                              <MessageSquare className="h-3 w-3" />
+                              メモ
+                            </span>
+                          )}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                           {/* 時間帯グループ時に処方箋名を表示 */}
@@ -363,6 +370,8 @@ export function MedicationGroupedRecordsList({
                           scheduleId={item.scheduleId}
                           recordId={record?._id}
                           recordStatus={record?.status}
+                          recordNotes={record?.notes}
+                          medicineName={item.medicineName}
                         />
                       )}
                     </div>
