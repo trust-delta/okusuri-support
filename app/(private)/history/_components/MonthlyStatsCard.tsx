@@ -33,6 +33,9 @@ const TIMING_LABELS: Record<string, string> = {
   bedtime: "就寝前",
 };
 
+// 表示順序を明示的に定義（朝→昼→晩→就寝前）
+const TIMING_ORDER = ["morning", "noon", "evening", "bedtime"] as const;
+
 export function MonthlyStatsCard({
   groupId,
   year,
@@ -137,20 +140,18 @@ export function MonthlyStatsCard({
             タイミング別
           </h4>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {(
-              Object.entries(timingStats) as [
-                keyof typeof timingStats,
-                (typeof timingStats)[keyof typeof timingStats],
-              ][]
-            ).map(([timing, stat]) => (
-              <TimingStat
-                key={timing}
-                label={TIMING_LABELS[timing] ?? timing}
-                taken={stat.taken}
-                total={stat.taken + stat.skipped + stat.pending}
-                rate={stat.rate}
-              />
-            ))}
+            {TIMING_ORDER.map((timing) => {
+              const stat = timingStats[timing];
+              return (
+                <TimingStat
+                  key={timing}
+                  label={TIMING_LABELS[timing] ?? timing}
+                  taken={stat.taken}
+                  total={stat.taken + stat.skipped + stat.pending}
+                  rate={stat.rate}
+                />
+              );
+            })}
           </div>
         </div>
 
