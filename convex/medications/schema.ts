@@ -13,6 +13,7 @@ export const medicinesSchema = {
     endDate: v.optional(v.string()), // YYYY-MM-DD形式（未指定 = 継続中）
     isActive: v.boolean(), // 処方箋が有効かどうか（期間外でも手動で無効化可能）
     notes: v.optional(v.string()), // メモ（医療機関名、処方目的など）
+    imageId: v.optional(v.id("_storage")), // 処方箋画像のストレージID
     createdBy: v.string(), // Convex AuthのuserIdを文字列として保存
     createdAt: v.number(),
     updatedAt: v.number(),

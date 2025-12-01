@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  ImageIcon,
   Pause,
   Pill,
   Play,
@@ -14,6 +15,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
+import { ImageUpload } from "@/components/image-upload";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +77,12 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
   );
   const duplicatePrescription = useMutation(
     api.medications.prescriptions.mutations.duplicatePrescription,
+  );
+  const attachImage = useMutation(
+    api.storage.mutations.attachImageToPrescription,
+  );
+  const removeImage = useMutation(
+    api.storage.mutations.removeImageFromPrescription,
   );
 
   const [endDateDialogPrescriptionId, setEndDateDialogPrescriptionId] =
@@ -408,9 +416,31 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                         </p>
                       )}
                       {isExpanded && (
-                        <PrescriptionMedicinesList
-                          prescriptionId={prescription._id}
-                        />
+                        <>
+                          <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              処方箋画像
+                            </Label>
+                            <ImageUpload
+                              imageUrl={prescription.imageUrl}
+                              onImageUploaded={async (storageId) => {
+                                await attachImage({
+                                  prescriptionId: prescription._id,
+                                  storageId: storageId as Id<"_storage">,
+                                });
+                              }}
+                              onImageRemoved={async () => {
+                                await removeImage({
+                                  prescriptionId: prescription._id,
+                                });
+                              }}
+                            />
+                          </div>
+                          <PrescriptionMedicinesList
+                            prescriptionId={prescription._id}
+                          />
+                        </>
                       )}
                     </CardContent>
                   )}
