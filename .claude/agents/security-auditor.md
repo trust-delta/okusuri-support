@@ -1,11 +1,11 @@
 ---
-name: security-audit
+name: security-auditor
 description: コードベースのセキュリティリスクを検出してレポートする。認証・認可の保護範囲、機密情報のハードコード、脆弱性パターンを監査する際に使用する。
 tools: Read, Glob, Grep, Bash
 model: opus
 ---
 
-# security-audit
+# security-auditor
 
 **タイプ**: セキュリティ監査専門サブエージェント
 
@@ -143,4 +143,4 @@ Grep: pattern="console\.(log|info|debug).*prescription|medication|symptom" -i
 
 ---
 
-**最終更新**: 2025年11月30日
+**最終更新**: 2025年12月1日
