@@ -1,6 +1,6 @@
 # 服薬管理機能仕様
 
-**最終更新**: 2025年11月30日
+**最終更新**: 2025年12月2日
 
 ## 概要
 
@@ -21,6 +21,7 @@
   endDate?: string,                // YYYY-MM-DD（未指定 = 継続中）
   isActive: boolean,               // 服用中かどうか
   notes?: string,
+  imageId?: Id<"_storage">,        // 処方箋画像のストレージID
   createdBy: string,
   createdAt: number,
   updatedAt: number,
@@ -393,6 +394,72 @@
 **制限**:
 - 論理削除された処方箋は複製できない
 - グループメンバーのみが複製可能
+
+#### 処方箋画像の添付
+
+処方箋にスキャン画像やカメラ撮影画像を添付できる機能。
+
+##### アップロードURL生成
+**API**: `storage.mutations.generateUploadUrl`
+```typescript
+{
+  args: {},
+  returns: string  // 短期間有効なアップロードURL
+}
+```
+
+**使用手順**:
+1. `generateUploadUrl` でアップロードURLを取得
+2. 取得したURLに画像ファイルをPOST
+3. レスポンスから `storageId` を取得
+4. `attachImageToPrescription` で処方箋に添付
+
+##### 画像添付
+**API**: `storage.mutations.attachImageToPrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+    storageId: Id<"_storage">,
+  },
+  returns: Id<"prescriptions">
+}
+```
+
+**挙動**:
+- 既存の画像があれば自動的に削除
+- 新しい画像を処方箋に関連付け
+
+##### 画像削除
+**API**: `storage.mutations.removeImageFromPrescription`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+  },
+  returns: void
+}
+```
+
+**挙動**:
+- ストレージから画像を削除
+- 処方箋の `imageId` をクリア
+
+##### 画像URL取得
+**API**: `storage.queries.getPrescriptionImageUrl`
+```typescript
+{
+  args: {
+    prescriptionId: Id<"prescriptions">,
+  },
+  returns: string | null
+}
+```
+
+**制限**:
+- 対応形式: JPEG, PNG, WebP
+- 最大ファイルサイズ: 5MB
+- グループメンバーのみが添付・閲覧可能
 
 #### 処方箋内の薬の管理
 
