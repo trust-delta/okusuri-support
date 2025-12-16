@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
 
@@ -9,6 +10,27 @@ export const getMedicineGroups = query({
     groupId: v.id("groups"),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("groupId"), args.groupId),
+          q.eq(q.field("leftAt"), undefined),
+        ),
+      )
+      .first();
+
+    if (!membership) {
+      return [];
+    }
+
     const medicineGroups = await ctx.db
       .query("medicineGroups")
       .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
@@ -29,6 +51,27 @@ export const findSimilarMedicineNames = query({
     threshold: v.optional(v.number()), // 類似度閾値（0-1、デフォルト0.7）
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("groupId"), args.groupId),
+          q.eq(q.field("leftAt"), undefined),
+        ),
+      )
+      .first();
+
+    if (!membership) {
+      return [];
+    }
+
     const threshold = args.threshold ?? 0.7;
 
     // グループ内の全ての薬名を取得

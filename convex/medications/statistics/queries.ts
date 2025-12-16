@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
 import {
@@ -27,6 +28,61 @@ export const getMedicationStatsByPeriod = query({
     endDate: v.string(), // YYYY-MM-DD
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return {
+        medicines: [],
+        summary: {
+          totalMedicines: 0,
+          totalDoses: 0,
+          totalTaken: 0,
+          totalSkipped: 0,
+          totalPending: 0,
+          overallAdherenceRate: 0,
+        },
+        timingStats: {},
+        asNeeded: { taken: 0, skipped: 0, pending: 0, total: 0 },
+        period: {
+          startDate: args.startDate,
+          endDate: args.endDate,
+          days: 0,
+        },
+      };
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("groupId"), args.groupId),
+          q.eq(q.field("leftAt"), undefined),
+        ),
+      )
+      .first();
+
+    if (!membership) {
+      return {
+        medicines: [],
+        summary: {
+          totalMedicines: 0,
+          totalDoses: 0,
+          totalTaken: 0,
+          totalSkipped: 0,
+          totalPending: 0,
+          overallAdherenceRate: 0,
+        },
+        timingStats: {},
+        asNeeded: { taken: 0, skipped: 0, pending: 0, total: 0 },
+        period: {
+          startDate: args.startDate,
+          endDate: args.endDate,
+          days: 0,
+        },
+      };
+    }
+
     // 期間内の全日付を生成
     const dates = generateDateRange(args.startDate, args.endDate);
 

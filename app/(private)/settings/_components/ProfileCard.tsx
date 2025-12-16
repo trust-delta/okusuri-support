@@ -80,7 +80,12 @@ export function ProfileCard({ preloadedCurrentUser }: ProfileCardProps) {
     setIsUploadingImage(true);
     try {
       // Step 1: アップロードURLを生成
-      const postUrl = await generateUploadUrl();
+      const urlResult = await generateUploadUrl();
+      if (!urlResult.isSuccess) {
+        toast.error(urlResult.errorMessage);
+        return;
+      }
+      const postUrl = urlResult.data;
 
       // Step 2: ファイルをアップロード
       const uploadResult = await fetch(postUrl, {
