@@ -202,6 +202,11 @@ describe("GroupInvitationManager", () => {
     await user.click(createButton);
 
     expect(screen.getByText("作成中...")).toBeInTheDocument();
+
+    // 非同期処理が完了するまで待機して、テスト環境破棄後のsetState呼び出しを防ぐ
+    await waitFor(() => {
+      expect(screen.getByText("招待コードを作成")).toBeInTheDocument();
+    });
   });
 
   it("リンクをコピーボタンをクリックするとクリップボードにコピーされる", async () => {
