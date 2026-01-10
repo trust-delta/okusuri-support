@@ -7,8 +7,8 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 import { api } from "@/api";
-import schema from "../../../../convex/schema";
-import { modules } from "../../../../convex/test.setup";
+import schema from "../../../../../convex/schema";
+import { modules } from "../../../../../convex/test.setup";
 
 describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
   describe("Task 18.1: 既存グループ作成フローとの共存確認", () => {

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Id } from "@/schema";
-import { GroupMembersList } from "./GroupMembersList";
+import { GroupMembersList } from "../GroupMembersList";
 
 describe("GroupMembersList", () => {
   const mockMembers = [
