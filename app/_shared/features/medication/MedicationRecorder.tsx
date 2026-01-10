@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
-import { MEDICATION_TIMINGS } from "../constants/timings";
+import { MEDICATION_TIMINGS } from "./constants";
 import { MedicationRecordActions } from "./MedicationRecordActions";
 
 interface MedicationRecorderProps {

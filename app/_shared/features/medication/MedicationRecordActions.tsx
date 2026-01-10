@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
-import type { MedicationTiming } from "../types/timing";
 import { MemoEditDialog } from "./MemoEditDialog";
+import type { MedicationTiming } from "./types";
 
 interface MedicationRecordActionsProps {
   groupId: Id<"groups">;

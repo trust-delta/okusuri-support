@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { usePushNotifications } from "@/features/push-notifications/hooks/use-push-notifications";
+import { usePushNotifications } from "./use-push-notifications";
 
 interface PushNotificationPromptProps {
   onComplete?: () => void;

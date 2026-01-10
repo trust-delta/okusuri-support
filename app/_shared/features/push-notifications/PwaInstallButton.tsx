@@ -2,7 +2,7 @@
 
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePWAInstall } from "@/features/push-notifications/hooks/use-pwa-install";
+import { usePWAInstall } from "./use-pwa-install";
 
 interface PWAInstallButtonProps {
   variant?: "default" | "outline" | "ghost";

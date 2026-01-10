@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
-import { IOSPWAInstallBanner } from "@/features/push-notifications/components/IosPwaInstallBanner";
+import { IOSPWAInstallBanner } from "@/features/push-notifications";
 import { ClientProvider, ServerProvider } from "@/providers";
 
 const geistSans = Geist({
