@@ -103,8 +103,8 @@ export function PasswordReset() {
         className="space-y-4"
       >
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+            <p className="text-sm text-destructive">{error}</p>
           </div>
         )}
         <FormDescription>
@@ -139,11 +139,11 @@ export function PasswordReset() {
         className="space-y-4"
       >
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+            <p className="text-sm text-destructive">{error}</p>
           </div>
         )}
-        <div className="text-sm text-gray-600 mb-4">
+        <div className="text-sm text-muted-foreground mb-4">
           <p>{step.email} に認証コードを送信しました。</p>
           <p>メールをご確認ください。</p>
         </div>

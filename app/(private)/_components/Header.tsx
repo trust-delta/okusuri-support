@@ -25,19 +25,19 @@ export async function Header() {
   const currentUserResult = preloadedQueryResult(currentUser);
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div className="bg-card border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-4 space-y-4">
           {/* ユーザー情報とナビゲーションボタン */}
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               {currentUserResult && (
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-10 w-10 ring-2 ring-primary/10">
                   <AvatarImage
                     src={currentUserResult.image || undefined}
                     alt={currentUserResult.name || "プロフィール画像"}
                   />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
                     {currentUserResult.name?.charAt(0) ||
                       currentUserResult.email?.charAt(0) ||
                       "?"}
@@ -46,10 +46,10 @@ export async function Header() {
               )}
               {currentUserResult?.displayName && (
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <p className="text-sm font-medium text-foreground">
                     {currentUserResult.displayName}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     {currentUserResult.email}
                   </p>
                 </div>

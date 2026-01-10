@@ -132,7 +132,7 @@ export function MedicineGroupDialog({
               onChange={(e) => setCanonicalName(e.target.value)}
               placeholder="例: ロキソニン"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               統計に表示される名前です
             </p>
           </div>
@@ -140,11 +140,11 @@ export function MedicineGroupDialog({
           {/* 統合する薬名 */}
           <div className="space-y-2">
             <Label>統合する薬名 *</Label>
-            <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3">
               {Array.from(selectedMedicines).map((medicine) => (
                 <div
                   key={medicine}
-                  className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                  className="flex items-center justify-between p-2 bg-muted rounded"
                 >
                   <div className="flex items-center space-x-2">
                     <Checkbox

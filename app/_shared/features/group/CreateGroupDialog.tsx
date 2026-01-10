@@ -178,7 +178,7 @@ export function CreateGroupDialog({
                           <FormLabel className="font-medium">
                             服薬者（患者）
                           </FormLabel>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-muted-foreground">
                             自分の服薬を記録・管理します
                           </p>
                         </div>
@@ -191,7 +191,7 @@ export function CreateGroupDialog({
                           <FormLabel className="font-medium">
                             サポーター
                           </FormLabel>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-muted-foreground">
                             家族や友人の服薬をサポートします
                           </p>
                         </div>

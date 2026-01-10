@@ -80,8 +80,8 @@ export function MedicationRecordActions({
         <span
           className={`px-3 py-1 rounded-full text-sm ${
             recordStatus === "taken"
-              ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
-              : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+              ? "bg-success/10 text-success"
+              : "bg-muted text-muted-foreground"
           }`}
         >
           {recordStatus === "taken" ? "服用済み" : "スキップ"}
@@ -97,7 +97,7 @@ export function MedicationRecordActions({
           size="sm"
           onClick={handleDelete}
           disabled={isLoading}
-          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+          className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
         >
           取消し
         </Button>

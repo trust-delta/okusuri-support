@@ -20,21 +20,21 @@ export default function DashboardError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-6 text-center">
         <div className="flex justify-center">
           <AlertCircle className="h-16 w-16 text-red-500" />
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-3xl font-bold text-foreground">
             エラーが発生しました
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted-foreground">
             ダッシュボードの読み込み中に問題が発生しました。
           </p>
           {error.digest && (
-            <p className="text-sm text-gray-500 dark:text-gray-500">
+            <p className="text-sm text-muted-foreground">
               エラーID: {error.digest}
             </p>
           )}

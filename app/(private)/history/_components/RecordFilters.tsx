@@ -121,7 +121,7 @@ export function RecordFilters({
       <CardContent className="space-y-4">
         {/* 薬名検索 */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             id="search-medicine"
             type="text"
@@ -134,9 +134,7 @@ export function RecordFilters({
 
         {/* 日付範囲選択 */}
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            日付範囲
-          </div>
+          <div className="text-sm font-medium text-foreground/80">日付範囲</div>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -159,7 +157,7 @@ export function RecordFilters({
                     format(filters.dateRange.from, "yyyy/MM/dd", { locale: ja })
                   )
                 ) : (
-                  <span className="text-gray-500">日付を選択...</span>
+                  <span className="text-muted-foreground">日付を選択...</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -197,7 +195,7 @@ export function RecordFilters({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* ステータスフィルター */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="text-sm font-medium text-foreground/80">
               ステータス
             </div>
             <Select value={filters.status} onValueChange={handleStatusChange}>
@@ -216,7 +214,7 @@ export function RecordFilters({
 
           {/* タイミングフィルター */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="text-sm font-medium text-foreground/80">
               タイミング
             </div>
             <Select value={filters.timing} onValueChange={handleTimingChange}>
@@ -236,9 +234,7 @@ export function RecordFilters({
 
         {/* 並び替え */}
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            並び替え
-          </div>
+          <div className="text-sm font-medium text-foreground/80">並び替え</div>
           <Select
             value={filters.sortOrder}
             onValueChange={handleSortOrderChange}

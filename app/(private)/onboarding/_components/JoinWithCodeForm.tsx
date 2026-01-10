@@ -32,7 +32,7 @@ export function JoinWithCodeForm({ onBack }: JoinWithCodeFormProps) {
         <div>
           <label
             htmlFor="invitationCode"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-foreground/80 mb-2"
           >
             招待コード
           </label>
@@ -46,7 +46,7 @@ export function JoinWithCodeForm({ onBack }: JoinWithCodeFormProps) {
             maxLength={8}
             className="text-center text-lg font-mono tracking-wider"
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             8文字の英数字コード
           </p>
         </div>

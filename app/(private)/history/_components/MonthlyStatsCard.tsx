@@ -50,7 +50,7 @@ const getProgressColor = (rate: number): string => {
 };
 
 const getTimingColor = (rate: number, total: number): string => {
-  if (total === 0) return "text-gray-400";
+  if (total === 0) return "text-muted-foreground";
   if (rate >= 80) return "text-green-600 dark:text-green-400";
   if (rate >= 50) return "text-yellow-600 dark:text-yellow-400";
   return "text-red-600 dark:text-red-400";
@@ -81,7 +81,7 @@ export function MonthlyStatsCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="py-8 text-center text-gray-500 dark:text-gray-400">
+          <p className="py-8 text-center text-muted-foreground">
             データの取得に失敗しました
           </p>
         </CardContent>
@@ -114,7 +114,7 @@ export function MonthlyStatsCard({
         {/* 服薬継続率 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-foreground/80">
               服薬継続率
             </span>
             <span
@@ -129,7 +129,7 @@ export function MonthlyStatsCard({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="服薬継続率"
-            className="relative h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"
+            className="relative h-3 w-full overflow-hidden rounded-full bg-muted"
           >
             <div
               className={`h-full transition-all duration-500 ${getProgressColor(adherenceRate)}`}
@@ -159,7 +159,7 @@ export function MonthlyStatsCard({
             unit="回"
           />
           <StatItem
-            icon={<Circle className="h-4 w-4 text-gray-400" />}
+            icon={<Circle className="h-4 w-4 text-muted-foreground" />}
             label="未記録"
             value={totalPending}
             unit="回"
@@ -168,7 +168,7 @@ export function MonthlyStatsCard({
 
         {/* タイミング別統計 */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <h4 className="text-sm font-medium text-foreground/80">
             タイミング別
           </h4>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -191,7 +191,7 @@ export function MonthlyStatsCard({
         {/* 頓服（参考） */}
         {asNeeded.total > 0 && (
           <div className="border-t pt-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" aria-hidden="true" />
               <span>頓服（参考）:</span>
               <span>
@@ -217,16 +217,16 @@ function StatItem({
   unit: string;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+    <div className="flex flex-col items-center rounded-lg bg-muted p-3">
       <div className="flex items-center gap-1.5">
         <span aria-hidden="true">{icon}</span>
-        <span className="text-xs text-gray-600 dark:text-gray-400">
-          {label}
-        </span>
+        <span className="text-xs text-muted-foreground">{label}</span>
       </div>
-      <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+      <div className="mt-1 text-lg font-semibold text-foreground">
         {value}
-        <span className="ml-0.5 text-xs font-normal text-gray-500">{unit}</span>
+        <span className="ml-0.5 text-xs font-normal text-muted-foreground">
+          {unit}
+        </span>
       </div>
     </div>
   );
@@ -245,11 +245,11 @@ function TimingStat({
 }) {
   return (
     <div className="rounded-lg border p-2 text-center">
-      <div className="text-xs text-gray-600 dark:text-gray-400">{label}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
       <div className={`text-sm font-semibold ${getTimingColor(rate, total)}`}>
         {total > 0 ? `${rate.toFixed(0)}%` : "-"}
       </div>
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-muted-foreground">
         {taken}/{total}
       </div>
     </div>

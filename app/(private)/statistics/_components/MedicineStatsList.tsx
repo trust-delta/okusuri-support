@@ -44,7 +44,7 @@ export function MedicineStatsList({
     return (
       <Card>
         <CardContent className="py-8">
-          <p className="text-center text-gray-500 dark:text-gray-400">
+          <p className="text-center text-muted-foreground">
             この期間に服用した薬がありません
           </p>
         </CardContent>
@@ -68,7 +68,7 @@ export function MedicineStatsList({
               .map((suggestion: (typeof similarMedicines)[number]) => (
                 <div
                   key={suggestion.medicineNames.join("-")}
-                  className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                  className="flex items-center justify-between p-2 bg-muted rounded"
                 >
                   <div className="flex items-center gap-2">
                     {suggestion.medicineNames.map((name: string) => (
@@ -80,7 +80,7 @@ export function MedicineStatsList({
                           ] && " ≈ "}
                       </span>
                     ))}
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted-foreground">
                       (類似度: {(suggestion.similarity * 100).toFixed(0)}%)
                     </span>
                   </div>
@@ -112,14 +112,14 @@ export function MedicineStatsList({
           {medicines.map((medicine, index) => (
             <div
               key={`${medicine.medicineName}-${index}`}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-3"
+              className="p-4 border border-border rounded-lg space-y-3"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">
                     {medicine.medicineName}
                   </h3>
-                  <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
                     {medicine.totalAmount > 0 && (
                       <span>
                         合計用量: {medicine.totalAmount}
@@ -138,7 +138,7 @@ export function MedicineStatsList({
                       </span>
                     )}
                     {medicine.pendingCount > 0 && (
-                      <span className="text-gray-500">
+                      <span className="text-muted-foreground">
                         未記録: {medicine.pendingCount}回
                       </span>
                     )}
@@ -167,9 +167,7 @@ export function MedicineStatsList({
               {medicine.totalDoses > 0 ? (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      服用率
-                    </span>
+                    <span className="text-muted-foreground">服用率</span>
                     <span className="font-medium">
                       {medicine.takenCount} / {medicine.totalDoses}回
                     </span>
@@ -177,7 +175,7 @@ export function MedicineStatsList({
                   <Progress value={medicine.adherenceRate} className="h-2" />
                 </div>
               ) : (
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm text-muted-foreground">
                   頓服のみの薬（服用率は表示されません）
                 </div>
               )}

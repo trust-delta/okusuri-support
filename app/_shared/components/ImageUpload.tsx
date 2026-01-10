@@ -133,13 +133,13 @@ export function ImageUpload({
       />
 
       {displayUrl ? (
-        <div className="relative rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="relative rounded-lg border border-border overflow-hidden">
           <div className="relative aspect-4/3 w-full">
             <Image
               src={displayUrl}
               alt="処方箋画像"
               fill
-              className="object-contain bg-gray-50 dark:bg-gray-900"
+              className="object-contain bg-muted"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
@@ -157,7 +157,7 @@ export function ImageUpload({
                 variant="secondary"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                className="h-8 w-8 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800"
+                className="h-8 w-8 bg-background/90 hover:bg-background"
               >
                 <Upload className="h-4 w-4" />
               </Button>
@@ -180,11 +180,11 @@ export function ImageUpload({
           disabled={disabled || isLoading}
           className={cn(
             "w-full aspect-4/3 rounded-lg border-2 border-dashed",
-            "border-gray-300 dark:border-gray-600",
-            "hover:border-gray-400 dark:hover:border-gray-500",
-            "bg-gray-50 dark:bg-gray-900",
+            "border-border",
+            "hover:border-primary/50",
+            "bg-muted",
             "flex flex-col items-center justify-center gap-2",
-            "text-gray-500 dark:text-gray-400",
+            "text-muted-foreground",
             "transition-colors cursor-pointer",
             "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
@@ -195,7 +195,7 @@ export function ImageUpload({
             <>
               <ImageIcon className="h-10 w-10" />
               <span className="text-sm">クリックして画像を選択</span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-muted-foreground/70">
                 JPEG, PNG, WebP (最大5MB)
               </span>
             </>

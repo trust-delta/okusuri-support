@@ -247,9 +247,7 @@ export function PrescriptionMedicinesList({
   return (
     <div className="border-t pt-4">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          含まれる薬
-        </h4>
+        <h4 className="text-sm font-semibold text-foreground/80">含まれる薬</h4>
         <Button
           variant="outline"
           size="sm"
@@ -264,19 +262,16 @@ export function PrescriptionMedicinesList({
       </div>
 
       {medicines.length === 0 ? (
-        <div className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+        <div className="text-sm text-muted-foreground py-4 text-center">
           この処方箋には薬が登録されていません
         </div>
       ) : (
         <div className="space-y-2">
           {medicines.map((medicine) => (
-            <div
-              key={medicine._id}
-              className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-            >
+            <div key={medicine._id} className="p-3 bg-muted rounded-lg">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
+                  <div className="font-medium text-foreground">
                     {medicine.name}
                   </div>
                   {medicine.schedule && (
@@ -284,7 +279,7 @@ export function PrescriptionMedicinesList({
                       {medicine.schedule.timings.map((timing: string) => (
                         <span
                           key={timing}
-                          className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
+                          className="text-xs px-2 py-1 bg-primary/10 text-primary rounded"
                         >
                           {TIMING_LABELS[timing] || timing}
                         </span>
@@ -292,13 +287,13 @@ export function PrescriptionMedicinesList({
                     </div>
                   )}
                   {medicine.schedule?.dosage && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       用量: {medicine.schedule.dosage.amount}
                       {medicine.schedule.dosage.unit}
                     </div>
                   )}
                   {medicine.description && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {medicine.description}
                     </div>
                   )}

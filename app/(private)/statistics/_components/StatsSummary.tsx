@@ -49,8 +49,8 @@ export function StatsSummary({ summary, period }: StatsSummaryProps) {
       value: summary.totalPending,
       subValue: "回",
       icon: Clock,
-      color: "text-gray-600 dark:text-gray-400",
-      bgColor: "bg-gray-50 dark:bg-gray-800",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
     {
       label: "服用率",
@@ -69,7 +69,7 @@ export function StatsSummary({ summary, period }: StatsSummaryProps) {
           <CardTitle className="text-lg">
             統計サマリー（{period.days}日間）
           </CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             {period.startDate} 〜 {period.endDate}
           </p>
         </CardHeader>
@@ -83,13 +83,13 @@ export function StatsSummary({ summary, period }: StatsSummaryProps) {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    <p className="text-sm text-muted-foreground mb-1">
                       {stat.label}
                     </p>
                     <div className="flex items-baseline gap-1">
                       <p className="text-3xl font-bold">{stat.value}</p>
                       {stat.subValue && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                           {stat.subValue}
                         </p>
                       )}

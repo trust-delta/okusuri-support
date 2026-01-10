@@ -48,7 +48,7 @@ export default function StatisticsPage() {
       <div className="container mx-auto py-8 px-4">
         <Card>
           <CardContent className="py-8">
-            <p className="text-center text-gray-500 dark:text-gray-400">
+            <p className="text-center text-muted-foreground">
               グループ情報を読み込んでいます...
             </p>
           </CardContent>
@@ -65,7 +65,7 @@ export default function StatisticsPage() {
             <BarChart3 className="h-8 w-8" />
             服薬統計
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-muted-foreground mt-2">
             期間別の服薬状況と用量の統計を確認できます
           </p>
         </div>

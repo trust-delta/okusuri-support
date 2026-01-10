@@ -61,7 +61,7 @@ export function PeriodSelector({
       <CardContent className="pt-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <Calendar className="h-5 w-5 text-muted-foreground" />
             <Label className="text-base font-semibold">期間を選択</Label>
           </div>
 

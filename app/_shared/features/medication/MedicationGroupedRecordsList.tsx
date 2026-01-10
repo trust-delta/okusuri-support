@@ -105,9 +105,7 @@ export function MedicationGroupedRecordsList({
         {title && (
           <div className="flex items-center justify-between mb-4">
             {typeof title === "string" ? (
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {title}
-              </h2>
+              <h2 className="text-xl font-semibold text-foreground">{title}</h2>
             ) : (
               title
             )}
@@ -128,15 +126,13 @@ export function MedicationGroupedRecordsList({
         {title && (
           <div className="flex items-center justify-between mb-4">
             {typeof title === "string" ? (
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {title}
-              </h2>
+              <h2 className="text-xl font-semibold text-foreground">{title}</h2>
             ) : (
               title
             )}
           </div>
         )}
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-8 text-muted-foreground">
           <p>{emptyMessage}</p>
         </div>
       </div>
@@ -208,7 +204,7 @@ export function MedicationGroupedRecordsList({
           <div className="flex items-center gap-2">
             {title &&
               (typeof title === "string" ? (
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="text-xl font-semibold text-foreground">
                   {title}
                 </h2>
               ) : (
@@ -260,7 +256,7 @@ export function MedicationGroupedRecordsList({
           <div key={groupName} className="space-y-3">
             {/* グループ見出しとまとめて操作ボタン */}
             <div className="flex items-center justify-between border-b pb-2">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <h3 className="text-sm font-semibold text-foreground/80">
                 {groupBy === "timing" ? getTimingLabel(groupName) : groupName}
               </h3>
               {/* 時間帯でグルーピング & まとめて操作表示 & 編集可能の場合のみ */}
@@ -295,11 +291,10 @@ export function MedicationGroupedRecordsList({
                 // 未記録時のスタイル
                 const unrecordedClass =
                   showUnrecordedStyle === "dashed"
-                    ? "border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50"
-                    : "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800";
+                    ? "border border-dashed border-border bg-muted/50"
+                    : "border border-border bg-card";
 
-                const recordedClass =
-                  "border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20";
+                const recordedClass = "border-2 border-primary/30 bg-primary/5";
 
                 return (
                   <div
@@ -311,31 +306,31 @@ export function MedicationGroupedRecordsList({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                          <span className="font-medium text-foreground">
                             {item.medicineName}
                           </span>
                           {/* 未記録ラベル (dashed スタイル時のみ) */}
                           {!hasRecord && showUnrecordedStyle === "dashed" && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                            <span className="text-xs text-muted-foreground italic">
                               (未記録)
                             </span>
                           )}
                           {/* 処方箋グループ時にタイミングバッジを表示 */}
                           {groupBy === "prescription" &&
                             showTimingInPrescription && (
-                              <span className="text-sm px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                              <span className="text-sm px-2 py-0.5 bg-primary/10 text-primary rounded">
                                 {getTimingLabel(item.timing)}
                               </span>
                             )}
                           {/* メモ付きバッジ */}
                           {record?.notes && (
-                            <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded">
+                            <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-warning/20 text-warning-foreground rounded">
                               <MessageSquare className="h-3 w-3" />
                               メモ
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <div className="text-sm text-muted-foreground mt-1">
                           {/* 時間帯グループ時に処方箋名を表示 */}
                           {groupBy === "timing" &&
                             showPrescriptionInTiming &&
@@ -347,12 +342,12 @@ export function MedicationGroupedRecordsList({
                         {showRecordDetails && (
                           <>
                             {record?.notes && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                              <p className="text-sm text-muted-foreground mt-2 p-2 bg-muted rounded">
                                 メモ: {record.notes}
                               </p>
                             )}
                             {record?.takenAt && (
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                              <p className="text-xs text-muted-foreground mt-1">
                                 服用時刻:{" "}
                                 {formatJST(new Date(record.takenAt), "HH:mm")}
                               </p>

@@ -55,7 +55,7 @@ export default async function DashboardPage({
   if (!activeGroup) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg text-gray-900 dark:text-gray-100">
+        <div className="text-lg text-foreground">
           グループ情報の取得に失敗しました
         </div>
       </div>
@@ -74,9 +74,7 @@ export default async function DashboardPage({
   return (
     <div className="py-8 px-4">
       <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          ダッシュボード
-        </h1>
+        <h1 className="text-3xl font-bold text-foreground">ダッシュボード</h1>
 
         {/* グループ情報カード */}
         <GroupInfoCard

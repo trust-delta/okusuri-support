@@ -91,10 +91,7 @@ export function GroupInvitationManager({
         </div>
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-            >
+            <div key={i} className="border border-border rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 space-y-3">
                   <Skeleton className="h-7 w-32" />
@@ -122,7 +119,7 @@ export function GroupInvitationManager({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           グループに他のユーザーを招待できます
         </p>
         <Button
@@ -136,7 +133,7 @@ export function GroupInvitationManager({
 
       {activeInvitations.length > 0 ? (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <h3 className="text-sm font-medium text-foreground/80">
             有効な招待コード
           </h3>
           {activeInvitations.map(
@@ -148,21 +145,21 @@ export function GroupInvitationManager({
               return (
                 <div
                   key={invitation._id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                  className="border border-border rounded-lg p-4"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <code className="text-lg font-mono font-bold text-gray-900 dark:text-gray-100">
+                        <code className="text-lg font-mono font-bold text-foreground">
                           {invitation.code}
                         </code>
                         {isExpired && (
-                          <span className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded">
+                          <span className="text-xs px-2 py-1 bg-destructive/10 text-destructive rounded">
                             期限切れ
                           </span>
                         )}
                       </div>
-                      <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                         <p>
                           有効期限: {expiryDate.toLocaleDateString("ja-JP")}{" "}
                           {expiryDate.toLocaleTimeString("ja-JP")}
@@ -209,15 +206,15 @@ export function GroupInvitationManager({
           )}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+        <p className="text-sm text-muted-foreground text-center py-4">
           有効な招待コードがありません
         </p>
       )}
 
       {invitations.filter((inv: (typeof invitations)[number]) => inv.isUsed)
         .length > 0 && (
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        <div className="mt-6 pt-6 border-t border-border">
+          <h3 className="text-sm font-medium text-foreground/80 mb-3">
             使用済みの招待コード
           </h3>
           <div className="space-y-2">
@@ -226,13 +223,13 @@ export function GroupInvitationManager({
               .map((invitation: (typeof invitations)[number]) => (
                 <div
                   key={invitation._id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 opacity-60"
+                  className="border border-border rounded-lg p-3 opacity-60"
                 >
                   <div className="flex items-center justify-between">
-                    <code className="font-mono text-gray-600 dark:text-gray-400">
+                    <code className="font-mono text-muted-foreground">
                       {invitation.code}
                     </code>
-                    <span className="text-xs text-gray-500 dark:text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       使用済み
                     </span>
                   </div>

@@ -140,7 +140,7 @@ export function ProfileCard({ preloadedCurrentUser }: ProfileCardProps) {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <p className="text-sm font-medium text-foreground/80 mb-2">
               プロフィール画像
             </p>
             <div className="flex items-center space-x-2">
@@ -161,7 +161,7 @@ export function ProfileCard({ preloadedCurrentUser }: ProfileCardProps) {
               >
                 {isUploadingImage ? "アップロード中..." : "画像を変更"}
               </Button>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 JPG, PNG (最大5MB)
               </p>
             </div>
@@ -171,7 +171,7 @@ export function ProfileCard({ preloadedCurrentUser }: ProfileCardProps) {
         <div>
           <label
             htmlFor="displayName"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-foreground/80 mb-2"
           >
             表示名
           </label>
@@ -206,7 +206,7 @@ export function ProfileCard({ preloadedCurrentUser }: ProfileCardProps) {
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <p className="text-gray-900 dark:text-gray-100">
+              <p className="text-foreground">
                 {currentUser?.displayName || "未設定"}
               </p>
               <Button

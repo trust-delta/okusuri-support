@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
 import { IOSPWAInstallBanner } from "@/features/push-notifications";
 import { ClientProvider, ServerProvider } from "@/providers";
+
+const notoSansJP = Noto_Sans_JP({
+  variable: "--font-noto-sans-jp",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: true,
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +46,7 @@ export default function RootLayout({
     <ServerProvider>
       <html lang="ja" suppressHydrationWarning>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${notoSansJP.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <RegisterServiceWorker />
           <ClientProvider>

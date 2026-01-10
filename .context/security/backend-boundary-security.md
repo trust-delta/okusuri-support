@@ -1,16 +1,7 @@
----
-name: backend-boundary-security
-description: |
-  フロントエンドエンジニアがバックエンドコードを書く際のセキュリティガイダンス。以下を扱う場合に使用：
-  (1) Convex の query/mutation/action
-  (2) Next.js Server Actions、Route Handlers、Server Components
-  (3) Supabase Edge Functions、RLS ポリシー
-  (4) Firebase Security Rules、Cloud Functions
-  信頼境界、認可パターン、入力検証、よくある間違いをカバー。
-  トリガー：「これは安全？」「認可チェック」「誰がこれを呼べる？」フロントエンドエンジニアが書いたバックエンドコードのレビュー時。
----
-
 # バックエンド境界セキュリティ
+
+> フロントエンドエンジニアがバックエンドコードを書く際のセキュリティガイダンス。
+> Convex、Next.js Server Actions、Supabase、Firebase などを扱う場合に参照。
 
 フロントエンドエンジニアがサーバーサイドコードを書く際のセキュリティガイダンス。
 

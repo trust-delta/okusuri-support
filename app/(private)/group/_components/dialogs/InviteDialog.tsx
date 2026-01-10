@@ -90,10 +90,10 @@ export function InviteDialog({ open, onOpenChange, groupId }: Props) {
           {!invitationLink ? (
             // 招待リンクがまだ作成されていない場合
             <div className="text-center py-8">
-              <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-4">
-                <Link className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Link className="h-6 w-6 text-primary" />
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 招待リンクを作成してメンバーを招待しましょう
               </p>
               <Button

@@ -28,12 +28,12 @@ export function GroupMembersList({
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <Users className="h-5 w-5 text-muted-foreground" />
             <CardTitle>グループメンバー</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted-foreground">
             メンバー情報を読み込めませんでした
           </p>
         </CardContent>
@@ -45,7 +45,7 @@ export function GroupMembersList({
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          <Users className="h-5 w-5 text-muted-foreground" />
           <CardTitle>グループメンバー</CardTitle>
           <span className="ml-auto text-sm text-gray-500 dark:text-gray-400">
             {members.length}人

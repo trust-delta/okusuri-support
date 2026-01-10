@@ -90,7 +90,7 @@ export function TimingGroupActions({
         variant="outline"
         onClick={() => handleBulkAction("taken")}
         disabled={isLoading}
-        className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-950"
+        className="text-success hover:text-success/80 hover:bg-success/10"
       >
         <CheckCheck className="h-4 w-4 mr-1" />
         まとめて服用
@@ -100,7 +100,7 @@ export function TimingGroupActions({
         variant="outline"
         onClick={() => handleBulkAction("skipped")}
         disabled={isLoading}
-        className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
+        className="text-muted-foreground hover:text-foreground hover:bg-muted"
       >
         <X className="h-4 w-4 mr-1" />
         まとめてスキップ

@@ -99,16 +99,16 @@ export function InviteForm({
   const expiryDate = new Date(expiresAt);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             グループへの招待
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             「{groupName}」に招待されています
           </p>
-          <p className="mt-1 text-center text-xs text-gray-500 dark:text-gray-500">
+          <p className="mt-1 text-center text-xs text-muted-foreground">
             有効期限: {expiryDate.toLocaleDateString("ja-JP")}{" "}
             {expiryDate.toLocaleTimeString("ja-JP")}
           </p>

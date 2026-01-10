@@ -107,8 +107,8 @@ export function MemoEditDialog({
         size="sm"
         className={`p-1 h-auto ${
           hasMemo
-            ? "text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300"
-            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            ? "text-warning-foreground hover:text-warning-foreground/80"
+            : "text-muted-foreground hover:text-foreground"
         }`}
         title={hasMemo ? "メモを編集" : "メモを追加"}
       >
@@ -151,10 +151,10 @@ export function MemoEditDialog({
           <div
             className={`text-xs text-right ${
               isOverLimit
-                ? "text-red-500 dark:text-red-400"
+                ? "text-destructive"
                 : remainingChars <= 50
-                  ? "text-amber-500 dark:text-amber-400"
-                  : "text-gray-500 dark:text-gray-400"
+                  ? "text-warning-foreground"
+                  : "text-muted-foreground"
             }`}
           >
             残り {remainingChars} 文字
@@ -168,7 +168,7 @@ export function MemoEditDialog({
               variant="ghost"
               onClick={handleDelete}
               disabled={isLoading}
-              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
             >
               削除
             </Button>

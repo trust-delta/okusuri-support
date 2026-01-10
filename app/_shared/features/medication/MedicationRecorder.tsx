@@ -41,7 +41,7 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
           {MEDICATION_TIMINGS.map((timing) => (
             <div
               key={timing.value}
-              className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+              className="flex items-center justify-between p-4 border border-border rounded-lg"
             >
               <div className="flex items-center space-x-4 flex-1">
                 <Skeleton className="h-6 w-20" />
@@ -71,10 +71,10 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
           return (
             <div
               key={timing.value}
-              className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+              className="flex items-center justify-between p-4 border border-border rounded-lg"
             >
               <div className="flex items-center space-x-4 flex-1">
-                <span className="font-medium w-20 text-gray-900 dark:text-gray-100">
+                <span className="font-medium w-20 text-foreground">
                   {timing.label}
                 </span>
                 <MedicationRecordActions
@@ -91,16 +91,11 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
         })}
 
         {records && records.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <h3 className="font-medium mb-2 text-gray-900 dark:text-gray-100">
-              記録履歴
-            </h3>
+          <div className="mt-6 pt-6 border-t border-border">
+            <h3 className="font-medium mb-2 text-foreground">記録履歴</h3>
             <div className="space-y-2">
               {records.map((rec: (typeof records)[number]) => (
-                <div
-                  key={rec._id}
-                  className="text-sm text-gray-600 dark:text-gray-400"
-                >
+                <div key={rec._id} className="text-sm text-muted-foreground">
                   {
                     MEDICATION_TIMINGS.find((t) => t.value === rec.timing)
                       ?.label

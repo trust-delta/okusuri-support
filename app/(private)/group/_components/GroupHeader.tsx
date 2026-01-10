@@ -25,11 +25,11 @@ export function GroupHeader({ preloadedGroupDetails }: Props) {
     <>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-3xl font-bold text-foreground">
             {groupDetails.name}
           </h1>
           {groupDetails.description && (
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-muted-foreground">
               {groupDetails.description}
             </p>
           )}

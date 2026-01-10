@@ -28,7 +28,7 @@ export function GroupMembersCard({ preloadedMembers }: Props) {
           {members.map((member: (typeof members)[number]) => (
             <div
               key={member.userId}
-              className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
+              className="flex items-center justify-between p-3 rounded-lg bg-muted"
             >
               <div className="flex items-center gap-3">
                 <Avatar>
@@ -40,11 +40,11 @@ export function GroupMembersCard({ preloadedMembers }: Props) {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-gray-100">
+                  <p className="font-medium text-foreground">
                     {member.displayName || member.name || "名前未設定"}
                   </p>
                   {member.email && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {member.email}
                     </p>
                   )}
