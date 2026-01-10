@@ -1,6 +1,6 @@
 # アーキテクチャ
 
-**最終更新**: 2025年10月19日
+**最終更新**: 2026年01月11日
 
 ## 概要
 
@@ -29,25 +29,32 @@ Feature-Based Architecture（機能ベース）を採用したフルスタック
 
 ### 1. Feature-Based Architecture
 
-機能ごとに独立したモジュールとして実装。
+機能ごとに独立したモジュールとして実装。**フラット構造**を採用し、命名規則でファイル種別を判別。
 
 ```
 app/_shared/features/
-├── auth/          # 認証
-├── group/         # グループ管理
-├── medication/    # 服薬管理
-└── onboarding/    # オンボーディング
+├── auth/               # 認証
+│   ├── AuthPageLayout.tsx      # コンポーネント (PascalCase.tsx)
+│   ├── OauthSignIn.tsx
+│   ├── use-redirect-after-auth.ts  # フック (use-kebab-case.ts)
+│   ├── index.ts                # Public API
+│   └── __tests__/              # テストファイル
+├── group/              # グループ管理
+├── medication/         # 服薬管理
+└── push-notifications/ # プッシュ通知
 ```
 
 **原則**:
 
-- 各機能は基本的に独立
-- **`@x/` ディレクトリで feature 間依存を明示的に管理**
+- 各機能は基本的に独立（現在 feature 間の依存なし）
+- ファイルは feature ルートに直接配置（`hooks/`, `components/` サブディレクトリ不要）
+- テストは `__tests__/` ディレクトリに分離
 - `index.ts` で Public API を管理
+- 将来 feature 間依存が発生した場合は **`@x/` ディレクトリ**で明示的に管理
 
-### @x/ ディレクトリによる依存管理
+### @x/ ディレクトリによる依存管理（将来用）
 
-**依存される側が公開先を宣言**するパターン（FSD由来）。
+feature 間の依存が発生した場合に使用。**依存される側が公開先を宣言**するパターン（FSD由来）。
 
 ```
 app/_shared/features/
@@ -77,6 +84,8 @@ export { getCartItems, getCartTotal } from '../use-cart-items'
 // @x/checkout.ts（checkoutには一部だけ）
 export { getCartItems } from '../use-cart-items'
 ```
+
+> **現状**: 各 feature は独立しており、@x/ ディレクトリは未使用。依存が発生した時点で導入する。
 
 ### 2. リアルタイムファースト
 
@@ -114,13 +123,13 @@ export default defineSchema({
 
 ### プレゼンテーション層
 
-- **場所**: `src/app/`, `src/features/*/components/`
+- **場所**: `app/`, `app/_shared/features/*/`（コンポーネント）
 - **責務**: UI、ルーティング、ユーザー入力
 - **技術**: Next.js App Router、React Server/Client Components
 
 ### ビジネスロジック層
 
-- **場所**: `src/features/*/hooks/`, `convex/*/`
+- **場所**: `app/_shared/features/*/`（フック）, `convex/*/`
 - **責務**: ビジネスルール、データ操作、バリデーション
 - **技術**: カスタムReact Hooks、Convex Functions
 

@@ -1,6 +1,6 @@
 # コーディングスタイルガイド
 
-> **最終更新**: 2025年11月30日
+> **最終更新**: 2026年01月11日
 > **目的**: おくすりサポートプロジェクトの統一されたコーディング規約
 
 ---
@@ -50,18 +50,20 @@
 
 ### ディレクトリ構造
 ```
-src/
-├── app/                    # Next.js App Router
-│   ├── (authenticated)/   # 認証必須ルート
-│   └── (public)/          # 公開ルート
-├── features/              # 機能モジュール
-│   ├── auth/
-│   ├── group/
-│   └── medication/
-└── shared/                # 共有リソース
-    ├── components/ui/     # UIコンポーネント
-    ├── lib/              # ユーティリティ
-    └── hooks/            # カスタムフック
+app/
+├── (private)/             # 認証必須ルート
+├── (public)/              # 公開ルート
+└── _shared/               # 共有リソース
+    ├── components/        # 共有コンポーネント
+    │   └── ui/           # shadcn/ui コンポーネント
+    ├── features/          # 機能モジュール（フラット構造）
+    │   ├── auth/
+    │   ├── group/
+    │   ├── medication/
+    │   └── push-notifications/
+    ├── hooks/             # 共有カスタムフック
+    ├── lib/               # ユーティリティ
+    └── providers/         # Reactプロバイダー
 
 convex/
 ├── schema.ts             # スキーマ定義
@@ -78,9 +80,35 @@ convex/
     └── history/
 ```
 
+### Feature ディレクトリ構造（フラット）
+
+各 feature は**フラット構造**を採用。命名規則でファイル種別を判別するため、`hooks/` や `components/` サブディレクトリは不要。
+
+```
+app/_shared/features/auth/
+├── AuthPageLayout.tsx       # コンポーネント (PascalCase.tsx)
+├── OauthSignIn.tsx
+├── PasswordReset.tsx
+├── PasswordSignIn.tsx
+├── SignOutButton.tsx
+├── use-redirect-after-auth.ts  # フック (use-kebab-case.ts)
+├── index.ts                    # Public API
+└── __tests__/                  # テストファイル
+    ├── oauth-sign-in.test.tsx
+    ├── sign-out-button.test.tsx
+    └── use-redirect-after-auth.test.ts
+```
+
+**ポイント**:
+- ソースファイルは feature ルートに直接配置
+- テストファイルは `__tests__/` ディレクトリに分離
+- `index.ts` で外部公開する API を管理
+
 ### パス解決
-- **エイリアス**: `@/*` → `./src/*`
-- **Convex API**: `@/shared/lib/convex` 経由で統一的にインポート
+- **エイリアス**:
+  - `@/*` → `./app/_shared/*`
+  - `@/api` → Convex API
+  - `@/schema` → Convex スキーマ型
 
 ---
 
@@ -99,6 +127,7 @@ convex/
 | 定数 | **constants.ts** | `constants.ts` |
 | @x/公開API | **依存先名.ts** | `checkout.ts`, `order.ts` |
 | テストファイル | **kebab-case.test.tsx** | `cart-button.test.tsx` |
+| テストディレクトリ | **__tests__** | feature 内のテストを格納 |
 | フォルダ | **kebab-case** | `cart-summary/`, `medication-record/` |
 
 **判別ルール**:
