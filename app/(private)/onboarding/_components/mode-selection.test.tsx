@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { ModeSelection } from "./mode-selection";
+import { ModeSelection } from "./ModeSelection";
 
 describe("ModeSelection", () => {
   it("タイトルと説明が表示される", () => {

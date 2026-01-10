@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Id } from "@/schema";
-import { MemoEditDialog } from "./memo-edit-dialog";
+import { MemoEditDialog } from "./MemoEditDialog";
 
 // Convex のモック
 const mockUpdateMutation = vi.fn();

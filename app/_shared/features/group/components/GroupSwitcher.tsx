@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Id } from "@/schema";
-import { CreateGroupDialog } from "./create-group-dialog";
+import { CreateGroupDialog } from "./CreateGroupDialog";
 
 interface GroupInfo {
   groupId: Id<"groups">;

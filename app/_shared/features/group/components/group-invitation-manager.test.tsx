@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Id } from "@/schema";
-import { GroupInvitationManager } from "./group-invitation-manager";
+import { GroupInvitationManager } from "./GroupInvitationManager";
 
 // Convexのモック
 vi.mock("convex/react", () => ({

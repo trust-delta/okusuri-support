@@ -1,6 +1,6 @@
-export { MedicationGroupedRecordsList } from "./medication-grouped-records-list";
-export { MedicationRecordActions } from "./medication-record-actions";
-export { MedicationRecorder } from "./medication-recorder";
-export { MemoEditDialog } from "./memo-edit-dialog";
-export { PrescriptionBasedRecorder } from "./prescription-based-recorder";
-export { TimingGroupActions } from "./timing-group-actions";
+export { MedicationGroupedRecordsList } from "./MedicationGroupedRecordsList";
+export { MedicationRecordActions } from "./MedicationRecordActions";
+export { MedicationRecorder } from "./MedicationRecorder";
+export { MemoEditDialog } from "./MemoEditDialog";
+export { PrescriptionBasedRecorder } from "./PrescriptionBasedRecorder";
+export { TimingGroupActions } from "./TimingGroupActions";

@@ -32,8 +32,8 @@ Feature-Based Architecture（機能ベース）を採用したフルスタック
 機能ごとに独立したモジュールとして実装。
 
 ```
-src/features/
-├── auth/          # 認証（components/hooks/__tests__）
+app/_shared/features/
+├── auth/          # 認証
 ├── group/         # グループ管理
 ├── medication/    # 服薬管理
 └── onboarding/    # オンボーディング
@@ -41,9 +41,42 @@ src/features/
 
 **原則**:
 
-- 各機能は他機能に依存しない
-- `index.ts`でPublic APIを管理
-- 内部関数は`_`プレフィックス
+- 各機能は基本的に独立
+- **`@x/` ディレクトリで feature 間依存を明示的に管理**
+- `index.ts` で Public API を管理
+
+### @x/ ディレクトリによる依存管理
+
+**依存される側が公開先を宣言**するパターン（FSD由来）。
+
+```
+app/_shared/features/
+├── cart/
+│   ├── CartButton.tsx
+│   ├── use-cart-items.ts
+│   └── @x/
+│       ├── checkout.ts    ← checkout向け公開API
+│       └── order.ts       ← order向け公開API
+│
+└── checkout/
+    ├── CheckoutForm.tsx
+    └── (cart/@x/checkout.ts をインポート可能)
+```
+
+**ルール**:
+- feature 間の依存は `@x/依存先名.ts` 経由でのみ許可
+- `ls @x/` で依存先が一覧できる
+- `grep "@x/checkout"` で影響範囲が即わかる
+- ファイル削除 = 依存解除
+
+**公開先ごとに別ファイル**（中身が同じでも）:
+```typescript
+// @x/order.ts（orderには全部公開）
+export { getCartItems, getCartTotal } from '../use-cart-items'
+
+// @x/checkout.ts（checkoutには一部だけ）
+export { getCartItems } from '../use-cart-items'
+```
 
 ### 2. リアルタイムファースト
 

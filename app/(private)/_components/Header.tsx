@@ -3,7 +3,7 @@ import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 import { api } from "@/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupSwitcherSection } from "./GroupSwitcherSection";
-import { HeaderNavigation } from "./header-navigation";
+import { HeaderNavigation } from "./HeaderNavigation";
 
 /**
  * app/(private)配下で共通で使用されるヘッダーコンポーネント

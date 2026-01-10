@@ -4,7 +4,7 @@ import { Pill } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
-import { MedicationGroupedRecordsList } from "./medication-grouped-records-list";
+import { MedicationGroupedRecordsList } from "./MedicationGroupedRecordsList";
 
 interface PrescriptionBasedRecorderProps {
   groupId: Id<"groups">;

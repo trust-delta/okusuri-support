@@ -1,5 +1,5 @@
-export { CreateGroupDialog } from "./create-group-dialog";
-export { GroupInvitationManager } from "./group-invitation-manager";
-export { GroupMembersList } from "./group-members-list";
-export { GroupSwitcher } from "./group-switcher";
-export { MemberCard } from "./member-card";
+export { CreateGroupDialog } from "./CreateGroupDialog";
+export { GroupInvitationManager } from "./GroupInvitationManager";
+export { GroupMembersList } from "./GroupMembersList";
+export { GroupSwitcher } from "./GroupSwitcher";
+export { MemberCard } from "./MemberCard";

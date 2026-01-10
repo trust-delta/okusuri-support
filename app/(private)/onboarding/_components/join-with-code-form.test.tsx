@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { JoinWithCodeForm } from "./join-with-code-form";
+import { JoinWithCodeForm } from "./JoinWithCodeForm";
 
 // next/navigation のモック
 const mockPush = vi.fn();

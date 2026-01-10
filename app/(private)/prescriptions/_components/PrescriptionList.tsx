@@ -15,7 +15,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
-import { ImageUpload } from "@/components/image-upload";
+import { ImageUpload } from "@/components/ImageUpload";
 import {
   AlertDialog,
   AlertDialogAction,

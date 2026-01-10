@@ -13,8 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PushNotificationPrompt } from "@/features/push-notifications/components/push-notification-prompt";
-import { PWAInstallButton } from "@/features/push-notifications/components/pwa-install-button";
+import { PushNotificationPrompt } from "@/features/push-notifications/components/PushNotificationPrompt";
+import { PWAInstallButton } from "@/features/push-notifications/components/PwaInstallButton";
 import { usePushNotifications } from "@/features/push-notifications/hooks/use-push-notifications";
 
 /**

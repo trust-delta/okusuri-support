@@ -7,7 +7,7 @@ import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import type { MedicationTiming } from "../types/timing";
-import { MemoEditDialog } from "./memo-edit-dialog";
+import { MemoEditDialog } from "./MemoEditDialog";
 
 interface MedicationRecordActionsProps {
   groupId: Id<"groups">;
