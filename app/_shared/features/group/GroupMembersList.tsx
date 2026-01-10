@@ -4,7 +4,7 @@ import type { FunctionReturnType } from "convex/server";
 import { Users } from "lucide-react";
 import type { api } from "@/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MemberCard } from "./member-card";
+import { MemberCard } from "./MemberCard";
 
 interface GroupMembersListProps {
   members: FunctionReturnType<typeof api.groups.getGroupMembers> | null;

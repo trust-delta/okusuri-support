@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { MemberCard } from "./member-card";
+import { MemberCard } from "../MemberCard";
 
 describe("MemberCard", () => {
   it("患者のメンバーカードが正しく表示される", () => {

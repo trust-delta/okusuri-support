@@ -9,7 +9,7 @@ describe("generateInvitationCodeAction", () => {
     const t = convexTest(schema, modules);
 
     const code = await t.action(
-      api.invitationCodeGenerator.generateInvitationCodeAction,
+      api["invitation-code-generator"].generateInvitationCodeAction,
     );
 
     expect(code).toBeDefined();
@@ -21,7 +21,7 @@ describe("generateInvitationCodeAction", () => {
     const t = convexTest(schema, modules);
 
     const code = await t.action(
-      api.invitationCodeGenerator.generateInvitationCodeAction,
+      api["invitation-code-generator"].generateInvitationCodeAction,
     );
 
     // 英数字のみを含むかチェック（a-z, A-Z, 0-9）

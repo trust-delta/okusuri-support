@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Header } from "./_components/header";
+import { Header } from "./_components/Header";
 
 /**
  * 認証済みユーザー向けのレイアウト

@@ -87,12 +87,31 @@ convex/
 ## 命名規則
 
 ### ファイル名
-| 種類 | 規則 | 例 |
-|------|------|-----|
-| コンポーネント | kebab-case | `medication-recorder.tsx` |
-| ページ | kebab-case | `page.tsx`, `layout.tsx` |
-| ユーティリティ | kebab-case | `date-fns.ts`, `utils.ts` |
-| 型定義 | kebab-case | `timing.ts` |
+
+**拡張子で種別を判別**できる命名規則を採用。Biome の `useFilenamingConvention` で自動強制。
+
+| 種別 | パターン | 例 |
+|------|----------|-----|
+| コンポーネント | **PascalCase.tsx** | `CartButton.tsx`, `MedicationRecorder.tsx` |
+| hooks | **use-kebab-case.ts** | `use-cart-items.ts`, `use-onboarding-flow.ts` |
+| ユーティリティ | **kebab-case.ts** | `format-price.ts`, `date-utils.ts` |
+| 型定義 | **types.ts** | `types.ts`（フォルダごとに1ファイル） |
+| 定数 | **constants.ts** | `constants.ts` |
+| @x/公開API | **依存先名.ts** | `checkout.ts`, `order.ts` |
+| テストファイル | **kebab-case.test.tsx** | `cart-button.test.tsx` |
+| フォルダ | **kebab-case** | `cart-summary/`, `medication-record/` |
+
+**判別ルール**:
+```
+.tsx + PascalCase → コンポーネント
+.ts + use-* → hooks
+.ts + kebab-case → ユーティリティ
+```
+
+**例外（命名規則適用外）**:
+- Next.js 規約ファイル: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`
+- 特殊ファイル: `index.ts`, `schema.ts`, `middleware.ts`, `*.config.ts`
+- **shadcn/ui コンポーネント**: `components/ui/*`（`shadcn add` で生成されるため）
 
 ### コード内の命名
 | 種類 | 規則 | 例 |

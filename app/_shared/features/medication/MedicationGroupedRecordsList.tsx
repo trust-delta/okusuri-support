@@ -15,9 +15,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
-import { MEDICATION_TIMINGS } from "../constants/timings";
-import { MedicationRecordActions } from "./medication-record-actions";
-import { TimingGroupActions } from "./timing-group-actions";
+import { MEDICATION_TIMINGS } from "./constants";
+import { MedicationRecordActions } from "./MedicationRecordActions";
+import { TimingGroupActions } from "./TimingGroupActions";
 
 /**
  * タイミング値からラベルを取得するヘルパー

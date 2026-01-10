@@ -1,4 +1,4 @@
-import type { MedicationTiming } from "../types/timing";
+import type { MedicationTiming } from "./types";
 
 export const MEDICATION_TIMINGS: ReadonlyArray<{
   value: MedicationTiming;

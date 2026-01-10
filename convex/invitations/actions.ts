@@ -29,7 +29,7 @@ export const createInvitation = action({
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       // 1. 暗号学的に安全な招待コード生成
       const code: string = await ctx.runAction(
-        api.invitationCodeGenerator.generateInvitationCodeAction,
+        api["invitation-code-generator"].generateInvitationCodeAction,
       );
 
       // 2. 招待レコード作成
