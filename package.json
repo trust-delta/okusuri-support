@@ -57,7 +57,7 @@
     "require-in-the-middle": "^8.0.1",
     "resend": "^6.1.2",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^3.3.1",
+    "tailwind-merge": "^3.4.0",
     "web-push": "^3.6.7",
     "zod": "^4.1.12"
   },
