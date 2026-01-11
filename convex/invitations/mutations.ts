@@ -1,13 +1,14 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
-import { mutation } from "../_generated/server";
+import { internalMutation } from "../_generated/server";
 import { error, type Result, success } from "../types/result";
 
 /**
  * 招待コードを生成（内部mutation）
+ * クライアントから直接呼び出し不可。actions.createInvitationから呼び出される。
  */
-export const createInvitationInternal = mutation({
+export const createInvitationInternal = internalMutation({
   args: {
     groupId: v.id("groups"),
     code: v.string(),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { AlertCircle, Pill } from "lucide-react";
+import { AlertCircle, Pill, TrendingDown } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { Id } from "@/schema";
+import { MedicineAdherenceChart } from "./charts/MedicineAdherenceChart";
 import { MedicineGroupDialog } from "./MedicineGroupDialog";
 
 interface MedicineStatsListProps {
@@ -100,15 +101,33 @@ export function MedicineStatsList({
         </Alert>
       )}
 
+      {/* 薬別服用率チャート（低い順） */}
+      {medicines.filter((m) => m.totalDoses > 0).length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingDown className="h-4 w-4" />
+              改善が必要な薬
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              服用率が低い順に表示
+            </p>
+          </CardHeader>
+          <CardContent>
+            <MedicineAdherenceChart medicines={medicines} maxItems={5} />
+          </CardContent>
+        </Card>
+      )}
+
       {/* 薬別統計 */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
             <Pill className="h-5 w-5" />
-            薬別の統計
+            薬別の詳細
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {medicines.map((medicine, index) => (
             <div
               key={`${medicine.medicineName}-${index}`}

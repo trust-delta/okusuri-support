@@ -121,8 +121,8 @@ describe("GroupSwitcher", () => {
 
     expect(screen.getByTestId("create-group-dialog")).toBeInTheDocument();
 
-    const closeButton = screen.getByText("閉じる");
-    await user.click(closeButton);
+    const cancelButton = screen.getByText("キャンセル");
+    await user.click(cancelButton);
 
     expect(screen.queryByTestId("create-group-dialog")).not.toBeInTheDocument();
   });

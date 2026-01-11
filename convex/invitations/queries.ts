@@ -4,6 +4,12 @@ import { query } from "../_generated/server";
 
 /**
  * 招待コードを検証してグループ情報を返す
+ *
+ * @security 認証不要（意図的）
+ * この関数は招待リンク（/invite/[code]）ページで使用され、
+ * ユーザーがログイン前にグループ情報を確認できるようにする。
+ * 返却する情報はグループ名、説明、メンバー数のみで機密情報を含まない。
+ * 参照: .context/specs/features/group.md - 招待コード検証
  */
 export const validateInvitationCode = query({
   args: {

@@ -11,7 +11,7 @@
 
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "../../_generated/api";
+import { api, internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
@@ -42,13 +42,10 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       // レイテンシ測定
       const startTime = performance.now();
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "PERF001",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "PERF001",
+      });
       const endTime = performance.now();
       const latency = endTime - startTime;
 
@@ -90,13 +87,10 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       // レイテンシ測定（Patient存在チェックを含む）
       const startTime = performance.now();
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "PERF002",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "PERF002",
+      });
       const endTime = performance.now();
       const latency = endTime - startTime;
 
@@ -132,13 +126,10 @@ describe("パフォーマンステスト - 招待機能", () => {
       // 10回連続で招待コードを生成
       for (let i = 0; i < 10; i++) {
         const startTime = performance.now();
-        await asUser.mutation(
-          api.invitations.mutations.createInvitationInternal,
-          {
-            groupId,
-            code: `PERF${String(i + 10).padStart(3, "0")}`,
-          },
-        );
+        await asUser.mutation(internal.invitations.createInvitationInternal, {
+          groupId,
+          code: `PERF${String(i + 10).padStart(3, "0")}`,
+        });
         const endTime = performance.now();
         latencies.push(endTime - startTime);
       }

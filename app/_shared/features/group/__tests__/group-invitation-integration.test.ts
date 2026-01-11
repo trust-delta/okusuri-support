@@ -6,7 +6,7 @@
 
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "@/api";
+import { api, internal } from "@/api";
 import schema from "../../../../../convex/schema";
 import { modules } from "../../../../../convex/test.setup";
 
@@ -321,7 +321,7 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
 
       // ユーザー2が所属していないグループの招待コードを作成しようとする
       const result = await asUser2.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId: setup.groupId,
           code: "UNAUTHORIZED",

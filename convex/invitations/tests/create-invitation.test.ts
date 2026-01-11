@@ -1,6 +1,6 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "../../_generated/api";
+import { internal } from "../../_generated/api";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
 
@@ -20,7 +20,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
       // 認証なしで招待コード生成を試行（withIdentityなし）
       const result = await t.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "TEST1234",
@@ -53,7 +53,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
       // メンバーでないグループの招待コード生成を試行
       const asNonMember = t.withIdentity({ subject: userId });
       const result = await asNonMember.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "TEST1234",
@@ -99,7 +99,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
       // 招待コードを生成
       const result = await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "TEST1234",
@@ -151,7 +151,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
       // 招待コードを生成
       const result = await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "TEST5678",
@@ -205,7 +205,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
       // 重複するコードで招待を生成
       const result = await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "DUPLICATE",
@@ -248,7 +248,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
 
       const beforeCreation = Date.now();
       const result = await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "TEST7DAYS",
@@ -299,7 +299,7 @@ describe("createInvitationInternal - 招待コード生成ロジック", () => {
       const asUser = t.withIdentity({ subject: userId });
 
       const result = await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "TESTCODE",

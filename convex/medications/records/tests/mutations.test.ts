@@ -594,24 +594,24 @@ describe("updateMedicationRecord - 服薬記録更新", () => {
     it("更新時に履歴テーブルにレコードが保存される", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId, groupId, recordId } = await t.run(async (ctx) => {
+      const { userId, _groupId, recordId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
 
-        const groupId = await ctx.db.insert("groups", {
+        const _groupId = await ctx.db.insert("groups", {
           name: "テストグループ",
           createdBy: userId,
           createdAt: Date.now(),
         });
 
         await ctx.db.insert("groupMembers", {
-          groupId,
+          groupId: _groupId,
           userId,
           role: "supporter",
           joinedAt: Date.now(),
         });
 
         const recordId = await ctx.db.insert("medicationRecords", {
-          groupId,
+          groupId: _groupId,
           patientId: userId,
           timing: "morning",
           scheduledDate: "2025-01-15",
@@ -624,7 +624,7 @@ describe("updateMedicationRecord - 服薬記録更新", () => {
           updatedAt: Date.now(),
         });
 
-        return { userId, groupId, recordId };
+        return { userId, _groupId, recordId };
       });
 
       const asUser = t.withIdentity({ subject: userId });

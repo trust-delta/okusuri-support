@@ -104,7 +104,10 @@ export function CreateGroupDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent
+        className="sm:max-w-[500px]"
+        data-testid="create-group-dialog"
+      >
         <DialogHeader>
           <DialogTitle>新しいグループを作成</DialogTitle>
           <DialogDescription>
