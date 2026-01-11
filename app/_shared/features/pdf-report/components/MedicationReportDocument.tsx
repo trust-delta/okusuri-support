@@ -7,25 +7,18 @@ import {
   View,
 } from "@react-pdf/renderer";
 
-// 日本語フォントを登録（Noto Sans JP）
+// 日本語フォントを登録（M PLUS 1 - ローカルファイル）
+// フォントファイルは public/fonts/ に配置
+// ダウンロード: node scripts/download-fonts.mjs
 Font.register({
-  family: "NotoSansJP",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/notosansjp/v53/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFJEk757Y0rw_qMHVdbR2L8Y9QTJ1LwkRmR5GprQAe-TuOjM.ttf",
-      fontWeight: 400,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/notosansjp/v53/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFJEk757Y0rw_qMHVdbR2L8Y9QTJ1LwkRmR5GprQA5unuOjM.ttf",
-      fontWeight: 700,
-    },
-  ],
+  family: "MPLUS1",
+  src: "/fonts/MPLUSRounded1c-Regular.ttf",
 });
 
 // スタイル定義
 const styles = StyleSheet.create({
   page: {
-    fontFamily: "NotoSansJP",
+    fontFamily: "MPLUS1",
     padding: 40,
     fontSize: 10,
     backgroundColor: "#ffffff",
