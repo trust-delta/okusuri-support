@@ -19,7 +19,7 @@ export function BottomNavigation({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const groupId = searchParams.get("groupId");
-  const groupIdParam = groupId ? `?groupId=${groupId}` : "";
+  const groupIdParam = groupId ? `?groupId=${encodeURIComponent(groupId)}` : "";
 
   const navItems: NavItem[] = [
     { icon: Home, label: "ホーム", href: `/dashboard${groupIdParam}` },
@@ -36,24 +36,29 @@ export function BottomNavigation({ onMenuClick }: { onMenuClick: () => void }) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden">
       <div className="flex items-center justify-around h-16">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-col items-center justify-center flex-1 h-full gap-1 text-xs transition-colors",
-              isActive(item.href)
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
-          </Link>
-        ))}
+        {navItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex flex-col items-center justify-center flex-1 h-full gap-1 text-xs transition-colors",
+                active
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
         <button
           type="button"
           onClick={onMenuClick}
+          aria-label="その他のメニューを開く"
           className="flex flex-col items-center justify-center flex-1 h-full gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <Menu className="h-5 w-5" />

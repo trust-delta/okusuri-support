@@ -32,7 +32,7 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const groupId = searchParams.get("groupId");
-  const groupIdParam = groupId ? `?groupId=${groupId}` : "";
+  const groupIdParam = groupId ? `?groupId=${encodeURIComponent(groupId)}` : "";
 
   const menuItems: MenuItem[] = [
     {
@@ -67,27 +67,29 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
           <SheetTitle>メニュー</SheetTitle>
         </SheetHeader>
         <nav className="mt-6 space-y-2">
-          {menuItems.map((item) => (
-            <SheetClose asChild key={item.href}>
-              <Link
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-4 rounded-lg px-4 py-3 transition-colors",
-                  isActive(item.href)
-                    ? "bg-primary/10 text-primary"
-                    : "hover:bg-muted",
-                )}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-sm text-muted-foreground truncate">
-                    {item.description}
+          {menuItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <SheetClose asChild key={item.href}>
+                <Link
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-4 rounded-lg px-4 py-3 transition-colors",
+                    active ? "bg-primary/10 text-primary" : "hover:bg-muted",
+                  )}
+                >
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium">{item.label}</div>
+                    <div className="text-sm text-muted-foreground truncate">
+                      {item.description}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </SheetClose>
-          ))}
+                </Link>
+              </SheetClose>
+            );
+          })}
         </nav>
       </SheetContent>
     </Sheet>
