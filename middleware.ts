@@ -7,6 +7,7 @@ import {
 const isSignInPage = createRouteMatcher(["/login"]);
 
 // (private) ルートグループ内のすべてのページを保護
+// 注: /invite/(.*)は招待コード検証のために認証不要（.context/specs/features/group.md参照）
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/onboarding(.*)",
@@ -15,7 +16,6 @@ const isProtectedRoute = createRouteMatcher([
   "/group(.*)",
   "/statistics(.*)",
   "/settings(.*)",
-  "/invite/(.*)",
 ]);
 
 export default convexAuthNextjsMiddleware(
