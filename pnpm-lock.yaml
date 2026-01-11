@@ -178,8 +178,8 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(vitest@4.0.16)
       convex-test:
-        specifier: ^0.0.38
-        version: 0.0.38(convex@1.28.0(react@19.1.0))
+        specifier: ^0.0.41
+        version: 0.0.41(convex@1.28.0(react@19.1.0))
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
@@ -2843,8 +2843,8 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  convex-test@0.0.38:
-    resolution: {integrity: sha512-1o/3GvUR9gMLjiqq7SxchI/0OYQaWwbQC4INmB1SNt1WLBjUgEM8+brgpqrZwJ+Vb1DdGZokCVeihwT5IPk49w==}
+  convex-test@0.0.41:
+    resolution: {integrity: sha512-GPHeYFOi70n7UtW0eCEQFVhzl/+m8PvbWkDCbKpHLybI1MrScf4sVpGeM0cC2qmtxiduxa2nLPbehPalhh9oyQ==}
     peerDependencies:
       convex: ^1.16.4
 
@@ -7637,7 +7637,7 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex-test@0.0.38(convex@1.28.0(react@19.1.0)):
+  convex-test@0.0.41(convex@1.28.0(react@19.1.0)):
     dependencies:
       convex: 1.28.0(react@19.1.0)
 
