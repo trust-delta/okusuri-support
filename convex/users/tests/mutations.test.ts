@@ -550,10 +550,10 @@ describe("setActiveGroup - アクティブグループ設定", () => {
     it("別のグループに切り替えできる", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId, groupId1, groupId2 } = await t.run(async (ctx) => {
+      const { userId, _groupId1, groupId2 } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
 
-        const groupId1 = await ctx.db.insert("groups", {
+        const _groupId1 = await ctx.db.insert("groups", {
           name: "グループ1",
           createdBy: userId,
           createdAt: Date.now(),
@@ -566,7 +566,7 @@ describe("setActiveGroup - アクティブグループ設定", () => {
         });
 
         await ctx.db.insert("groupMembers", {
-          groupId: groupId1,
+          groupId: _groupId1,
           userId,
           role: "supporter",
           joinedAt: Date.now(),
@@ -580,9 +580,9 @@ describe("setActiveGroup - アクティブグループ設定", () => {
         });
 
         // 最初にグループ1をアクティブに設定
-        await ctx.db.patch(userId, { activeGroupId: groupId1 });
+        await ctx.db.patch(userId, { activeGroupId: _groupId1 });
 
-        return { userId, groupId1, groupId2 };
+        return { userId, _groupId1, groupId2 };
       });
 
       const asUser = t.withIdentity({ subject: userId });

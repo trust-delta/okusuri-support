@@ -979,9 +979,9 @@ describe("leaveGroup - グループ脱退", () => {
     it("グループから脱退できる", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId, userId2, groupId } = await t.run(async (ctx) => {
+      const { userId, _userId2, groupId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
-        const userId2 = await ctx.db.insert("users", {});
+        const _userId2 = await ctx.db.insert("users", {});
         const groupId = await ctx.db.insert("groups", {
           name: "テストグループ",
           createdBy: userId,
@@ -997,12 +997,12 @@ describe("leaveGroup - グループ脱退", () => {
 
         await ctx.db.insert("groupMembers", {
           groupId,
-          userId: userId2,
+          userId: _userId2,
           role: "supporter",
           joinedAt: Date.now(),
         });
 
-        return { userId, userId2, groupId };
+        return { userId, _userId2, groupId };
       });
 
       const asUser = t.withIdentity({ subject: userId });

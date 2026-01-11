@@ -38,8 +38,6 @@ vi.mock("@/features/auth", () => ({
   ),
 }));
 
-const { toast } = await import("sonner");
-
 describe("JoinWithCodeForm", () => {
   const mockOnBack = vi.fn();
 

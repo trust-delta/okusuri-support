@@ -1,6 +1,6 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "../../_generated/api";
+import { api, internal } from "../../_generated/api";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
 
@@ -36,7 +36,7 @@ describe("招待機能 - 統合テスト", () => {
 
       // === ステップ1: メンバーAが招待コードを生成 ===
       const invitation = await asCreator.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "INTEGRATION",
@@ -150,13 +150,10 @@ describe("招待機能 - 統合テスト", () => {
       expect(invitations).toHaveLength(0);
 
       // 招待を1件作成
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "FIRST",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "FIRST",
+      });
 
       invitations = await asUser.query(
         api.invitations.queries.listGroupInvitations,
@@ -169,13 +166,10 @@ describe("招待機能 - 統合テスト", () => {
       expect(invitations[0]?.code).toBe("FIRST");
 
       // 招待を2件目作成
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "SECOND",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "SECOND",
+      });
 
       invitations = await asUser.query(
         api.invitations.queries.listGroupInvitations,
@@ -231,7 +225,7 @@ describe("招待機能 - 統合テスト", () => {
 
       // 招待を生成
       const invitation = await asSupporter.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "SUPPORTER_ONLY",

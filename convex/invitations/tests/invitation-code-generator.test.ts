@@ -33,11 +33,11 @@ describe("generateInvitationCodeAction", () => {
 
     // 複数回生成して一意性を確認
     const codes = await Promise.all([
-      t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
-      t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
-      t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
-      t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
-      t.action(api.invitationCodeGenerator.generateInvitationCodeAction),
+      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
+      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
+      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
+      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
+      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
     ]);
 
     // すべてのコードが異なることを確認（Set のサイズが配列の長さと一致）

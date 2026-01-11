@@ -1,12 +1,13 @@
 "use node";
 
 import { randomBytes } from "node:crypto";
-import { action } from "./_generated/server";
+import { internalAction } from "./_generated/server";
 
 /**
- * 暗号学的に安全な招待コードを生成するaction
+ * 暗号学的に安全な招待コードを生成する内部action
+ * クライアントから直接呼び出し不可
  */
-export const generateInvitationCodeAction = action({
+export const generateInvitationCodeAction = internalAction({
   args: {},
   handler: async () => {
     // 62進数の文字セット（a-z, A-Z, 0-9）
