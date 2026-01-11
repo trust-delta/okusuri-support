@@ -115,6 +115,8 @@ jobs:
         run: pnpm run test:e2e
         env:
           CI: true
+          # E2Eテスト用の環境変数（GitHub Secretsから取得、未設定の場合はダミー値）
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL || 'https://dummy-convex-url.convex.cloud' }}
 
       - name: Playwright レポートをアップロード
         if: always()
