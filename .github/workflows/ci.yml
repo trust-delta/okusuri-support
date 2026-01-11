@@ -112,11 +112,16 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: E2E テストを実行
+        # NEXT_PUBLIC_CONVEX_URLが設定されている場合のみ実行
+        if: ${{ secrets.NEXT_PUBLIC_CONVEX_URL != '' }}
         run: pnpm run test:e2e
         env:
           CI: true
-          # E2Eテスト用の環境変数（GitHub Secretsから取得、未設定の場合はダミー値）
-          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL || 'https://dummy-convex-url.convex.cloud' }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+
+      - name: E2E テストをスキップ（環境変数未設定）
+        if: ${{ secrets.NEXT_PUBLIC_CONVEX_URL == '' }}
+        run: echo "⚠️ NEXT_PUBLIC_CONVEX_URL が未設定のため E2E テストをスキップしました"
 
       - name: Playwright レポートをアップロード
         if: always()
