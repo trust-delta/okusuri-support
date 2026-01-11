@@ -1,6 +1,12 @@
 ---
 name: spec-assistant
-description: 新機能の仕様書を対話形式で作成、または既存仕様書を実装に合わせて更新する。プロジェクトのテンプレートに準拠し、一貫性のある仕様書を生成する。
+description: |
+  .context/specs/ の仕様書を作成・更新・検証する。機能の実装を変更した後は、このスキルで仕様書との同期を確認する。
+  <example>
+  - 「通知機能の仕様書を作成して」
+  - 「〇〇機能を実装したので仕様書を更新」
+  - 「仕様書と実装の整合性をチェック」
+  </example>
 ---
 
 # Spec Assistant
@@ -67,6 +73,18 @@ API仕様書を対話形式で作成します。
 
 ---
 
+### 6. 同期チェック
+仕様書と実装の同期状態をチェックし、不整合を検出します。
+
+**使用例**:
+- 「仕様書との整合性を確認」
+- 「ドキュメントの同期をチェック」
+- 「仕様と実装のズレを検出」
+
+**詳細**: [capabilities/sync-check.md](capabilities/sync-check.md)
+
+---
+
 ## 基本的な実行フロー
 
 ユーザーのリクエストに応じて、該当する機能のガイドを読み込んでください：
@@ -76,6 +94,7 @@ API仕様書を対話形式で作成します。
 3. **仕様を更新/同期** → `capabilities/update.md` を読み込む
 4. **仕様を検証/チェック** → `capabilities/validate.md` を読み込む
 5. **仕様を検索/探す** → `capabilities/search.md` を読み込む
+6. **同期チェック** → `capabilities/sync-check.md` を読み込む
 
 ---
 
@@ -93,9 +112,12 @@ API仕様書を対話形式で作成します。
 
 | スクリプト | 機能 | 使用コマンド |
 |----------|------|------------|
-| spec-list-recent.sh | 最新仕様書一覧 | `./.claude/skills/spec-assistant/scripts/spec-list-recent.sh 5 features` |
-| spec-list-templates.sh | テンプレート一覧 | `./.claude/skills/spec-assistant/scripts/spec-list-templates.sh feature` |
-| spec-to-kebab-case.sh | kebab-case変換 | `./.claude/skills/spec-assistant/scripts/spec-to-kebab-case.sh "通知機能"` |
-| spec-validate.sh | 仕様書検証 | `./.claude/skills/spec-assistant/scripts/spec-validate.sh <file>` |
-| spec-search-related.sh | 関連検索 | `./.claude/skills/spec-assistant/scripts/spec-search-related.sh <keywords>` |
-| spec-find-impl.sh | 実装ファイル検索 | `./.claude/skills/spec-assistant/scripts/spec-find-impl.sh <feature> 5` |
+| get-date.sh | JST日付取得 | `./.claude/skills/shared/scripts/get-date.sh [format]` |
+| spec-list-recent.ts | 最新仕様書一覧 | `tsx ./.claude/skills/spec-assistant/scripts/spec-list-recent.ts 5 features` |
+| spec-list-templates.ts | テンプレート一覧 | `tsx ./.claude/skills/spec-assistant/scripts/spec-list-templates.ts feature` |
+| spec-to-kebab-case.ts | kebab-case変換 | `tsx ./.claude/skills/spec-assistant/scripts/spec-to-kebab-case.ts "通知機能"` |
+| spec-validate.ts | 仕様書検証 | `tsx ./.claude/skills/spec-assistant/scripts/spec-validate.ts <file>` |
+| spec-search-related.ts | 関連検索 | `tsx ./.claude/skills/spec-assistant/scripts/spec-search-related.ts <keywords>` |
+| spec-find-impl.ts | 実装ファイル検索 | `tsx ./.claude/skills/spec-assistant/scripts/spec-find-impl.ts <feature> 5` |
+| find-related-specs.ts | 関連仕様書検索 | `tsx ./.claude/skills/spec-assistant/scripts/find-related-specs.ts <file>` |
+| check-sync.ts | 同期チェック | `tsx ./.claude/skills/spec-assistant/scripts/check-sync.ts` |

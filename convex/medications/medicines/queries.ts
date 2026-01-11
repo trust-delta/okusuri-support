@@ -3,6 +3,70 @@ import { ConvexError, v } from "convex/values";
 import { query } from "../../_generated/server";
 
 /**
+ * グループの薬一覧を取得
+ */
+export const getGroupMedicines = query({
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      throw new ConvexError("このグループのメンバーではありません");
+    }
+
+    // 削除されていない薬を取得
+    const medicines = await ctx.db
+      .query("medicines")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+
+    // 処方箋名とスケジュールの用量単位を付加
+    const medicinesWithDetails = await Promise.all(
+      medicines.map(async (medicine) => {
+        let prescriptionName: string | undefined;
+        let dosageUnit: string | undefined;
+
+        if (medicine.prescriptionId) {
+          const prescription = await ctx.db.get(medicine.prescriptionId);
+          prescriptionName = prescription?.name;
+        }
+
+        // スケジュールから用量単位を取得
+        const schedule = await ctx.db
+          .query("medicationSchedules")
+          .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
+          .first();
+
+        if (schedule?.dosage?.unit) {
+          dosageUnit = schedule.dosage.unit;
+        }
+
+        return {
+          ...medicine,
+          prescriptionName,
+          dosageUnit,
+        };
+      }),
+    );
+
+    return medicinesWithDetails;
+  },
+});
+
+/**
  * 薬の服薬記録件数を取得（削除確認用）
  */
 export const getMedicineRecordCount = query({

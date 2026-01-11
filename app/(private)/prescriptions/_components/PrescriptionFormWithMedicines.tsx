@@ -95,8 +95,7 @@ export function PrescriptionFormWithMedicines({
     }
 
     // 薬のバリデーション
-    for (let i = 0; i < medicines.length; i++) {
-      const med = medicines[i];
+    for (const [i, med] of medicines.entries()) {
       if (!med.name.trim()) {
         toast.error(`薬 ${i + 1} の薬名を入力してください`);
         return;
@@ -197,7 +196,7 @@ export function PrescriptionFormWithMedicines({
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               未設定の場合は継続中として扱われます
             </p>
           </div>
@@ -220,8 +219,8 @@ export function PrescriptionFormWithMedicines({
         <h3 className="text-lg font-semibold">薬リスト</h3>
 
         {medicines.length === 0 ? (
-          <div className="text-center py-8 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 border border-dashed border-border rounded-lg">
+            <p className="text-sm text-muted-foreground">
               薬が追加されていません。下部の「薬を追加」ボタンから追加してください。
             </p>
           </div>

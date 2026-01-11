@@ -54,3 +54,7 @@ next-env.d.ts
 
 # playwright mcp
 .playwright-mcp/
+
+# Sentry Config File
+.env.sentry-build-plugin
+.mcp.json

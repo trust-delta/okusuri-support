@@ -31,9 +31,9 @@ import { expect, test } from "@playwright/test";
  * ## 統合テストとの関係
  * E2Eテストは主にUIとブラウザの動作を確認し、
  * ビジネスロジックは統合テストで包括的にカバーしています：
- * - convex/invitations/__tests__/createInvitation.test.ts - 招待コード生成
- * - convex/invitations/__tests__/validateInvitation.test.ts - 招待コード検証
- * - convex/invitations/__tests__/joinGroupWithInvitation.test.ts - グループ参加
+ * - convex/invitations/tests/create-invitation.test.ts - 招待コード生成
+ * - convex/invitations/tests/validate-invitation.test.ts - 招待コード検証
+ * - convex/invitations/tests/join-group-with-invitation.test.ts - グループ参加
  * - convex/invitations/__tests__/integration.test.ts - フルフロー統合テスト
  */
 test.describe("招待機能のE2Eフロー", () => {
@@ -62,7 +62,7 @@ test.describe("招待機能のE2Eフロー", () => {
     context: _context,
   }) => {
     // NOTE: このテストは認証システムと有効な招待コードのセットアップが必要なためスキップ
-    // 代わりに convex/invitations/__tests__/joinGroupWithInvitation.test.ts で統合テストを実施
+    // 代わりに convex/invitations/tests/join-group-with-invitation.test.ts で統合テストを実施
     // TODO: Playwright Auth Setup + テストデータセットアップ実装後に有効化
     // 1. 招待コードを使用して招待ページにアクセス
     // const testInvitationCode = "TEST1234";
@@ -138,7 +138,7 @@ test.describe("招待機能のE2Eフロー", () => {
       page: _page,
     }) => {
       // NOTE: このテストは認証とPatient存在グループのセットアップが必要なためスキップ
-      // Patient制約のロジックは convex/invitations/__tests__/createInvitation.test.ts で統合テスト済み
+      // Patient制約のロジックは convex/invitations/tests/create-invitation.test.ts で統合テスト済み
       // TODO: テストデータセットアップ実装後に有効化
       // Patient存在グループで招待を生成
       // await page.goto("/settings/group");
@@ -156,7 +156,7 @@ test.describe("招待機能のE2Eフロー", () => {
       page: _page,
     }) => {
       // NOTE: このテストは認証とPatient不在グループのセットアップが必要なためスキップ
-      // Patient制約のロジックは convex/invitations/__tests__/createInvitation.test.ts で統合テスト済み
+      // Patient制約のロジックは convex/invitations/tests/create-invitation.test.ts で統合テスト済み
       // TODO: テストデータセットアップ実装後に有効化
       // Patient不在グループで招待を生成
       // await page.goto("/settings/group");
@@ -199,7 +199,7 @@ test.describe("招待機能のE2Eフロー", () => {
       page: _page,
     }) => {
       // NOTE: このテストは認証と既参加グループのセットアップが必要なためスキップ
-      // 重複参加のエラーハンドリングは convex/invitations/__tests__/joinGroupWithInvitation.test.ts で統合テスト済み
+      // 重複参加のエラーハンドリングは convex/invitations/tests/join-group-with-invitation.test.ts で統合テスト済み
       // TODO: 認証セットアップ + テストデータ準備後に有効化
       // 既に参加しているグループの招待コードでアクセス
       // await page.goto("/invite/ALREADY_JOINED");
@@ -215,7 +215,7 @@ test.describe("招待機能のE2Eフロー", () => {
       page: _page,
     }) => {
       // NOTE: このテストは認証とPatient存在グループのセットアップが必要なためスキップ
-      // Patient重複のエラーハンドリングは convex/invitations/__tests__/joinGroupWithInvitation.test.ts で統合テスト済み
+      // Patient重複のエラーハンドリングは convex/invitations/tests/join-group-with-invitation.test.ts で統合テスト済み
       // TODO: 認証セットアップ + テストデータ準備後に有効化
       // 招待ページにアクセス
       // await page.goto("/invite/PATIENT_EXISTS");

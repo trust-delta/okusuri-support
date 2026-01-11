@@ -122,7 +122,7 @@ export function EditGroupDialog({
                 maxLength={500}
                 rows={4}
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 {description.length}/500文字
               </p>
             </div>

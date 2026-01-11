@@ -117,7 +117,10 @@ export function generateDateRange(
     current <= end;
     current.setDate(current.getDate() + 1)
   ) {
-    dates.push(current.toISOString().split("T")[0]);
+    const datePart = current.toISOString().split("T")[0];
+    if (datePart) {
+      dates.push(datePart);
+    }
   }
 
   return dates;

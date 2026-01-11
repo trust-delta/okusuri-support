@@ -6,6 +6,7 @@ import { error, type Result, success } from "../../types/result";
 
 /**
  * 服薬記録を作成（簡易記録・処方箋ベース両対応）
+ * 在庫追跡が有効な場合、消費記録も自動生成
  */
 export const recordSimpleMedication = mutation({
   args: {
@@ -73,6 +74,115 @@ export const recordSimpleMedication = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    // 在庫追跡: 服用済みの場合のみ消費記録を作成
+    const medicineId = args.medicineId;
+    if (args.status === "taken" && medicineId) {
+      const inventory = await ctx.db
+        .query("medicineInventory")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicineId))
+        .first();
+
+      if (inventory?.isTrackingEnabled) {
+        // スケジュールから用量を取得
+        let consumeAmount = 1; // デフォルト1単位
+        if (args.scheduleId) {
+          const schedule = await ctx.db.get(args.scheduleId);
+          if (schedule?.dosage?.amount) {
+            consumeAmount = schedule.dosage.amount;
+          }
+        }
+
+        const newQuantity = Math.max(
+          0,
+          inventory.currentQuantity - consumeAmount,
+        );
+
+        // 消費記録を作成
+        await ctx.db.insert("medicineConsumptionRecords", {
+          medicineId,
+          inventoryId: inventory._id,
+          groupId: args.groupId,
+          patientId,
+          consumptionType: "scheduled",
+          quantity: consumeAmount,
+          quantityBefore: inventory.currentQuantity,
+          quantityAfter: newQuantity,
+          relatedRecordId: recordId,
+          recordedBy: userId,
+          recordedAt: now,
+          createdAt: now,
+        });
+
+        // 在庫を更新
+        await ctx.db.patch(inventory._id, {
+          currentQuantity: newQuantity,
+          updatedAt: now,
+        });
+
+        // 残量警告チェック
+        const medicine = await ctx.db.get(medicineId);
+        const medicineName = medicine?.name ?? "不明な薬";
+
+        // 在庫切れチェック（処方箋継続中の場合は重大なアラート）
+        if (newQuantity === 0 && inventory.currentQuantity > 0) {
+          // 処方箋が有効かどうか確認
+          let isPrescriptionActive = false;
+          if (medicine?.prescriptionId) {
+            const prescription = await ctx.db.get(medicine.prescriptionId);
+            if (prescription && !prescription.deletedAt) {
+              const today = new Date().toISOString().split("T")[0] ?? "";
+              // 処方箋が有効: isActive=true かつ (終了日なし または 終了日が今日以降)
+              isPrescriptionActive =
+                prescription.isActive &&
+                (!prescription.endDate || prescription.endDate >= today);
+            }
+          }
+
+          if (isPrescriptionActive) {
+            // 処方箋継続中の在庫切れは重大
+            await ctx.db.insert("inventoryAlerts", {
+              inventoryId: inventory._id,
+              groupId: args.groupId,
+              alertType: "out_of_stock",
+              severity: "critical",
+              message: `${medicineName}が在庫切れです。処方箋は継続中のため、補充が必要です`,
+              medicineName,
+              isRead: false,
+              createdAt: now,
+            });
+          } else {
+            // 処方箋なしまたは終了の在庫切れ
+            await ctx.db.insert("inventoryAlerts", {
+              inventoryId: inventory._id,
+              groupId: args.groupId,
+              alertType: "low_stock",
+              severity: "critical",
+              message: `${medicineName}の残量が0${inventory.unit}になりました`,
+              medicineName,
+              isRead: false,
+              createdAt: now,
+            });
+          }
+        } else if (
+          inventory.warningThreshold !== undefined &&
+          newQuantity <= inventory.warningThreshold &&
+          inventory.currentQuantity > inventory.warningThreshold
+        ) {
+          // 警告閾値を下回った場合のみアラート
+          await ctx.db.insert("inventoryAlerts", {
+            inventoryId: inventory._id,
+            groupId: args.groupId,
+            alertType: "low_stock",
+            severity: "warning",
+            message: `${medicineName}の残量が${newQuantity}${inventory.unit}になりました`,
+            medicineName,
+            isRead: false,
+            createdAt: now,
+          });
+        }
+      }
+    }
 
     return success(recordId);
   },

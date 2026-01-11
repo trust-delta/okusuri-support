@@ -98,10 +98,10 @@ export function DangerZoneCard({ preloadedGroupDetails }: Props) {
           {!groupDetails.isLastMember && (
             <div className="flex items-center justify-between p-4 rounded-lg border border-red-200 dark:border-red-900">
               <div>
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                <h3 className="font-medium text-foreground">
                   グループから脱退
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   このグループから脱退します。再度招待されることで、以前のデータを保持したまま再参加できます。
                 </p>
               </div>
@@ -119,10 +119,8 @@ export function DangerZoneCard({ preloadedGroupDetails }: Props) {
           {groupDetails.isLastMember && (
             <div className="flex items-center justify-between p-4 rounded-lg border border-red-200 dark:border-red-900">
               <div>
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                  グループを削除
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <h3 className="font-medium text-foreground">グループを削除</h3>
+                <p className="text-sm text-muted-foreground mt-1">
                   このグループに関連する全てのデータ（処方箋、服薬記録など）が削除されます。この操作は元に戻すことができません。
                 </p>
               </div>

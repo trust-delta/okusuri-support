@@ -74,8 +74,14 @@ export const updateUserImage = mutation({
  * 画像アップロード用のURLを生成
  */
 export const generateUploadUrl = mutation({
-  handler: async (ctx) => {
-    return await ctx.storage.generateUploadUrl();
+  handler: async (ctx): Promise<Result<string>> => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+
+    const url = await ctx.storage.generateUploadUrl();
+    return success(url);
   },
 });
 
@@ -118,11 +124,16 @@ export const setActiveGroup = mutation({
       return error("認証が必要です");
     }
 
-    // メンバーシップ確認
+    // メンバーシップ確認（脱退済みを除く）
     const membership = await ctx.db
       .query("groupMembers")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("groupId"), args.groupId),
+          q.eq(q.field("leftAt"), undefined),
+        ),
+      )
       .first();
 
     if (!membership) {

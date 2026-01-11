@@ -129,7 +129,7 @@ export function PrescriptionForm({
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-muted-foreground">
             未設定の場合は継続中として扱われます
           </p>
         </div>

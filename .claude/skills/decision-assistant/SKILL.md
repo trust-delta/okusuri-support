@@ -1,6 +1,6 @@
 ---
 name: decision-assistant
-description: 技術的意思決定や重要な判断を構造化して記録する。背景・理由・代替案を整理し、将来の参照価値が高い決定記録を生成する。
+description: 技術的意思決定を構造化して記録する。重要な設計判断、技術選定、アーキテクチャ決定を記録する際に使用する。
 ---
 
 # Decision Assistant
@@ -78,7 +78,7 @@ description: 技術的意思決定や重要な判断を構造化して記録す�
 
 | スクリプト | 機能 | 使用コマンド |
 |----------|------|------------|
-| get-date.sh | JST日付取得 | `./scripts/get-date.sh` |
+| get-date.sh | JST日付取得 | `./.claude/skills/shared/scripts/get-date.sh` |
 | search-decisions.ts | キーワード検索 | `tsx scripts/search-decisions.ts <keywords>` |
 | find-related.ts | 関連決定検索 | `tsx scripts/find-related.ts <keywords>` |
 | find-conflicts.ts | 競合検出 | `tsx scripts/find-conflicts.ts <keywords>` |

@@ -5,7 +5,18 @@ import {
 } from "@convex-dev/auth/nextjs/server";
 
 const isSignInPage = createRouteMatcher(["/login"]);
-const isProtectedRoute = createRouteMatcher(["/dashboard", "/onboarding"]);
+
+// (private) ルートグループ内のすべてのページを保護
+// 注: /invite/(.*)は招待コード検証のために認証不要（.context/specs/features/group.md参照）
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/onboarding(.*)",
+  "/prescriptions(.*)",
+  "/history(.*)",
+  "/group(.*)",
+  "/statistics(.*)",
+  "/settings(.*)",
+]);
 
 export default convexAuthNextjsMiddleware(
   async (request, { convexAuth }) => {

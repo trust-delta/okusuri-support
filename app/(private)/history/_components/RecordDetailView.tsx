@@ -59,7 +59,7 @@ export function RecordDetailView({
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-12 text-muted-foreground">
             <p>検索・フィルターから日付範囲を選択してください</p>
           </div>
         </CardContent>
@@ -119,10 +119,10 @@ function DayRecordSection({
         showEditableBadge={isEditable}
         title={
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-semibold text-foreground">
               {formatJST(date, "M月d日(E)")}の記録
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               {isEditable
                 ? "記録の編集・追加ができます"
                 : "この日の記録は閲覧のみです"}
@@ -149,7 +149,7 @@ function FilteredRecordsView({
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-12 text-muted-foreground">
             <p>条件に一致する記録がありません</p>
           </div>
         </CardContent>
@@ -183,7 +183,7 @@ function FilteredRecordsView({
       <CardHeader>
         <CardTitle>
           検索結果{" "}
-          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+          <span className="text-sm font-normal text-muted-foreground">
             ({records.length}件)
           </span>
         </CardTitle>

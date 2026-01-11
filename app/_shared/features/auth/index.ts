@@ -1,11 +1,9 @@
 // Components
-export {
-  AuthPageLayout,
-  OAuthSignIn,
-  PasswordReset,
-  PasswordSignIn,
-  SignOutButton,
-} from "./components";
+export { AuthPageLayout } from "./AuthPageLayout";
+export { OAuthSignIn } from "./OauthSignIn";
+export { PasswordReset } from "./PasswordReset";
+export { PasswordSignIn } from "./PasswordSignIn";
+export { SignOutButton } from "./SignOutButton";
 
 // Hooks
-export { useRedirectAfterAuth } from "./hooks";
+export { useRedirectAfterAuth } from "./use-redirect-after-auth";

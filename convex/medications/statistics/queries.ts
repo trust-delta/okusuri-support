@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
 import {
@@ -27,6 +28,61 @@ export const getMedicationStatsByPeriod = query({
     endDate: v.string(), // YYYY-MM-DD
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return {
+        medicines: [],
+        summary: {
+          totalMedicines: 0,
+          totalDoses: 0,
+          totalTaken: 0,
+          totalSkipped: 0,
+          totalPending: 0,
+          overallAdherenceRate: 0,
+        },
+        timingStats: {},
+        asNeeded: { taken: 0, skipped: 0, pending: 0, total: 0 },
+        period: {
+          startDate: args.startDate,
+          endDate: args.endDate,
+          days: 0,
+        },
+      };
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("groupId"), args.groupId),
+          q.eq(q.field("leftAt"), undefined),
+        ),
+      )
+      .first();
+
+    if (!membership) {
+      return {
+        medicines: [],
+        summary: {
+          totalMedicines: 0,
+          totalDoses: 0,
+          totalTaken: 0,
+          totalSkipped: 0,
+          totalPending: 0,
+          overallAdherenceRate: 0,
+        },
+        timingStats: {},
+        asNeeded: { taken: 0, skipped: 0, pending: 0, total: 0 },
+        period: {
+          startDate: args.startDate,
+          endDate: args.endDate,
+          days: 0,
+        },
+      };
+    }
+
     // 期間内の全日付を生成
     const dates = generateDateRange(args.startDate, args.endDate);
 
@@ -145,12 +201,15 @@ export const getMedicationStatsByPeriod = query({
           const regularTimings = schedule.timings.filter(
             (t) => t !== "asNeeded",
           );
-          medicineStatsMap[medicine.name].totalDoses += regularTimings.length;
+          const medicineStats = medicineStatsMap[medicine.name];
+          if (medicineStats) {
+            medicineStats.totalDoses += regularTimings.length;
 
-          // 用量がある場合は合計用量を計算
-          if (schedule.dosage) {
-            medicineStatsMap[medicine.name].totalAmount +=
-              schedule.dosage.amount * regularTimings.length;
+            // 用量がある場合は合計用量を計算
+            if (schedule.dosage) {
+              medicineStats.totalAmount +=
+                schedule.dosage.amount * regularTimings.length;
+            }
           }
 
           // タイミング別の期待値を加算（頓服を除く）
@@ -250,18 +309,23 @@ export const getMedicationStatsByPeriod = query({
       }
 
       // ステータスに応じてカウント
-      if (record.status === "taken") {
-        medicineStatsMap[medicine.name].takenCount++;
-      } else if (record.status === "skipped") {
-        medicineStatsMap[medicine.name].skippedCount++;
-      } else if (record.status === "pending") {
-        medicineStatsMap[medicine.name].pendingCount++;
+      const stats = medicineStatsMap[medicine.name];
+      if (stats) {
+        if (record.status === "taken") {
+          stats.takenCount++;
+        } else if (record.status === "skipped") {
+          stats.skippedCount++;
+        } else if (record.status === "pending") {
+          stats.pendingCount++;
+        }
       }
     }
 
     // 各薬の服用率を計算
     for (const medicineName of Object.keys(medicineStatsMap)) {
       const stats = medicineStatsMap[medicineName];
+      if (!stats) continue;
+
       const actualRecords =
         stats.takenCount + stats.skippedCount + stats.pendingCount;
 
@@ -279,6 +343,8 @@ export const getMedicationStatsByPeriod = query({
     // タイミング別統計の服用率を計算
     for (const timing of Object.keys(timingStatsMap)) {
       const stats = timingStatsMap[timing];
+      if (!stats) continue;
+
       const actualRecords = stats.taken + stats.skipped + stats.pending;
 
       // 未記録分をpendingに追加

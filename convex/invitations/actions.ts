@@ -1,11 +1,13 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { api } from "../_generated/api";
+import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { action } from "../_generated/server";
 import { error, type Result } from "../types/result";
 
 /**
  * 招待コードを生成
+ * 認証済みユーザーのみ呼び出し可能
  */
 export const createInvitation = action({
   args: {
@@ -23,18 +25,24 @@ export const createInvitation = action({
       invitationLink: string;
     }>
   > => {
+    // 0. 認証チェック（早期に失敗させてリソース節約）
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+
     // 最大3回試行
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      // 1. 暗号学的に安全な招待コード生成
+      // 1. 暗号学的に安全な招待コード生成（内部アクション）
       const code: string = await ctx.runAction(
-        api.invitationCodeGenerator.generateInvitationCodeAction,
+        internal.invitation_code_generator.generateInvitationCodeAction,
       );
 
-      // 2. 招待レコード作成
+      // 2. 招待レコード作成（内部mutation）
       const result = await ctx.runMutation(
-        api.invitations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId: args.groupId,
           code,

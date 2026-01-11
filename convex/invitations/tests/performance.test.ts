@@ -11,14 +11,15 @@
 
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "../../_generated/api";
+import { api, internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import schema from "../../schema";
+import { modules } from "../../test.setup";
 
 describe("パフォーマンステスト - 招待機能", () => {
   describe("Task 17.1: 招待コード生成のレイテンシ測定", () => {
     it("Patient不在グループでの招待コード生成が500ms以内で完了", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループとメンバーを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -41,13 +42,10 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       // レイテンシ測定
       const startTime = performance.now();
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "PERF001",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "PERF001",
+      });
       const endTime = performance.now();
       const latency = endTime - startTime;
 
@@ -59,7 +57,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("Patient存在グループでの招待コード生成が500ms以内で完了", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: Patient存在グループを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -89,13 +87,10 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       // レイテンシ測定（Patient存在チェックを含む）
       const startTime = performance.now();
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "PERF002",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "PERF002",
+      });
       const endTime = performance.now();
       const latency = endTime - startTime;
 
@@ -107,7 +102,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("複数回の招待コード生成で一貫したパフォーマンスを維持", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       const { userId, groupId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
@@ -131,13 +126,10 @@ describe("パフォーマンステスト - 招待機能", () => {
       // 10回連続で招待コードを生成
       for (let i = 0; i < 10; i++) {
         const startTime = performance.now();
-        await asUser.mutation(
-          api.invitations.mutations.createInvitationInternal,
-          {
-            groupId,
-            code: `PERF${String(i + 10).padStart(3, "0")}`,
-          },
-        );
+        await asUser.mutation(internal.invitations.createInvitationInternal, {
+          groupId,
+          code: `PERF${String(i + 10).padStart(3, "0")}`,
+        });
         const endTime = performance.now();
         latencies.push(endTime - startTime);
       }
@@ -158,7 +150,7 @@ describe("パフォーマンステスト - 招待機能", () => {
 
   describe("Task 17.2: 大量招待の一覧表示パフォーマンス確認", () => {
     it("100件の招待レコードの一覧取得が2秒以内で完了", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: 100件の招待レコードを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -214,7 +206,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("有効な招待のみフィルタリングした一覧取得が高速", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: 100件の招待レコード（半分は期限切れ）
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -284,7 +276,7 @@ describe("パフォーマンステスト - 招待機能", () => {
 
   describe("Task 17.3: 並行参加処理の負荷テスト", () => {
     it("10人が同時に異なる招待コードで参加できる", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループと10件の招待コードを作成
       const setup = await t.run(async (ctx) => {
@@ -335,8 +327,12 @@ describe("パフォーマンステスト - 招待機能", () => {
 
       const joinPromises = setup.newUserIds.map(async (userId, index) => {
         const asUser = t.withIdentity({ subject: userId });
+        const invitationCode = setup.invitationCodes[index];
+        if (!invitationCode) {
+          throw new Error(`Invitation code not found for index ${index}`);
+        }
         return asUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
-          invitationCode: setup.invitationCodes[index],
+          invitationCode,
           role: "supporter",
           displayName: `ユーザー${index + 1}`,
         });
@@ -366,7 +362,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("同一招待コードへの並行アクセスは1人のみ成功する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: グループと1件の招待コードを作成
       const setup = await t.run(async (ctx) => {
@@ -456,7 +452,7 @@ describe("パフォーマンステスト - 招待機能", () => {
     });
 
     it("Patient枠への競合アクセスは1人のみ成功する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // セットアップ: Patient不在グループと招待コードを作成
       const setup = await t.run(async (ctx) => {
@@ -502,11 +498,15 @@ describe("パフォーマンステスト - 招待機能", () => {
       // 5人が同時にPatientロールで参加を試みる（異なる招待コード使用）
       const joinPromises = setup.newUserIds.map(async (userId, index) => {
         const asUser = t.withIdentity({ subject: userId });
+        const invitationCode = setup.invitationCodes[index];
+        if (!invitationCode) {
+          throw new Error(`Invitation code not found for index ${index}`);
+        }
         try {
           const result = await asUser.mutation(
             api.groups.mutations.joinGroupWithInvitation,
             {
-              invitationCode: setup.invitationCodes[index],
+              invitationCode,
               role: "patient",
               displayName: `Patient候補${index + 1}`,
             },

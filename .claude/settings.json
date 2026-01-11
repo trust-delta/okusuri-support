@@ -1,15 +1,6 @@
 {
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "作成・編集したファイルと仕様書の整合性を確認してください。"
-          }
-        ]
-      }
-    ]
+  "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
   }
 }

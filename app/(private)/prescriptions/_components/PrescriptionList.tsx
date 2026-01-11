@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  ImageIcon,
   Pause,
   Pill,
   Play,
@@ -14,6 +15,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
+import { ImageUpload } from "@/components/ImageUpload";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +77,12 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
   );
   const duplicatePrescription = useMutation(
     api.medications.prescriptions.mutations.duplicatePrescription,
+  );
+  const attachImage = useMutation(
+    api.storage.mutations.attachImageToPrescription,
+  );
+  const removeImage = useMutation(
+    api.storage.mutations.removeImageFromPrescription,
   );
 
   const [endDateDialogPrescriptionId, setEndDateDialogPrescriptionId] =
@@ -242,7 +250,7 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
   }
 
   // フィルタ適用
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0] ?? "";
   const filteredPrescriptions = prescriptions.filter(
     (prescription: (typeof prescriptions)[number]) => {
       const isExpired = prescription.endDate && prescription.endDate < today;
@@ -263,8 +271,8 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
       {filteredPrescriptions.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Pill className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">
+            <Pill className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">
               {prescriptions.length === 0
                 ? "処方箋が登録されていません"
                 : "該当する処方箋がありません"}
@@ -403,14 +411,36 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                   {(prescription.notes || isExpanded) && (
                     <CardContent className="space-y-4">
                       {prescription.notes && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                           {prescription.notes}
                         </p>
                       )}
                       {isExpanded && (
-                        <PrescriptionMedicinesList
-                          prescriptionId={prescription._id}
-                        />
+                        <>
+                          <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              処方箋画像
+                            </Label>
+                            <ImageUpload
+                              imageUrl={prescription.imageUrl}
+                              onImageUploaded={async (storageId) => {
+                                await attachImage({
+                                  prescriptionId: prescription._id,
+                                  storageId: storageId as Id<"_storage">,
+                                });
+                              }}
+                              onImageRemoved={async () => {
+                                await removeImage({
+                                  prescriptionId: prescription._id,
+                                });
+                              }}
+                            />
+                          </div>
+                          <PrescriptionMedicinesList
+                            prescriptionId={prescription._id}
+                          />
+                        </>
                       )}
                     </CardContent>
                   )}
@@ -558,7 +588,7 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
                 value={duplicateEndDate}
                 onChange={(e) => setDuplicateEndDate(e.target.value)}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 未設定の場合は継続中として扱われます
               </p>
             </div>

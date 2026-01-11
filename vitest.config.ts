@@ -38,6 +38,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./app/_shared"),
       "@convex": path.resolve(__dirname, "./convex"),
+      "convex/_generated": path.resolve(__dirname, "./convex/_generated"),
     },
   },
 });

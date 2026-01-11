@@ -79,7 +79,7 @@ export function InviteSection({ groupId }: Props) {
             </AccordionTrigger>
             <AccordionContent>
               {activeInvitations.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 py-4">
+                <p className="text-sm text-muted-foreground py-4">
                   アクティブな招待はありません
                 </p>
               ) : (
@@ -88,19 +88,19 @@ export function InviteSection({ groupId }: Props) {
                     (invitation: (typeof activeInvitations)[number]) => (
                       <div
                         key={invitation._id}
-                        className="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                        className="rounded-lg border border-border p-4"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <code className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                              <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
                                 {invitation.code}
                               </code>
                               {isExpired(invitation.expiresAt) && (
                                 <Badge variant="destructive">期限切れ</Badge>
                               )}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                            <div className="text-sm text-muted-foreground space-y-1">
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
                                 <span>
@@ -164,7 +164,7 @@ export function InviteSection({ groupId }: Props) {
             </AccordionTrigger>
             <AccordionContent>
               {usedInvitations.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 py-4">
+                <p className="text-sm text-muted-foreground py-4">
                   使用済みの招待はありません
                 </p>
               ) : (
@@ -173,17 +173,17 @@ export function InviteSection({ groupId }: Props) {
                     (invitation: (typeof usedInvitations)[number]) => (
                       <div
                         key={invitation._id}
-                        className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 opacity-60"
+                        className="rounded-lg border border-border p-4 opacity-60"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <code className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                              <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
                                 {invitation.code}
                               </code>
                               <Badge variant="secondary">使用済み</Badge>
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-sm text-muted-foreground">
                               使用日時:{" "}
                               {invitation.usedAt
                                 ? format(new Date(invitation.usedAt), "PPP p", {

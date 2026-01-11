@@ -37,7 +37,20 @@ export const getPrescriptions = query({
     // startDateで降順ソート（新しい順）
     prescriptions.sort((a, b) => b.startDate.localeCompare(a.startDate));
 
-    return prescriptions;
+    // 各処方箋の画像URLを取得
+    const prescriptionsWithImageUrl = await Promise.all(
+      prescriptions.map(async (prescription) => {
+        const imageUrl = prescription.imageId
+          ? await ctx.storage.getUrl(prescription.imageId)
+          : null;
+        return {
+          ...prescription,
+          imageUrl,
+        };
+      }),
+    );
+
+    return prescriptionsWithImageUrl;
   },
 });
 

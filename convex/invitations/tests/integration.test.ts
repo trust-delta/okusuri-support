@@ -1,12 +1,13 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "../../_generated/api";
+import { api, internal } from "../../_generated/api";
 import schema from "../../schema";
+import { modules } from "../../test.setup";
 
 describe("招待機能 - 統合テスト", () => {
   describe("招待コード生成から参加までのエンドツーエンドフロー", () => {
     it("グループメンバーAが招待コードを生成し、ユーザーBが参加できる", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // === セットアップ: グループとメンバーAを作成 ===
       const { creatorId, groupId } = await t.run(async (ctx) => {
@@ -35,7 +36,7 @@ describe("招待機能 - 統合テスト", () => {
 
       // === ステップ1: メンバーAが招待コードを生成 ===
       const invitation = await asCreator.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "INTEGRATION",
@@ -114,7 +115,7 @@ describe("招待機能 - 統合テスト", () => {
     });
 
     it("招待一覧にリアルタイムで新しい招待が表示される", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // グループとメンバーを作成
       const { userId, groupId } = await t.run(async (ctx) => {
@@ -149,13 +150,10 @@ describe("招待機能 - 統合テスト", () => {
       expect(invitations).toHaveLength(0);
 
       // 招待を1件作成
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "FIRST",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "FIRST",
+      });
 
       invitations = await asUser.query(
         api.invitations.queries.listGroupInvitations,
@@ -165,16 +163,13 @@ describe("招待機能 - 統合テスト", () => {
       );
 
       expect(invitations).toHaveLength(1);
-      expect(invitations[0].code).toBe("FIRST");
+      expect(invitations[0]?.code).toBe("FIRST");
 
       // 招待を2件目作成
-      await asUser.mutation(
-        api.invitations.mutations.createInvitationInternal,
-        {
-          groupId,
-          code: "SECOND",
-        },
-      );
+      await asUser.mutation(internal.invitations.createInvitationInternal, {
+        groupId,
+        code: "SECOND",
+      });
 
       invitations = await asUser.query(
         api.invitations.queries.listGroupInvitations,
@@ -195,7 +190,7 @@ describe("招待機能 - 統合テスト", () => {
 
   describe("Patient制約の統合テスト", () => {
     it("Patient存在グループでの招待生成はSupporterのみ許可する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // Patient存在グループを作成
       const { supporterId, groupId } = await t.run(async (ctx) => {
@@ -230,7 +225,7 @@ describe("招待機能 - 統合テスト", () => {
 
       // 招待を生成
       const invitation = await asSupporter.mutation(
-        api.invitations.mutations.createInvitationInternal,
+        internal.invitations.createInvitationInternal,
         {
           groupId,
           code: "SUPPORTER_ONLY",
@@ -258,7 +253,7 @@ describe("招待機能 - 統合テスト", () => {
     });
 
     it("Patientロール選択時に既存Patientがいる場合はエラーを返す", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // Patient存在グループと招待を作成
       await t.run(async (ctx) => {
@@ -306,17 +301,24 @@ describe("招待機能 - 統合テスト", () => {
 
       const asNewUser = t.withIdentity({ subject: newUserId });
 
-      await expect(
-        asNewUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const result = await asNewUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "BOTH_ROLES",
           role: "patient",
           displayName: "新規ユーザー",
-        }),
-      ).rejects.toThrow("このグループには既に患者が登録されています");
+        },
+      );
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe(
+          "このグループには既に患者が登録されています",
+        );
+      }
     });
 
     it("Supporterロール選択時は既存Patientの有無に関わらず参加できる", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // Patient存在グループと招待を作成
       const { groupId } = await t.run(async (ctx) => {
@@ -394,7 +396,7 @@ describe("招待機能 - 統合テスト", () => {
 
   describe("有効期限切れ招待の処理テスト", () => {
     it("有効期限切れの招待コードでは参加できない", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // 有効期限切れの招待を作成
       await t.run(async (ctx) => {
@@ -440,17 +442,22 @@ describe("招待機能 - 統合テスト", () => {
 
       const asUser = t.withIdentity({ subject: userId });
 
-      await expect(
-        asUser.mutation(api.groups.mutations.joinGroupWithInvitation, {
+      const joinResult = await asUser.mutation(
+        api.groups.mutations.joinGroupWithInvitation,
+        {
           invitationCode: "EXPIRED",
           role: "supporter",
           displayName: "テストユーザー",
-        }),
-      ).rejects.toThrow("招待コードが無効です");
+        },
+      );
+      expect(joinResult.isSuccess).toBe(false);
+      if (!joinResult.isSuccess) {
+        expect(joinResult.errorMessage).toBe("招待コードが無効です");
+      }
     });
 
     it("有効期限内の招待コードは正常に機能する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // 有効期限内の招待を作成
       const { groupId } = await t.run(async (ctx) => {
@@ -519,7 +526,7 @@ describe("招待機能 - 統合テスト", () => {
 
   describe("並行招待使用の競合処理テスト", () => {
     it("同一招待コードを2人が同時に使用した場合、1人目のみ成功する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // グループと招待を作成
       const { groupId } = await t.run(async (ctx) => {
@@ -608,7 +615,7 @@ describe("招待機能 - 統合テスト", () => {
     });
 
     it("異なる招待コードを使用した並行参加は両方成功する", async () => {
-      const t = convexTest(schema);
+      const t = convexTest(schema, modules);
 
       // グループと2つの招待を作成
       const { groupId } = await t.run(async (ctx) => {

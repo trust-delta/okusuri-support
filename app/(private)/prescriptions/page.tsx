@@ -33,9 +33,9 @@ export default function PrescriptionsPage() {
 
   if (!activeGroupId) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-4xl mx-auto">
-          <p className="text-center text-gray-500 dark:text-gray-400">
+          <p className="text-center text-muted-foreground">
             グループ情報を読み込んでいます...
           </p>
         </div>
@@ -44,13 +44,13 @@ export default function PrescriptionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* タイトルと説明 */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold">処方箋管理</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               処方箋を登録して、薬の有効期間を管理できます
             </p>
           </div>

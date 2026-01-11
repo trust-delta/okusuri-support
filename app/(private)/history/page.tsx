@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
 import {
   type FilterState,
+  MemoExportButton,
+  MonthlyStatsCard,
   RecordDetailView,
   RecordFilters,
 } from "./_components";
@@ -23,6 +25,7 @@ export default function HistoryPage() {
     timing: "all",
     dateRange: { from: oneWeekAgo, to: today }, // デフォルトで過去1週間を選択
     sortOrder: "desc", // デフォルトで新しい順
+    memoOnly: false, // メモ付きのみフィルター
   });
   const searchParams = useSearchParams();
 
@@ -50,7 +53,8 @@ export default function HistoryPage() {
   const hasActiveFilter =
     filters.searchQuery !== "" ||
     filters.status !== "all" ||
-    filters.timing !== "all";
+    filters.timing !== "all" ||
+    filters.memoOnly;
 
   const filteredRecords = monthlyRecords?.filter(
     (record: (typeof monthlyRecords)[number]) => {
@@ -73,6 +77,11 @@ export default function HistoryPage() {
         return false;
       }
 
+      // メモ付きのみフィルター
+      if (filters.memoOnly && !record.notes) {
+        return false;
+      }
+
       return true;
     },
   );
@@ -80,10 +89,10 @@ export default function HistoryPage() {
   // ローディング中
   if (groupStatus === undefined) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+            <p className="text-muted-foreground">読み込み中...</p>
           </div>
         </div>
       </div>
@@ -93,13 +102,11 @@ export default function HistoryPage() {
   // グループに参加していない
   if (!groupStatus?.hasGroup || !activeGroupId) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-gray-900 dark:text-gray-100 mb-4">
-                グループに参加していません
-              </p>
+              <p className="text-foreground mb-4">グループに参加していません</p>
               <Link href="/onboarding">
                 <Button>グループを作成</Button>
               </Link>
@@ -111,17 +118,30 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* ヘッダー */}
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          記録履歴
-        </h1>
+        <h1 className="text-3xl font-bold text-foreground">記録履歴</h1>
+
+        {/* 月別統計カード */}
+        <MonthlyStatsCard
+          groupId={activeGroupId}
+          year={today.getFullYear()}
+          month={today.getMonth() + 1}
+        />
 
         {/* 1カラムレイアウト */}
         <div className="space-y-6">
           {/* 検索・フィルター */}
           <RecordFilters filters={filters} onFiltersChange={setFilters} />
+
+          {/* メモエクスポートボタン */}
+          <div className="flex justify-end">
+            <MemoExportButton
+              records={filteredRecords}
+              dateRange={filters.dateRange}
+            />
+          </div>
 
           {/* 記録詳細 */}
           <RecordDetailView

@@ -3,11 +3,13 @@
 import { useQuery } from "convex/react";
 import { BarChart3 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/api";
 import { Card, CardContent } from "@/components/ui/card";
+import { PdfDownloadButton, type ReportData } from "@/features/pdf-report";
 import { formatJST, nowJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
+import { AdherenceDonutChart } from "./_components/charts/AdherenceDonutChart";
 import { MedicineStatsList } from "./_components/MedicineStatsList";
 import { PeriodSelector } from "./_components/PeriodSelector";
 import { StatsSummary } from "./_components/StatsSummary";
@@ -43,12 +45,57 @@ export default function StatisticsPage() {
       : "skip",
   );
 
+  // グループ詳細を取得（レポート用）
+  const groupDetails = useQuery(
+    api.groups.getGroupDetails,
+    activeGroupId ? { groupId: activeGroupId } : "skip",
+  );
+
+  // PDFレポート用のデータを構築
+  const reportData = useMemo((): ReportData | null => {
+    if (!stats || !groupDetails) return null;
+
+    // timingStatsをPDF用に変換
+    const timingStatsForPdf: Record<
+      string,
+      {
+        timing: string;
+        totalDoses: number;
+        taken: number;
+        skipped: number;
+        pending: number;
+        adherenceRate: number;
+      }
+    > = {};
+
+    for (const [timing, stat] of Object.entries(stats.timingStats)) {
+      timingStatsForPdf[timing] = {
+        timing,
+        totalDoses: stat.total,
+        taken: stat.taken,
+        skipped: stat.skipped,
+        pending: stat.pending,
+        adherenceRate: stat.rate,
+      };
+    }
+
+    return {
+      groupName: groupDetails.name,
+      period: stats.period,
+      summary: stats.summary,
+      medicines: stats.medicines,
+      timingStats: timingStatsForPdf,
+      asNeeded: stats.asNeeded,
+      generatedAt: formatJST(new Date(), "yyyy年MM月dd日 HH:mm"),
+    };
+  }, [stats, groupDetails]);
+
   if (!activeGroupId) {
     return (
       <div className="container mx-auto py-8 px-4">
         <Card>
           <CardContent className="py-8">
-            <p className="text-center text-gray-500 dark:text-gray-400">
+            <p className="text-center text-muted-foreground">
               グループ情報を読み込んでいます...
             </p>
           </CardContent>
@@ -59,16 +106,20 @@ export default function StatisticsPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <BarChart3 className="h-8 w-8" />
             服薬統計
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-muted-foreground mt-2">
             期間別の服薬状況と用量の統計を確認できます
           </p>
         </div>
+        <PdfDownloadButton
+          data={reportData as ReportData}
+          disabled={!reportData}
+        />
       </div>
 
       {/* 期間選択 */}
@@ -82,12 +133,19 @@ export default function StatisticsPage() {
       {/* サマリー */}
       {stats && <StatsSummary summary={stats.summary} period={stats.period} />}
 
-      {/* タイミング別統計 */}
+      {/* タイミング別統計 & ドーナツチャート */}
       {stats && (
-        <TimingStatsCard
-          timingStats={stats.timingStats}
-          asNeeded={stats.asNeeded}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TimingStatsCard
+            timingStats={stats.timingStats}
+            asNeeded={stats.asNeeded}
+          />
+          <AdherenceDonutChart
+            taken={stats.summary.totalTaken}
+            skipped={stats.summary.totalSkipped}
+            pending={stats.summary.totalPending}
+          />
+        </div>
       )}
 
       {/* 薬別統計 */}

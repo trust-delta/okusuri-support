@@ -2,11 +2,13 @@
 
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { CalendarIcon, Search, X } from "lucide-react";
+import { CalendarIcon, MessageSquare, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -29,6 +31,8 @@ export interface FilterState {
     to?: Date;
   };
   sortOrder: "asc" | "desc";
+  /** メモ付きの記録のみ表示 */
+  memoOnly: boolean;
 }
 
 interface RecordFiltersProps {
@@ -102,6 +106,13 @@ export function RecordFilters({
     });
   };
 
+  const handleMemoOnlyChange = (checked: boolean) => {
+    onFiltersChange({
+      ...filters,
+      memoOnly: checked,
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -110,8 +121,9 @@ export function RecordFilters({
       <CardContent className="space-y-4">
         {/* 薬名検索 */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            id="search-medicine"
             type="text"
             placeholder="薬名で検索..."
             value={filters.searchQuery}
@@ -122,9 +134,7 @@ export function RecordFilters({
 
         {/* 日付範囲選択 */}
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            日付範囲
-          </div>
+          <div className="text-sm font-medium text-foreground/80">日付範囲</div>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -147,7 +157,7 @@ export function RecordFilters({
                     format(filters.dateRange.from, "yyyy/MM/dd", { locale: ja })
                   )
                 ) : (
-                  <span className="text-gray-500">日付を選択...</span>
+                  <span className="text-muted-foreground">日付を選択...</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -185,7 +195,7 @@ export function RecordFilters({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* ステータスフィルター */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="text-sm font-medium text-foreground/80">
               ステータス
             </div>
             <Select value={filters.status} onValueChange={handleStatusChange}>
@@ -204,7 +214,7 @@ export function RecordFilters({
 
           {/* タイミングフィルター */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="text-sm font-medium text-foreground/80">
               タイミング
             </div>
             <Select value={filters.timing} onValueChange={handleTimingChange}>
@@ -224,9 +234,7 @@ export function RecordFilters({
 
         {/* 並び替え */}
         <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            並び替え
-          </div>
+          <div className="text-sm font-medium text-foreground/80">並び替え</div>
           <Select
             value={filters.sortOrder}
             onValueChange={handleSortOrderChange}
@@ -242,6 +250,22 @@ export function RecordFilters({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* メモ付きのみフィルター */}
+        <div className="flex items-center space-x-2 pt-2 border-t">
+          <Checkbox
+            id="memoOnly"
+            checked={filters.memoOnly}
+            onCheckedChange={handleMemoOnlyChange}
+          />
+          <Label
+            htmlFor="memoOnly"
+            className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+          >
+            <MessageSquare className="h-4 w-4 text-amber-500" />
+            メモ付きの記録のみ表示
+          </Label>
         </div>
       </CardContent>
     </Card>

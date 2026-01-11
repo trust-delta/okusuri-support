@@ -55,7 +55,7 @@ function DeletedPrescriptionMedicinesList({
   // 実際にはカスタムクエリが必要かもしれませんが、まずは簡単な実装で
   return (
     <div className="border-t pt-4">
-      <div className="text-sm text-gray-500 dark:text-gray-400 py-2">
+      <div className="text-sm text-muted-foreground py-2">
         削除された薬の詳細は復元後に確認できます
       </div>
     </div>
@@ -186,8 +186,8 @@ export function DeletedPrescriptionList({
       {deletedPrescriptions.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Trash2 className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">
+            <Trash2 className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">
               削除された処方箋はありません
             </p>
           </CardContent>
@@ -206,10 +206,10 @@ export function DeletedPrescriptionList({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <CardTitle className="text-gray-500 dark:text-gray-400">
+                          <CardTitle className="text-muted-foreground">
                             {prescription.name}
                           </CardTitle>
-                          <span className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded">
+                          <span className="text-xs px-2 py-1 bg-destructive/10 text-destructive rounded">
                             削除済み
                           </span>
                         </div>
@@ -277,7 +277,7 @@ export function DeletedPrescriptionList({
                   {(prescription.notes || isExpanded) && (
                     <CardContent className="space-y-4">
                       {prescription.notes && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                           {prescription.notes}
                         </p>
                       )}

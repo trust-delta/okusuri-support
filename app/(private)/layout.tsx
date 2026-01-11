@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { Header } from "./_components/header";
+import { Spinner } from "@/components/ui/spinner";
+import { Header } from "./_components/Header";
 
 /**
  * 認証済みユーザー向けのレイアウト
@@ -14,13 +15,13 @@ export default function AuthenticatedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* 共通ヘッダー */}
       <Suspense
         fallback={
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-card border-b border-border">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <div className="h-12 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+              <div className="h-12 bg-muted animate-pulse rounded-lg"></div>
             </div>
           </div>
         }
@@ -31,10 +32,10 @@ export default function AuthenticatedLayout({
       {/* ページコンテンツ */}
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center">
+          <div className="min-h-[50vh] flex items-center justify-center">
             <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-400">読み込み中...</p>
+              <Spinner className="h-10 w-10 mx-auto text-primary" />
+              <p className="text-muted-foreground">読み込み中...</p>
             </div>
           </div>
         }

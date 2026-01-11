@@ -1,6 +1,6 @@
 # コーディングスタイルガイド
 
-> **最終更新**: 2025年10月20日 23:49:09 JST
+> **最終更新**: 2026年01月11日
 > **目的**: おくすりサポートプロジェクトの統一されたコーディング規約
 
 ---
@@ -24,8 +24,15 @@
 - **ツール**: Biome 2.2.0
 - **設定ファイル**: `biome.json`
 - **実行コマンド**:
-  - フォーマット: `npm run format`
-  - リント: `npm run lint`
+  - フォーマット: `pnpm run format`
+  - リント: `pnpm run lint`
+
+### Pre-commit Hook（自動実行）
+- **ツール**: husky 9.x + lint-staged 16.x
+- **動作**: コミット時にステージされたファイルに対して `biome check --write` が自動実行される
+- **効果**: フォーマット違反は自動修正、lint エラーがある場合はコミットがブロックされる
+
+> **Note**: 手動でのフォーマット/リント実行は基本的に不要です。
 
 ### フォーマットルール
 ```json
@@ -43,18 +50,20 @@
 
 ### ディレクトリ構造
 ```
-src/
-├── app/                    # Next.js App Router
-│   ├── (authenticated)/   # 認証必須ルート
-│   └── (public)/          # 公開ルート
-├── features/              # 機能モジュール
-│   ├── auth/
-│   ├── group/
-│   └── medication/
-└── shared/                # 共有リソース
-    ├── components/ui/     # UIコンポーネント
-    ├── lib/              # ユーティリティ
-    └── hooks/            # カスタムフック
+app/
+├── (private)/             # 認証必須ルート
+├── (public)/              # 公開ルート
+└── _shared/               # 共有リソース
+    ├── components/        # 共有コンポーネント
+    │   └── ui/           # shadcn/ui コンポーネント
+    ├── features/          # 機能モジュール（フラット構造）
+    │   ├── auth/
+    │   ├── group/
+    │   ├── medication/
+    │   └── push-notifications/
+    ├── hooks/             # 共有カスタムフック
+    ├── lib/               # ユーティリティ
+    └── providers/         # Reactプロバイダー
 
 convex/
 ├── schema.ts             # スキーマ定義
@@ -71,21 +80,67 @@ convex/
     └── history/
 ```
 
+### Feature ディレクトリ構造（フラット）
+
+各 feature は**フラット構造**を採用。命名規則でファイル種別を判別するため、`hooks/` や `components/` サブディレクトリは不要。
+
+```
+app/_shared/features/auth/
+├── AuthPageLayout.tsx       # コンポーネント (PascalCase.tsx)
+├── OauthSignIn.tsx
+├── PasswordReset.tsx
+├── PasswordSignIn.tsx
+├── SignOutButton.tsx
+├── use-redirect-after-auth.ts  # フック (use-kebab-case.ts)
+├── index.ts                    # Public API
+└── __tests__/                  # テストファイル
+    ├── oauth-sign-in.test.tsx
+    ├── sign-out-button.test.tsx
+    └── use-redirect-after-auth.test.ts
+```
+
+**ポイント**:
+- ソースファイルは feature ルートに直接配置
+- テストファイルは `__tests__/` ディレクトリに分離
+- `index.ts` で外部公開する API を管理
+
 ### パス解決
-- **エイリアス**: `@/*` → `./src/*`
-- **Convex API**: `@/shared/lib/convex` 経由で統一的にインポート
+- **エイリアス**:
+  - `@/*` → `./app/_shared/*`
+  - `@/api` → Convex API
+  - `@/schema` → Convex スキーマ型
 
 ---
 
 ## 命名規則
 
 ### ファイル名
-| 種類 | 規則 | 例 |
-|------|------|-----|
-| コンポーネント | kebab-case | `medication-recorder.tsx` |
-| ページ | kebab-case | `page.tsx`, `layout.tsx` |
-| ユーティリティ | kebab-case | `date-fns.ts`, `utils.ts` |
-| 型定義 | kebab-case | `timing.ts` |
+
+**拡張子で種別を判別**できる命名規則を採用。Biome の `useFilenamingConvention` で自動強制。
+
+| 種別 | パターン | 例 |
+|------|----------|-----|
+| コンポーネント | **PascalCase.tsx** | `CartButton.tsx`, `MedicationRecorder.tsx` |
+| hooks | **use-kebab-case.ts** | `use-cart-items.ts`, `use-onboarding-flow.ts` |
+| ユーティリティ | **kebab-case.ts** | `format-price.ts`, `date-utils.ts` |
+| 型定義 | **types.ts** | `types.ts`（フォルダごとに1ファイル） |
+| 定数 | **constants.ts** | `constants.ts` |
+| @x/公開API | **依存先名.ts** | `checkout.ts`, `order.ts` |
+| テストファイル | **kebab-case.test.tsx** | `cart-button.test.tsx` |
+| テストディレクトリ | **__tests__** | feature 内のテストを格納 |
+| フォルダ | **kebab-case** | `cart-summary/`, `medication-record/` |
+
+**判別ルール**:
+```
+.tsx + PascalCase → コンポーネント
+.ts + use-* → hooks
+.ts + kebab-case → ユーティリティ
+```
+
+**例外（命名規則適用外）**:
+- Next.js 規約ファイル: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`
+- 特殊ファイル: `index.ts`, `schema.ts`, `middleware.ts`, `*.config.ts`
+- **shadcn/ui コンポーネント**: `components/ui/*`（`shadcn add` で生成されるため）
 
 ### コード内の命名
 | 種類 | 規則 | 例 |
@@ -665,7 +720,7 @@ toast.error(
 - [ ] コンポーネントのProps型を定義したか
 - [ ] 非同期処理でローディング状態を管理しているか
 - [ ] ユーザー向けメッセージが日本語になっているか
-- [ ] Biomeでフォーマット・リントを実行したか
+- [x] Biomeでフォーマット・リントを実行したか → **pre-commit hook で自動実行**
 
 ---
 

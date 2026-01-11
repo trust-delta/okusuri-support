@@ -13,9 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PushNotificationPrompt } from "@/features/push-notifications/components/push-notification-prompt";
-import { PWAInstallButton } from "@/features/push-notifications/components/pwa-install-button";
-import { usePushNotifications } from "@/features/push-notifications/hooks/use-push-notifications";
+import {
+  PushNotificationPrompt,
+  PWAInstallButton,
+  usePushNotifications,
+} from "@/features/push-notifications";
 
 /**
  * 通知設定カード（個人設定用）

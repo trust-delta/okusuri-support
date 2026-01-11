@@ -21,7 +21,7 @@ export default defineConfig({
   // 共通の設定
   use: {
     // ベースURL（開発サーバー）
-    baseURL: process.env.BASE_URL || "http://localhost:3000",
+    baseURL: process.env.BASE_URL || "http://localhost:3002",
 
     // スクリーンショット設定
     screenshot: "only-on-failure",
@@ -53,10 +53,11 @@ export default defineConfig({
 
   // 開発サーバー設定
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: "npm run dev -- --port 3002",
+    url: "http://localhost:3002",
     reuseExistingServer: !process.env.CI,
     stdout: "ignore",
     stderr: "pipe",
+    timeout: 120000, // 2分のタイムアウト
   },
 });

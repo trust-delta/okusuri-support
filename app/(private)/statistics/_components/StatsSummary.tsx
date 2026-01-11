@@ -1,7 +1,8 @@
 "use client";
 
-import { Activity, CheckCircle2, Clock, Pill, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Pill, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AdherenceRadialChart } from "./charts/AdherenceRadialChart";
 
 interface StatsSummaryProps {
   summary: {
@@ -49,61 +50,62 @@ export function StatsSummary({ summary, period }: StatsSummaryProps) {
       value: summary.totalPending,
       subValue: "回",
       icon: Clock,
-      color: "text-gray-600 dark:text-gray-400",
-      bgColor: "bg-gray-50 dark:bg-gray-800",
-    },
-    {
-      label: "服用率",
-      value: `${summary.overallAdherenceRate.toFixed(1)}`,
-      subValue: "%",
-      icon: Activity,
-      color: "text-purple-600 dark:text-purple-400",
-      bgColor: "bg-purple-50 dark:bg-purple-950/20",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
   ];
 
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle className="text-lg">
             統計サマリー（{period.days}日間）
           </CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             {period.startDate} 〜 {period.endDate}
           </p>
         </CardHeader>
-      </Card>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.label}>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                      {stat.label}
-                    </p>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-3xl font-bold">{stat.value}</p>
-                      {stat.subValue && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {stat.subValue}
-                        </p>
-                      )}
+        <CardContent>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            {/* ラジアルチャート */}
+            <div className="flex-shrink-0">
+              <AdherenceRadialChart
+                adherenceRate={summary.overallAdherenceRate}
+              />
+            </div>
+            {/* KPIカード */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-1 w-full">
+              {stats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div
+                    key={stat.label}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
+                  >
+                    <div className={`p-2 rounded-full ${stat.bgColor}`}>
+                      <Icon className={`h-4 w-4 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <div className="flex items-baseline gap-0.5">
+                        <p className="text-lg font-bold">{stat.value}</p>
+                        {stat.subValue && (
+                          <p className="text-xs text-muted-foreground">
+                            {stat.subValue}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                    <Icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                );
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

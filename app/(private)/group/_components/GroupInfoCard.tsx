@@ -23,39 +23,37 @@ export function GroupInfoCard({ preloadedGroupDetails }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <div className="text-sm font-medium text-muted-foreground">
             グループ名
           </div>
-          <p className="text-base text-gray-900 dark:text-gray-100">
-            {groupDetails.name}
-          </p>
+          <p className="text-base text-foreground">{groupDetails.name}</p>
         </div>
 
         {groupDetails.description && (
           <div>
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <div className="text-sm font-medium text-muted-foreground">
               説明
             </div>
-            <p className="text-base text-gray-900 dark:text-gray-100">
+            <p className="text-base text-foreground">
               {groupDetails.description}
             </p>
           </div>
         )}
 
         <div>
-          <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <div className="text-sm font-medium text-muted-foreground">
             あなたの役割
           </div>
-          <p className="text-base text-gray-900 dark:text-gray-100">
+          <p className="text-base text-foreground">
             {groupDetails.myRole === "patient" ? "患者" : "支援者"}
           </p>
         </div>
 
         <div>
-          <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <div className="text-sm font-medium text-muted-foreground">
             メンバー数
           </div>
-          <p className="text-base text-gray-900 dark:text-gray-100">
+          <p className="text-base text-foreground">
             {groupDetails.memberCount}人
           </p>
         </div>

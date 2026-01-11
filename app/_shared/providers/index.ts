@@ -1,2 +1,2 @@
-export * from "./client-provider";
-export * from "./server-provider";
+export * from "./ClientProvider";
+export * from "./ServerProvider";

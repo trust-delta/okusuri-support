@@ -75,11 +75,9 @@ export function MedicineEntry({
   };
 
   return (
-    <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-4">
+    <div className="p-4 border border-border rounded-lg space-y-4">
       <div className="flex items-start justify-between">
-        <h4 className="font-medium text-gray-900 dark:text-gray-100">
-          薬 {index + 1}
-        </h4>
+        <h4 className="font-medium text-foreground">薬 {index + 1}</h4>
         <Button
           type="button"
           variant="ghost"
