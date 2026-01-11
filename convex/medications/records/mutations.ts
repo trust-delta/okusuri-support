@@ -6,6 +6,7 @@ import { error, type Result, success } from "../../types/result";
 
 /**
  * 服薬記録を作成（簡易記録・処方箋ベース両対応）
+ * 在庫追跡が有効な場合、消費記録も自動生成
  */
 export const recordSimpleMedication = mutation({
   args: {
@@ -73,6 +74,75 @@ export const recordSimpleMedication = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    // 在庫追跡: 服用済みの場合のみ消費記録を作成
+    const medicineId = args.medicineId;
+    if (args.status === "taken" && medicineId) {
+      const inventory = await ctx.db
+        .query("medicineInventory")
+        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicineId))
+        .first();
+
+      if (inventory?.isTrackingEnabled) {
+        // スケジュールから用量を取得
+        let consumeAmount = 1; // デフォルト1単位
+        if (args.scheduleId) {
+          const schedule = await ctx.db.get(args.scheduleId);
+          if (schedule?.dosage?.amount) {
+            consumeAmount = schedule.dosage.amount;
+          }
+        }
+
+        const newQuantity = Math.max(
+          0,
+          inventory.currentQuantity - consumeAmount,
+        );
+
+        // 消費記録を作成
+        await ctx.db.insert("medicineConsumptionRecords", {
+          medicineId,
+          inventoryId: inventory._id,
+          groupId: args.groupId,
+          patientId,
+          consumptionType: "scheduled",
+          quantity: consumeAmount,
+          quantityBefore: inventory.currentQuantity,
+          quantityAfter: newQuantity,
+          relatedRecordId: recordId,
+          recordedBy: userId,
+          recordedAt: now,
+          createdAt: now,
+        });
+
+        // 在庫を更新
+        await ctx.db.patch(inventory._id, {
+          currentQuantity: newQuantity,
+          updatedAt: now,
+        });
+
+        // 残量警告チェック
+        if (
+          inventory.warningThreshold !== undefined &&
+          newQuantity <= inventory.warningThreshold &&
+          inventory.currentQuantity > inventory.warningThreshold
+        ) {
+          // 警告閾値を下回った場合のみアラート
+          const medicine = await ctx.db.get(medicineId);
+          const medicineName = medicine?.name ?? "不明な薬";
+
+          await ctx.db.insert("inventoryAlerts", {
+            inventoryId: inventory._id,
+            groupId: args.groupId,
+            alertType: "low_stock",
+            severity: newQuantity === 0 ? "critical" : "warning",
+            message: `${medicineName}の残量が${newQuantity}${inventory.unit}になりました`,
+            medicineName,
+            isRead: false,
+            createdAt: now,
+          });
+        }
+      }
+    }
 
     return success(recordId);
   },

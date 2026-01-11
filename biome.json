@@ -146,6 +146,21 @@
           }
         }
       }
+    },
+    {
+      "includes": ["convex/**/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": {
+              "level": "error",
+              "options": {
+                "filenameCases": ["snake_case", "camelCase"]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

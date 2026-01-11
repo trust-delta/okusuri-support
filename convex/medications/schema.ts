@@ -160,4 +160,81 @@ export const medicinesSchema = {
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_groupId", ["groupId"]),
+
+  // ========================================
+  // 残量管理機能
+  // ========================================
+
+  // 薬在庫: 薬ごとの残量を管理
+  medicineInventory: defineTable({
+    medicineId: v.id("medicines"), // 薬への参照
+    groupId: v.id("groups"), // グループID
+    currentQuantity: v.number(), // 現在の残量
+    unit: v.string(), // 単位（錠、カプセル、mL等）
+    warningThreshold: v.optional(v.number()), // 警告閾値（この数量以下で警告）
+    isTrackingEnabled: v.boolean(), // 残量追跡が有効か
+    createdBy: v.string(), // Convex Auth userId
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_medicineId", ["medicineId"])
+    .index("by_groupId", ["groupId"])
+    .index("by_groupId_isTrackingEnabled", ["groupId", "isTrackingEnabled"]),
+
+  // 消費記録: 薬の消費・補充を記録
+  medicineConsumptionRecords: defineTable({
+    medicineId: v.id("medicines"), // 薬への参照
+    inventoryId: v.id("medicineInventory"), // 在庫への参照
+    groupId: v.id("groups"), // グループID
+    patientId: v.string(), // 患者ID（服薬者）
+    consumptionType: v.union(
+      v.literal("scheduled"), // 予定通りの服薬（medicationRecordsと連動）
+      v.literal("extra"), // 追加服用（予定外、多く飲んだ）
+      v.literal("lost"), // 紛失
+      v.literal("adjustment"), // 調整（棚卸し等）
+      v.literal("refill"), // 補充（処方箋受け取り等）
+    ),
+    quantity: v.number(), // 消費量（正: 消費、負: 補充）
+    quantityBefore: v.number(), // 変更前の残量
+    quantityAfter: v.number(), // 変更後の残量
+    relatedRecordId: v.optional(v.id("medicationRecords")), // 関連する服薬記録
+    reason: v.optional(v.string()), // 理由・備考
+    recordedBy: v.string(), // 記録者
+    recordedAt: v.number(), // 記録日時
+    createdAt: v.number(),
+  })
+    .index("by_medicineId", ["medicineId"])
+    .index("by_inventoryId", ["inventoryId"])
+    .index("by_groupId", ["groupId"])
+    .index("by_consumptionType", ["consumptionType"])
+    .index("by_recordedAt", ["recordedAt"])
+    .index("by_groupId_recordedAt", ["groupId", "recordedAt"]),
+
+  // 在庫アラート: 残量不足・予定外消費の警告
+  inventoryAlerts: defineTable({
+    inventoryId: v.id("medicineInventory"), // 在庫への参照
+    groupId: v.id("groups"), // グループID
+    alertType: v.union(
+      v.literal("low_stock"), // 残量不足
+      v.literal("unexpected_consumption"), // 予定外消費（extra, lost）
+      v.literal("overdose_warning"), // 過剰服用警告
+    ),
+    severity: v.union(
+      v.literal("info"),
+      v.literal("warning"),
+      v.literal("critical"),
+    ),
+    message: v.string(), // アラートメッセージ
+    relatedConsumptionId: v.optional(v.id("medicineConsumptionRecords")),
+    medicineName: v.string(), // 薬名（表示用）
+    isRead: v.boolean(), // 既読フラグ
+    readBy: v.optional(v.string()), // 既読者
+    readAt: v.optional(v.number()), // 既読日時
+    createdAt: v.number(),
+  })
+    .index("by_inventoryId", ["inventoryId"])
+    .index("by_groupId", ["groupId"])
+    .index("by_groupId_isRead", ["groupId", "isRead"])
+    .index("by_alertType", ["alertType"])
+    .index("by_createdAt", ["createdAt"]),
 };

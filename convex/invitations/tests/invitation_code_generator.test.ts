@@ -1,6 +1,6 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "../../_generated/api";
+import { internal } from "../../_generated/api";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
 
@@ -9,7 +9,7 @@ describe("generateInvitationCodeAction", () => {
     const t = convexTest(schema, modules);
 
     const code = await t.action(
-      api["invitation-code-generator"].generateInvitationCodeAction,
+      internal.invitation_code_generator.generateInvitationCodeAction,
     );
 
     expect(code).toBeDefined();
@@ -21,7 +21,7 @@ describe("generateInvitationCodeAction", () => {
     const t = convexTest(schema, modules);
 
     const code = await t.action(
-      api["invitation-code-generator"].generateInvitationCodeAction,
+      internal.invitation_code_generator.generateInvitationCodeAction,
     );
 
     // 英数字のみを含むかチェック（a-z, A-Z, 0-9）
@@ -33,11 +33,11 @@ describe("generateInvitationCodeAction", () => {
 
     // 複数回生成して一意性を確認
     const codes = await Promise.all([
-      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
-      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
-      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
-      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
-      t.action(api["invitation-code-generator"].generateInvitationCodeAction),
+      t.action(internal.invitation_code_generator.generateInvitationCodeAction),
+      t.action(internal.invitation_code_generator.generateInvitationCodeAction),
+      t.action(internal.invitation_code_generator.generateInvitationCodeAction),
+      t.action(internal.invitation_code_generator.generateInvitationCodeAction),
+      t.action(internal.invitation_code_generator.generateInvitationCodeAction),
     ]);
 
     // すべてのコードが異なることを確認（Set のサイズが配列の長さと一致）

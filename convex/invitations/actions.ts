@@ -37,7 +37,7 @@ export const createInvitation = action({
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       // 1. 暗号学的に安全な招待コード生成（内部アクション）
       const code: string = await ctx.runAction(
-        internal["invitation-code-generator"].generateInvitationCodeAction,
+        internal.invitation_code_generator.generateInvitationCodeAction,
       );
 
       // 2. 招待レコード作成（内部mutation）
