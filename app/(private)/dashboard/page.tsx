@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { api } from "@/api";
 import type { Id } from "@/schema";
 import { GroupInfoCard } from "./_components/GroupInfoCard";
+import { LowStockAlert } from "./_components/LowStockAlert";
 import { MedicationSection } from "./_components/MedicationSection";
 import { MembersSection } from "./_components/MembersSection";
 
@@ -81,6 +82,9 @@ export default async function DashboardPage({
           groupName={activeGroup.groupName}
           role={activeGroup.role}
         />
+
+        {/* 低在庫アラート */}
+        <LowStockAlert groupId={activeGroup.groupId} />
 
         {/* メンバーリスト */}
         <MembersSection preloadedGroupMembers={groupMembers} />

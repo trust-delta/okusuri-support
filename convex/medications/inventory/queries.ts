@@ -264,6 +264,77 @@ export const getGroupConsumptionHistory = query({
 });
 
 /**
+ * 処方箋継続中で在庫切れの薬を取得
+ * 緊急度の高いアラート用
+ */
+export const getOutOfStockWithActivePrescription = query({
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      throw new ConvexError("このグループのメンバーではありません");
+    }
+
+    // 在庫が0の薬を取得
+    const inventories = await ctx.db
+      .query("medicineInventory")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .collect();
+
+    const outOfStockInventories = inventories.filter(
+      (inv) => inv.isTrackingEnabled && inv.currentQuantity === 0,
+    );
+
+    const today = new Date().toISOString().split("T")[0] ?? "";
+
+    // 処方箋継続中かどうかを確認
+    const results = await Promise.all(
+      outOfStockInventories.map(async (inventory) => {
+        const medicine = await ctx.db.get(inventory.medicineId);
+        if (!medicine || medicine.deletedAt) return null;
+
+        let isPrescriptionActive = false;
+        let prescriptionName: string | undefined;
+
+        if (medicine.prescriptionId) {
+          const prescription = await ctx.db.get(medicine.prescriptionId);
+          if (prescription && !prescription.deletedAt) {
+            // 処方箋が有効: isActive=true かつ (終了日なし または 終了日が今日以降)
+            isPrescriptionActive =
+              prescription.isActive &&
+              (!prescription.endDate || prescription.endDate >= today);
+            prescriptionName = prescription.name;
+          }
+        }
+
+        if (!isPrescriptionActive) return null;
+
+        return {
+          ...inventory,
+          medicineName: medicine.name,
+          prescriptionName,
+        };
+      }),
+    );
+
+    return results.filter((r): r is NonNullable<typeof r> => r !== null);
+  },
+});
+
+/**
  * 日別の消費量を取得
  */
 export const getDailyConsumption = query({

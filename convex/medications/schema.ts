@@ -215,7 +215,8 @@ export const medicinesSchema = {
     inventoryId: v.id("medicineInventory"), // 在庫への参照
     groupId: v.id("groups"), // グループID
     alertType: v.union(
-      v.literal("low_stock"), // 残量不足
+      v.literal("low_stock"), // 残量不足（警告閾値以下）
+      v.literal("out_of_stock"), // 在庫切れ（残量0、処方箋継続中）
       v.literal("unexpected_consumption"), // 予定外消費（extra, lost）
       v.literal("overdose_warning"), // 過剰服用警告
     ),

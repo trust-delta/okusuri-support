@@ -97,6 +97,25 @@ export const createPrescription = mutation({
           createdAt: now,
           updatedAt: now,
         });
+
+        // 在庫レコードを自動作成（残量追跡を自動開始）
+        const unit = medicine.dosage?.unit ?? "錠";
+        // 警告閾値: 1日の服用量 × 7日分（1週間分）を目安に
+        const dailyDosage =
+          (medicine.dosage?.amount ?? 1) * medicine.timings.length;
+        const warningThreshold = Math.ceil(dailyDosage * 7);
+
+        await ctx.db.insert("medicineInventory", {
+          medicineId,
+          groupId: args.groupId,
+          currentQuantity: 0, // 初期残量は0（ユーザーが後で設定）
+          unit,
+          warningThreshold,
+          isTrackingEnabled: true,
+          createdBy: userId,
+          createdAt: now,
+          updatedAt: now,
+        });
       }
     }
 
@@ -617,6 +636,7 @@ export const duplicatePrescription = mutation({
         .collect();
 
       // スケジュールをコピー
+      let firstSchedule: (typeof sourceSchedules)[0] | undefined;
       for (const schedule of sourceSchedules) {
         await ctx.db.insert("medicationSchedules", {
           medicineId: newMedicineId,
@@ -624,6 +644,28 @@ export const duplicatePrescription = mutation({
           timings: schedule.timings,
           dosage: schedule.dosage,
           notes: schedule.notes,
+          createdBy: userId,
+          createdAt: now,
+          updatedAt: now,
+        });
+        if (!firstSchedule) firstSchedule = schedule;
+      }
+
+      // 在庫レコードを自動作成（薬ごとに1つ）
+      if (firstSchedule) {
+        const unit = firstSchedule.dosage?.unit ?? "錠";
+        // 警告閾値: 1日の服用量 × 7日分（1週間分）を目安に
+        const dailyDosage =
+          (firstSchedule.dosage?.amount ?? 1) * firstSchedule.timings.length;
+        const warningThreshold = Math.ceil(dailyDosage * 7);
+
+        await ctx.db.insert("medicineInventory", {
+          medicineId: newMedicineId,
+          groupId: sourcePrescription.groupId,
+          currentQuantity: 0, // 初期残量は0（ユーザーが後で設定）
+          unit,
+          warningThreshold,
+          isTrackingEnabled: true,
           createdBy: userId,
           createdAt: now,
           updatedAt: now,

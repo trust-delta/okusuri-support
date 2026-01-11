@@ -121,20 +121,60 @@ export const recordSimpleMedication = mutation({
         });
 
         // 残量警告チェック
-        if (
+        const medicine = await ctx.db.get(medicineId);
+        const medicineName = medicine?.name ?? "不明な薬";
+
+        // 在庫切れチェック（処方箋継続中の場合は重大なアラート）
+        if (newQuantity === 0 && inventory.currentQuantity > 0) {
+          // 処方箋が有効かどうか確認
+          let isPrescriptionActive = false;
+          if (medicine?.prescriptionId) {
+            const prescription = await ctx.db.get(medicine.prescriptionId);
+            if (prescription && !prescription.deletedAt) {
+              const today = new Date().toISOString().split("T")[0] ?? "";
+              // 処方箋が有効: isActive=true かつ (終了日なし または 終了日が今日以降)
+              isPrescriptionActive =
+                prescription.isActive &&
+                (!prescription.endDate || prescription.endDate >= today);
+            }
+          }
+
+          if (isPrescriptionActive) {
+            // 処方箋継続中の在庫切れは重大
+            await ctx.db.insert("inventoryAlerts", {
+              inventoryId: inventory._id,
+              groupId: args.groupId,
+              alertType: "out_of_stock",
+              severity: "critical",
+              message: `${medicineName}が在庫切れです。処方箋は継続中のため、補充が必要です`,
+              medicineName,
+              isRead: false,
+              createdAt: now,
+            });
+          } else {
+            // 処方箋なしまたは終了の在庫切れ
+            await ctx.db.insert("inventoryAlerts", {
+              inventoryId: inventory._id,
+              groupId: args.groupId,
+              alertType: "low_stock",
+              severity: "critical",
+              message: `${medicineName}の残量が0${inventory.unit}になりました`,
+              medicineName,
+              isRead: false,
+              createdAt: now,
+            });
+          }
+        } else if (
           inventory.warningThreshold !== undefined &&
           newQuantity <= inventory.warningThreshold &&
           inventory.currentQuantity > inventory.warningThreshold
         ) {
           // 警告閾値を下回った場合のみアラート
-          const medicine = await ctx.db.get(medicineId);
-          const medicineName = medicine?.name ?? "不明な薬";
-
           await ctx.db.insert("inventoryAlerts", {
             inventoryId: inventory._id,
             groupId: args.groupId,
             alertType: "low_stock",
-            severity: newQuantity === 0 ? "critical" : "warning",
+            severity: "warning",
             message: `${medicineName}の残量が${newQuantity}${inventory.unit}になりました`,
             medicineName,
             isRead: false,

@@ -3,7 +3,14 @@
 import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
-import { AlertTriangle, Bell, Check, Package, Pill } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  Check,
+  Package,
+  Pill,
+  XCircle,
+} from "lucide-react";
 import { api } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,12 +29,14 @@ interface AlertListProps {
 
 const ALERT_ICONS = {
   low_stock: Package,
+  out_of_stock: XCircle,
   unexpected_consumption: Pill,
   overdose_warning: AlertTriangle,
 };
 
 const ALERT_LABELS = {
   low_stock: "残量不足",
+  out_of_stock: "在庫切れ",
   unexpected_consumption: "予定外消費",
   overdose_warning: "過剰服用",
 };
