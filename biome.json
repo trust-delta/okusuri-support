@@ -148,6 +148,9 @@
         "rules": {
           "style": {
             "useFilenamingConvention": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
           }
         }
       }
