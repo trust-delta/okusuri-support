@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 
 function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   return (
-    // biome-ignore lint/a11y/useSemanticElements: SVG element requires role for accessibility
     <Loader2Icon
       role="status"
       aria-label="Loading"
