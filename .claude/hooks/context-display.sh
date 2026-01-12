@@ -2,14 +2,19 @@
 # Context Display Hook - UserPromptSubmit時にコンテキスト情報を表示
 # stdoutがそのままコンテキストに追加される
 
+# 一時ファイル置き場（スクリプトからの相対パス）
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TMP_DIR="$SCRIPT_DIR/../tmp/hooks"
+mkdir -p "$TMP_DIR"
+
 THRESHOLD_STEP=5  # 5%刻み
 
 # stdinからJSON入力を読み取り
 INPUT=$(cat)
 
 # デバッグログ
-echo "[$(date '+%H:%M:%S')] context-display.sh called (UserPromptSubmit)" >> /tmp/claude-hook-debug.log
-echo "$INPUT" > /tmp/claude-hook-input-debug.json
+echo "[$(date '+%H:%M:%S')] context-display.sh called (UserPromptSubmit)" >> "$TMP_DIR/hook-debug.log"
+echo "$INPUT" > "$TMP_DIR/hook-input-debug.json"
 
 # Node.jsでJSON処理してプレーンテキストで出力
 node -e "
@@ -21,8 +26,9 @@ try {
   const sessionId = hookInput.session_id || 'default';
 
   // セッションごとのファイルパス
-  const contextFile = '/tmp/claude-context-' + sessionId + '.json';
-  const thresholdFile = '/tmp/claude-context-threshold-' + sessionId + '.txt';
+  const tmpDir = '$TMP_DIR';
+  const contextFile = tmpDir + '/context-' + sessionId + '.json';
+  const thresholdFile = tmpDir + '/threshold-' + sessionId + '.txt';
 
   // コンテキストファイルが存在しない場合は終了
   if (!fs.existsSync(contextFile)) {

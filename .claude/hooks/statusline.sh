@@ -2,11 +2,16 @@
 # Claude Code Context Monitor - Statusline Script
 # コンテキスト情報をセッションごとのファイルに保存し、スキルから読み取り可能にする
 
+# 一時ファイル置き場（スクリプトからの相対パス）
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TMP_DIR="$SCRIPT_DIR/../tmp/hooks"
+mkdir -p "$TMP_DIR"
+
 # stdinからJSONを読み取り
 input=$(cat)
 
 # デバッグ: 入力データをログに保存
-echo "$input" > /tmp/claude-statusline-debug.json
+echo "$input" > "$TMP_DIR/statusline-debug.json"
 
 # Node.jsでJSONを処理
 node -e "
@@ -15,7 +20,8 @@ const fs = require('fs');
 
 // セッションIDを取得（なければ 'default'）
 const sessionId = input.session_id || 'default';
-const outputFile = '/tmp/claude-context-' + sessionId + '.json';
+const tmpDir = '$TMP_DIR';
+const outputFile = tmpDir + '/context-' + sessionId + '.json';
 
 const timestamp = new Date().toISOString();
 const output = {
