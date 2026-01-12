@@ -91,20 +91,27 @@ export function MedicineAdherenceChart({
           cursor={{ fill: "var(--muted)", opacity: 0.3 }}
           content={
             <ChartTooltipContent
-              formatter={(value, _name, item) => (
-                <div className="space-y-1">
-                  <div className="font-semibold">{item.payload.fullName}</div>
-                  <div className="text-muted-foreground">
-                    服用率:{" "}
-                    <span className="font-bold text-foreground">
-                      {Number(value).toFixed(0)}%
-                    </span>
+              formatter={(value, _name, item) => {
+                const payload = item.payload as {
+                  fullName?: string;
+                  taken?: number;
+                  total?: number;
+                };
+                return (
+                  <div className="space-y-1">
+                    <div className="font-semibold">{payload.fullName}</div>
+                    <div className="text-muted-foreground">
+                      服用率:{" "}
+                      <span className="font-bold text-foreground">
+                        {Number(value).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {payload.taken} / {payload.total}回
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {item.payload.taken} / {item.payload.total}回
-                  </div>
-                </div>
-              )}
+                );
+              }}
             />
           }
         />

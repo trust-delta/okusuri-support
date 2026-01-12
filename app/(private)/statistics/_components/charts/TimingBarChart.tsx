@@ -101,21 +101,29 @@ export function TimingBarChart({ timingStats }: TimingBarChartProps) {
           cursor={{ fill: "var(--muted)", opacity: 0.3 }}
           content={
             <ChartTooltipContent
-              formatter={(value, _name, item) => (
-                <div className="space-y-1">
-                  <div className="font-semibold">{item.payload.label}</div>
-                  <div className="text-muted-foreground">
-                    服用率:{" "}
-                    <span className="font-bold text-foreground">
-                      {Number(value).toFixed(0)}%
-                    </span>
+              formatter={(value, _name, item) => {
+                const payload = item.payload as {
+                  label?: string;
+                  taken?: number;
+                  skipped?: number;
+                  pending?: number;
+                };
+                return (
+                  <div className="space-y-1">
+                    <div className="font-semibold">{payload.label}</div>
+                    <div className="text-muted-foreground">
+                      服用率:{" "}
+                      <span className="font-bold text-foreground">
+                        {Number(value).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      服用 {payload.taken} / スキップ {payload.skipped} / 未記録{" "}
+                      {payload.pending}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    服用 {item.payload.taken} / スキップ {item.payload.skipped}{" "}
-                    / 未記録 {item.payload.pending}
-                  </div>
-                </div>
-              )}
+                );
+              }}
             />
           }
         />
