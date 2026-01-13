@@ -150,9 +150,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ### 新機能開発
 ```bash
-# 1. mainから最新を取得
-git checkout main
-git pull origin main
+# 1. developから最新を取得
+git checkout develop
+git pull origin develop
 
 # 2. 機能ブランチを作成
 git checkout -b feature/<feature-name>
@@ -163,14 +163,14 @@ git commit -m "feat: <説明>"
 
 # 4. プッシュ・PR作成
 git push -u origin feature/<feature-name>
-gh pr create --title "feat: <説明>" --body "..."
+gh pr create --base develop --title "feat: <説明>" --body "..."
 ```
 
 ### バグ修正
 ```bash
-# 1. mainから最新を取得
-git checkout main
-git pull origin main
+# 1. developから最新を取得
+git checkout develop
+git pull origin develop
 
 # 2. 修正ブランチを作成
 git checkout -b fix/<bug-description>
@@ -181,7 +181,7 @@ git commit -m "fix: <説明>"
 
 # 4. プッシュ・PR作成
 git push -u origin fix/<bug-description>
-gh pr create --title "fix: <説明>" --body "..."
+gh pr create --base develop --title "fix: <説明>" --body "..."
 ```
 
 ---
@@ -195,4 +195,4 @@ gh pr create --title "fix: <説明>" --body "..."
 
 ---
 
-**最終更新**: 2025年11月29日
+**最終更新**: 2026年01月13日
