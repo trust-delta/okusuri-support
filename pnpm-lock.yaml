@@ -175,8 +175,8 @@ importers:
         specifier: 4.0.16
         version: 4.0.16(vitest@4.0.16)
       '@vitest/ui':
-        specifier: ^3.2.4
-        version: 3.2.4(vitest@4.0.16)
+        specifier: ^4.0.17
+        version: 4.0.17(vitest@4.0.16)
       convex-test:
         specifier: ^0.0.41
         version: 0.0.41(convex@1.31.3(react@19.2.3))
@@ -206,7 +206,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@3.2.4)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@4.0.17)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1)
 
 packages:
 
@@ -2449,11 +2449,11 @@ packages:
       vite:
         optional: true
 
-  '@vitest/pretty-format@3.2.4':
-    resolution: {integrity: sha512-IVNZik8IVRJRTr9fxlitMKeJeXFFFN0JaB9PHPGQ8NKQbGpfjlTx9zO4RefN8gp7eqjNy8nyK3NZmBzOPeIxtA==}
-
   '@vitest/pretty-format@4.0.16':
     resolution: {integrity: sha512-eNCYNsSty9xJKi/UdVD8Ou16alu7AYiS2fCPRs0b1OdhJiV89buAXQLpTbe+X8V9L6qrs9CqyvU7OaAopJYPsA==}
+
+  '@vitest/pretty-format@4.0.17':
+    resolution: {integrity: sha512-Ah3VAYmjcEdHg6+MwFE17qyLqBHZ+ni2ScKCiW2XrlSBV4H3Z7vYfPfz7CWQ33gyu76oc0Ai36+kgLU3rfF4nw==}
 
   '@vitest/runner@4.0.16':
     resolution: {integrity: sha512-VWEDm5Wv9xEo80ctjORcTQRJ539EGPB3Pb9ApvVRAY1U/WkHXmmYISqU5E79uCwcW7xYUV38gwZD+RV755fu3Q==}
@@ -2464,16 +2464,16 @@ packages:
   '@vitest/spy@4.0.16':
     resolution: {integrity: sha512-4jIOWjKP0ZUaEmJm00E0cOBLU+5WE0BpeNr3XN6TEF05ltro6NJqHWxXD0kA8/Zc8Nh23AT8WQxwNG+WeROupw==}
 
-  '@vitest/ui@3.2.4':
-    resolution: {integrity: sha512-hGISOaP18plkzbWEcP/QvtRW1xDXF2+96HbEX6byqQhAUbiS5oH6/9JwW+QsQCIYON2bI6QZBF+2PvOmrRZ9wA==}
+  '@vitest/ui@4.0.17':
+    resolution: {integrity: sha512-hRDjg6dlDz7JlZAvjbiCdAJ3SDG+NH8tjZe21vjxfvT2ssYAn72SRXMge3dKKABm3bIJ3C+3wdunIdur8PHEAw==}
     peerDependencies:
-      vitest: 3.2.4
-
-  '@vitest/utils@3.2.4':
-    resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
+      vitest: 4.0.17
 
   '@vitest/utils@4.0.16':
     resolution: {integrity: sha512-h8z9yYhV3e1LEfaQ3zdypIrnAg/9hguReGZoS7Gl0aBG5xgA410zBqECqmaF/+RkTggRsfnzc1XaAHA6bmUufA==}
+
+  '@vitest/utils@4.0.17':
+    resolution: {integrity: sha512-RG6iy+IzQpa9SB8HAFHJ9Y+pTzI+h8553MrciN9eC6TFBErqrQaTas4vG+MVj8S4uKk8uTT2p0vgZPnTdxd96w==}
 
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
@@ -3741,9 +3741,6 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
-  loupe@3.2.1:
-    resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
-
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
@@ -4643,10 +4640,6 @@ packages:
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
-
-  tinyrainbow@2.0.0:
-    resolution: {integrity: sha512-op4nsTR47R6p0vMUUoYl/a+ljLFVtlfaXkLQmqfLR1qHma1h/ysYk4hEXZ880bf2CYgTskvTa/e196Vd5dDQXw==}
-    engines: {node: '>=14.0.0'}
 
   tinyrainbow@3.0.3:
     resolution: {integrity: sha512-PSkbLUoxOFRzJYjjxHJt9xro7D+iilgMX/C9lawzVuYiIdcihh9DXmVibBe8lmcFrRi/VzlPjBxbN7rH24q8/Q==}
@@ -7205,7 +7198,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@3.2.4)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@4.0.17)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -7227,11 +7220,11 @@ snapshots:
       msw: 2.12.7(@types/node@25.0.6)(typescript@5.9.3)
       vite: 7.3.1(@types/node@25.0.6)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1)
 
-  '@vitest/pretty-format@3.2.4':
-    dependencies:
-      tinyrainbow: 2.0.0
-
   '@vitest/pretty-format@4.0.16':
+    dependencies:
+      tinyrainbow: 3.0.3
+
+  '@vitest/pretty-format@4.0.17':
     dependencies:
       tinyrainbow: 3.0.3
 
@@ -7248,26 +7241,25 @@ snapshots:
 
   '@vitest/spy@4.0.16': {}
 
-  '@vitest/ui@3.2.4(vitest@4.0.16)':
+  '@vitest/ui@4.0.17(vitest@4.0.16)':
     dependencies:
-      '@vitest/utils': 3.2.4
+      '@vitest/utils': 4.0.17
       fflate: 0.8.2
       flatted: 3.3.3
       pathe: 2.0.3
       sirv: 3.0.2
       tinyglobby: 0.2.15
-      tinyrainbow: 2.0.0
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@3.2.4)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1)
-
-  '@vitest/utils@3.2.4':
-    dependencies:
-      '@vitest/pretty-format': 3.2.4
-      loupe: 3.2.1
-      tinyrainbow: 2.0.0
+      tinyrainbow: 3.0.3
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@4.0.17)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1)
 
   '@vitest/utils@4.0.16':
     dependencies:
       '@vitest/pretty-format': 4.0.16
+      tinyrainbow: 3.0.3
+
+  '@vitest/utils@4.0.17':
+    dependencies:
+      '@vitest/pretty-format': 4.0.17
       tinyrainbow: 3.0.3
 
   '@webassemblyjs/ast@1.14.1':
@@ -8484,8 +8476,6 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
-  loupe@3.2.1: {}
-
   lru-cache@10.4.3: {}
 
   lru-cache@5.1.1:
@@ -9417,8 +9407,6 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
-  tinyrainbow@2.0.0: {}
-
   tinyrainbow@3.0.3: {}
 
   tldts-core@7.0.19: {}
@@ -9573,7 +9561,7 @@ snapshots:
       terser: 5.44.1
       yaml: 2.8.1
 
-  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@3.2.4)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1):
+  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.6)(@vitest/ui@4.0.17)(happy-dom@20.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(terser@5.44.1)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.16
       '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@25.0.6)(typescript@5.9.3))(vite@7.3.1(@types/node@25.0.6)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))
@@ -9598,7 +9586,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/node': 25.0.6
-      '@vitest/ui': 3.2.4(vitest@4.0.16)
+      '@vitest/ui': 4.0.17(vitest@4.0.16)
       happy-dom: 20.1.0
     transitivePeerDependencies:
       - jiti
