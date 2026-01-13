@@ -13,7 +13,7 @@ importers:
         version: 0.37.4
       '@convex-dev/auth':
         specifier: ^0.0.90
-        version: 0.0.90(@auth/core@0.37.4)(convex@1.31.3(react@19.2.3))(react@19.2.3)
+        version: 0.0.90(@auth/core@0.37.4)(convex@1.31.4(react@19.2.3))(react@19.2.3)
       '@fontsource/noto-sans-jp':
         specifier: ^5.2.8
         version: 5.2.8
@@ -78,8 +78,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       convex:
-        specifier: ^1.31.3
-        version: 1.31.3(react@19.2.3)
+        specifier: ^1.31.4
+        version: 1.31.4(react@19.2.3)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -179,7 +179,7 @@ importers:
         version: 4.0.17(vitest@4.0.16)
       convex-test:
         specifier: ^0.0.41
-        version: 0.0.41(convex@1.31.3(react@19.2.3))
+        version: 0.0.41(convex@1.31.4(react@19.2.3))
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
@@ -2382,8 +2382,8 @@ packages:
   '@types/node@25.0.6':
     resolution: {integrity: sha512-NNu0sjyNxpoiW3YuVFfNz7mxSQ+S4X2G28uqg2s+CzoqoQjLPsWSbsFFyztIAqt2vb8kfEAsJNepMGPTxFDx3Q==}
 
-  '@types/node@25.0.7':
-    resolution: {integrity: sha512-C/er7DlIZgRJO7WtTdYovjIFzGsz0I95UlMyR9anTb4aCpBSRWe5Jc1/RvLKUfzmOxHPGjSE5+63HgLtndxU4w==}
+  '@types/node@25.0.8':
+    resolution: {integrity: sha512-powIePYMmC3ibL0UJ2i2s0WIbq6cg6UyVFQxSCpaPxxzAaziRfimGivjdF943sSGV6RADVbk0Nvlm5P/FB44Zg==}
 
   '@types/pg-pool@2.0.6':
     resolution: {integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ==}
@@ -2818,10 +2818,9 @@ packages:
     peerDependencies:
       convex: ^1.16.4
 
-  convex@1.31.3:
-    resolution: {integrity: sha512-SkpLjhFFnml2xKB4vNOaZ+MtqyhVmDdk5AIF2m8rW8Z7nZsMtuO1Tpn2BnDHCysZkZPJj9xopnsF5RtAINQ0Eg==}
+  convex@1.31.4:
+    resolution: {integrity: sha512-iDm283Gb/CFRb30cvhH6Z9qlYof6dhtin415FarKUKB3K7gumO0rn8snY0CTvUrThV3UnCtttbuL/1oY7LscyA==}
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
-    deprecated: This version of convex contains a bug when used with React Native. Install the latest version with `npm i convex@latest`
     hasBin: true
     peerDependencies:
       '@auth0/auth0-react': ^2.0.1
@@ -5276,12 +5275,12 @@ snapshots:
   '@biomejs/cli-win32-x64@2.3.11':
     optional: true
 
-  '@convex-dev/auth@0.0.90(@auth/core@0.37.4)(convex@1.31.3(react@19.2.3))(react@19.2.3)':
+  '@convex-dev/auth@0.0.90(@auth/core@0.37.4)(convex@1.31.4(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@auth/core': 0.37.4
       '@oslojs/crypto': 1.0.1
       '@oslojs/encoding': 1.1.0
-      convex: 1.31.3(react@19.2.3)
+      convex: 1.31.4(react@19.2.3)
       cookie: 1.0.2
       is-network-error: 1.3.0
       jose: 5.10.0
@@ -7131,7 +7130,7 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
-  '@types/node@25.0.7':
+  '@types/node@25.0.8':
     dependencies:
       undici-types: 7.16.0
 
@@ -7601,11 +7600,11 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex-test@0.0.41(convex@1.31.3(react@19.2.3)):
+  convex-test@0.0.41(convex@1.31.4(react@19.2.3)):
     dependencies:
-      convex: 1.31.3(react@19.2.3)
+      convex: 1.31.4(react@19.2.3)
 
-  convex@1.31.3(react@19.2.3):
+  convex@1.31.4(react@19.2.3):
     dependencies:
       esbuild: 0.27.0
       prettier: 3.7.4
@@ -8320,7 +8319,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.0.7
+      '@types/node': 25.0.8
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
