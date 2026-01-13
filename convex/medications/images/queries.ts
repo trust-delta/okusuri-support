@@ -1,17 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
-
-/**
- * タイミング型定義（共通）
- */
-const timingValidator = v.union(
-  v.literal("morning"),
-  v.literal("noon"),
-  v.literal("evening"),
-  v.literal("bedtime"),
-  v.literal("asNeeded"),
-);
+import { timingValidator } from "./validators";
 
 /**
  * 指定日・時間帯の服薬画像を取得

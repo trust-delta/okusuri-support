@@ -61,7 +61,7 @@ export function MedicationImageThumbnail({
           </DialogHeader>
 
           <div className="space-y-3">
-            <div className="relative aspect-4/3 w-full rounded-lg overflow-hidden border border-border">
+            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-border">
               <Image
                 src={imageUrl}
                 alt={timing ? `${timing}の服薬画像` : "服薬画像"}

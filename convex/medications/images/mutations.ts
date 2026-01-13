@@ -1,17 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import { mutation } from "../../_generated/server";
-
-/**
- * タイミング型定義（共通）
- */
-const timingValidator = v.union(
-  v.literal("morning"),
-  v.literal("noon"),
-  v.literal("evening"),
-  v.literal("bedtime"),
-  v.literal("asNeeded"),
-);
+import { timingValidator } from "./validators";
 
 /**
  * 服薬記録に画像を添付

@@ -3,7 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { Camera, ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export function MedicationImageUpload({
 
       // ファイルタイプチェック
       if (!ACCEPTED_TYPES.includes(file.type)) {
-        toast.error("JPEG、PNG、WebP形式の画像を選択してください");
+        toast.error("JPEG、PNG、WebP、HEIC形式の画像を選択してください");
         return;
       }
 
@@ -123,12 +123,18 @@ export function MedicationImageUpload({
           fileInputRef.current.value = "";
         }
       }
-
-      // クリーンアップ
-      return () => URL.revokeObjectURL(objectUrl);
     },
     [generateUploadUrl, attachImage, groupId, scheduledDate, timing],
   );
+
+  // previewUrlのクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleRemove = useCallback(async () => {
     if (!existingImage?._id) return;
@@ -251,7 +257,7 @@ function ImageUploadContent({
   if (displayUrl) {
     return (
       <div className="relative rounded-lg border border-border overflow-hidden">
-        <div className="relative aspect-4/3 w-full">
+        <div className="relative aspect-[4/3] w-full">
           <Image
             src={displayUrl}
             alt="服薬画像"
@@ -299,7 +305,7 @@ function ImageUploadContent({
       onClick={onFileSelect}
       disabled={disabled || isLoading}
       className={cn(
-        "w-full aspect-4/3 rounded-lg border-2 border-dashed",
+        "w-full aspect-[4/3] rounded-lg border-2 border-dashed",
         "border-border",
         "hover:border-primary/50",
         "bg-muted",
