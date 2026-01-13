@@ -34,6 +34,7 @@ export function PrescriptionBasedRecorder({
           allowGroupBySwitch={true}
           defaultGroupBy="timing"
           showBulkActions={true}
+          showTimingImages={true}
           isEditable={true}
           showUnrecordedStyle="solid"
           showRecordDetails={false}

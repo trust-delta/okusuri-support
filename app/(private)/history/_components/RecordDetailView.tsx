@@ -113,6 +113,7 @@ function DayRecordSection({
         scheduledDate={scheduledDate}
         allowGroupBySwitch={false}
         showBulkActions={isEditable}
+        showTimingImages={true}
         isEditable={isEditable}
         showUnrecordedStyle="dashed"
         showRecordDetails={true}

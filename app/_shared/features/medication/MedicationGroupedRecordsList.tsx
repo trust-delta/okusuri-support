@@ -16,8 +16,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatJST } from "@/lib/date-fns";
 import type { Id } from "@/schema";
 import { MEDICATION_TIMINGS } from "./constants";
+import { MedicationImageThumbnail } from "./MedicationImageThumbnail";
+import { MedicationImageUpload } from "./MedicationImageUpload";
 import { MedicationRecordActions } from "./MedicationRecordActions";
 import { TimingGroupActions } from "./TimingGroupActions";
+import type { MedicationTiming } from "./types";
 
 /**
  * タイミング値からラベルを取得するヘルパー
@@ -46,6 +49,7 @@ interface MedicationGroupedRecordsListProps {
   allowGroupBySwitch?: boolean; // グルーピング切り替え UI を表示 (default: false)
   defaultGroupBy?: "timing" | "prescription"; // 初期グルーピング (default: "timing")
   showBulkActions?: boolean; // まとめて操作を表示 (default: true)
+  showTimingImages?: boolean; // 時間帯ごとの画像を表示 (default: false)
 
   // UI制御
   isEditable?: boolean; // 編集可能か (default: true)
@@ -70,6 +74,7 @@ export function MedicationGroupedRecordsList({
   allowGroupBySwitch = false,
   defaultGroupBy = "timing",
   showBulkActions = true,
+  showTimingImages = false,
   isEditable = true,
   showUnrecordedStyle = "solid",
   showRecordDetails = false,
@@ -97,6 +102,12 @@ export function MedicationGroupedRecordsList({
     groupId,
     scheduledDate,
   });
+
+  // その日の画像を取得（showTimingImages が true の場合のみ）
+  const dayImages = useQuery(
+    api.medications.images.queries.getDayMedicationImages,
+    showTimingImages ? { groupId, scheduledDate } : "skip",
+  );
 
   // ローディング中
   if (medications === undefined || records === undefined) {
@@ -252,29 +263,60 @@ export function MedicationGroupedRecordsList({
           },
         );
 
+        // 時間帯グルーピング時の画像情報を取得
+        const timingImage =
+          groupBy === "timing" && showTimingImages && dayImages
+            ? dayImages[groupName as MedicationTiming]
+            : null;
+
         return (
           <div key={groupName} className="space-y-3">
             {/* グループ見出しとまとめて操作ボタン */}
             <div className="flex items-center justify-between border-b pb-2">
-              <h3 className="text-sm font-semibold text-foreground/80">
-                {groupBy === "timing" ? getTimingLabel(groupName) : groupName}
-              </h3>
-              {/* 時間帯でグルーピング & まとめて操作表示 & 編集可能の場合のみ */}
-              {groupBy === "timing" && showBulkActions && isEditable && (
-                <TimingGroupActions
-                  groupId={groupId}
-                  timing={
-                    groupName as
-                      | "morning"
-                      | "noon"
-                      | "evening"
-                      | "bedtime"
-                      | "asNeeded"
-                  }
-                  scheduledDate={scheduledDate}
-                  items={itemsWithRecordStatus}
-                />
-              )}
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground/80">
+                  {groupBy === "timing" ? getTimingLabel(groupName) : groupName}
+                </h3>
+                {/* 時間帯画像のサムネイル（閲覧のみ） */}
+                {groupBy === "timing" &&
+                  showTimingImages &&
+                  !isEditable &&
+                  timingImage?.imageUrl && (
+                    <MedicationImageThumbnail
+                      imageUrl={timingImage.imageUrl}
+                      notes={timingImage.notes}
+                      timing={getTimingLabel(groupName)}
+                      className="w-8 h-8"
+                    />
+                  )}
+              </div>
+              <div className="flex items-center gap-2">
+                {/* 時間帯画像のアップロードボタン（編集可能時） */}
+                {groupBy === "timing" && showTimingImages && isEditable && (
+                  <MedicationImageUpload
+                    groupId={groupId}
+                    scheduledDate={scheduledDate}
+                    timing={groupName as MedicationTiming}
+                    compact
+                  />
+                )}
+                {/* 時間帯でグルーピング & まとめて操作表示 & 編集可能の場合のみ */}
+                {groupBy === "timing" && showBulkActions && isEditable && (
+                  <TimingGroupActions
+                    groupId={groupId}
+                    timing={
+                      groupName as
+                        | "morning"
+                        | "noon"
+                        | "evening"
+                        | "bedtime"
+                        | "asNeeded"
+                    }
+                    scheduledDate={scheduledDate}
+                    items={itemsWithRecordStatus}
+                  />
+                )}
+              </div>
             </div>
 
             {/* グループ内の薬 */}
