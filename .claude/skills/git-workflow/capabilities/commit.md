@@ -107,3 +107,12 @@ useAuth フックを作成し、認証関連のロジックを一箇所に集約
 1. **コミット前の確認**: `npm run type-check && npm run lint`
 2. **機密情報の除外**: `.env`ファイルなどをコミットしない
 3. **原子的なコミット**: 1つのコミットは1つの論理的な変更
+4. **カッコを含むパス**: Next.js App Router の `(private)` などカッコを含むパスは、bashでエスケープが必要。ダブルクォートで囲むこと
+
+```bash
+# NG: カッコがシェルに解釈されてエラー
+git add app/(private)/_components/Example.tsx
+
+# OK: ダブルクォートで囲む
+git add "app/(private)/_components/Example.tsx"
+```

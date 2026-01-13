@@ -238,4 +238,35 @@ export const medicinesSchema = {
     .index("by_groupId_isRead", ["groupId", "isRead"])
     .index("by_alertType", ["alertType"])
     .index("by_createdAt", ["createdAt"]),
+
+  // ========================================
+  // 服薬記録画像機能
+  // ========================================
+
+  // 服薬記録画像: 時間帯ごとに1枚の画像を添付
+  medicationImages: defineTable({
+    groupId: v.id("groups"), // グループID
+    patientId: v.string(), // 服薬者のConvex Auth userId
+    scheduledDate: v.string(), // YYYY-MM-DD形式
+    timing: v.union(
+      v.literal("morning"), // 朝
+      v.literal("noon"), // 昼
+      v.literal("evening"), // 晩
+      v.literal("bedtime"), // 就寝前
+      v.literal("asNeeded"), // 頓服
+    ),
+    imageId: v.id("_storage"), // Convex Storage ID
+    notes: v.optional(v.string()), // 画像メモ（任意）
+    uploadedBy: v.string(), // アップロード者のConvex Auth userId
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_groupId", ["groupId"])
+    .index("by_patientId", ["patientId"])
+    .index("by_patientId_scheduledDate", ["patientId", "scheduledDate"])
+    .index("by_patientId_timing_scheduledDate", [
+      "patientId",
+      "timing",
+      "scheduledDate",
+    ]),
 };

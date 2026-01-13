@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { Header } from "./_components/Header";
+import { MobileNavigation } from "./_components/MobileNavigation";
 
 /**
  * 認証済みユーザー向けのレイアウト
@@ -8,6 +9,7 @@ import { Header } from "./_components/Header";
  * 非同期ページコンポーネント（dashboard, settings, invite等）が
  * 上位にサスペンドしないよう、Suspenseでラップしています。
  * ヘッダーは全ページで共通表示されます。
+ * モバイルではボトムナビゲーションを表示します。
  */
 export default function AuthenticatedLayout({
   children,
@@ -29,7 +31,7 @@ export default function AuthenticatedLayout({
         <Header />
       </Suspense>
 
-      {/* ページコンテンツ */}
+      {/* ページコンテンツ（モバイルではボトムナビの高さ分パディング） */}
       <Suspense
         fallback={
           <div className="min-h-[50vh] flex items-center justify-center">
@@ -40,8 +42,11 @@ export default function AuthenticatedLayout({
           </div>
         }
       >
-        {children}
+        <div className="pb-16 md:pb-0">{children}</div>
       </Suspense>
+
+      {/* モバイル用ボトムナビゲーション */}
+      <MobileNavigation />
     </div>
   );
 }

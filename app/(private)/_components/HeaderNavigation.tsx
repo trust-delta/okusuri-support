@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 
 /**
  * ヘッダーのナビゲーションボタン（Client Component）
+ * デスクトップのみ表示、モバイルはボトムナビを使用
  *
  * URLパラメータからgroupIdを読み取り、ナビゲーションリンクに含める
  */
@@ -24,7 +25,7 @@ export function HeaderNavigation() {
   const groupIdParam = groupId ? `?groupId=${groupId}` : "";
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="hidden md:flex items-center gap-2">
       <Link href={`/dashboard${groupIdParam}`}>
         <Button variant="ghost" size="icon">
           <Home className="h-5 w-5" />
