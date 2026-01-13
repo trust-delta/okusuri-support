@@ -96,7 +96,7 @@ export function MedicationImageUpload({
           throw new Error("アップロードに失敗しました");
         }
 
-        const { storageId } = await response.json();
+        const { storageId } = (await response.json()) as { storageId: string };
 
         // 画像を添付
         await attachImage({
@@ -322,7 +322,7 @@ function ImageUploadContent({
           <ImageIcon className="h-10 w-10" />
           <span className="text-sm">クリックして画像を選択</span>
           <span className="text-xs text-muted-foreground/70">
-            JPEG, PNG, WebP (最大5MB)
+            JPEG, PNG, WebP, HEIC (最大5MB)
           </span>
         </>
       )}
