@@ -80,8 +80,32 @@ try {
 
   // 新しい閾値を超えた場合のみアラート
   if (currentThreshold > lastThreshold) {
-    console.log(\`[Context Alert] コンテキスト使用率が\${currentThreshold}%を超えました。ユーザーに知らせてください。\`);
     fs.writeFileSync(thresholdFile, String(currentThreshold));
+
+    // 閾値に応じたメッセージを生成
+    if (currentThreshold >= 70) {
+      // 緊急: 自動compact間近
+      console.log(\`[Context URGENT] コンテキスト使用率が\${currentThreshold}%に達しました。自動compact(約77%)が間近です。\`);
+      console.log(\`【必須アクション】ユーザーの指示を実行する前に、AskUserQuestionツールで以下を確認してください：\`);
+      console.log(\`「コンテキスト使用率が\${percent}%に達し、自動compact(77%)が間近です。自動compactは品質低下を招く可能性があります。\`);
+      console.log(\`次のいずれかを選択してください：\`);
+      console.log(\`1. 今すぐ /compact を実行する\`);
+      console.log(\`2. 現在のタスクを完了してセッションを終了する\`);
+      console.log(\`3. このまま続行する（自動compactのリスクあり）」\`);
+    } else if (currentThreshold >= 60) {
+      // 強い警告
+      console.log(\`[Context WARNING] コンテキスト使用率が\${currentThreshold}%に達しました。自動compact(約77%)まで残り約\${77 - percent}%です。\`);
+      console.log(\`【推奨アクション】ユーザーの指示を実行する前に、AskUserQuestionツールで以下を確認してください：\`);
+      console.log(\`「コンテキスト使用率が\${percent}%です。作業中に自動compact(77%)が発動する可能性が高いです。\`);
+      console.log(\`今のうちに /compact するか、セッションを区切ることを推奨します。どうしますか？」\`);
+    } else if (currentThreshold >= 50) {
+      // 注意喚起 + 確認
+      console.log(\`[Context NOTICE] コンテキスト使用率が\${currentThreshold}%に達しました。\`);
+      console.log(\`【確認推奨】大きなタスクを開始する前に、ユーザーにコンテキスト状況を伝え、必要に応じて /compact やセッション区切りを提案してください。\`);
+    } else {
+      // 情報のみ
+      console.log(\`[Context Info] コンテキスト使用率が\${currentThreshold}%を超えました。\`);
+    }
   }
 } catch (e) {
   // エラーは静かに無視
