@@ -226,7 +226,6 @@ export function MedicationImageUpload({
         displayUrl={displayUrl}
         isLoading={isLoading}
         disabled={disabled}
-        hasImage={hasImage}
         onFileSelect={() => fileInputRef.current?.click()}
         onRemove={handleRemove}
       />
