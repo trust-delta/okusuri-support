@@ -96,7 +96,9 @@ export function MedicationImageUpload({
           throw new Error("アップロードに失敗しました");
         }
 
-        const { storageId } = (await response.json()) as { storageId: string };
+        const { storageId } = (await response.json()) as {
+          storageId: Id<"_storage">;
+        };
 
         // 画像を添付
         await attachImage({
