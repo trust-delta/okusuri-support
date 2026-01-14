@@ -1,6 +1,6 @@
 # プロジェクト概要
 
-**最終更新**: 2025年11月30日
+**最終更新**: 2026年01月14日
 
 ---
 
@@ -53,14 +53,14 @@
 
 #### コアフレームワーク
 
-- **Next.js 15.5.3**: App Router + Turbopack
-- **React 19.1.0**: Server/Client Components
+- **Next.js 16.1.1**: App Router + Turbopack
+- **React 19.2.3**: Server/Client Components
 
 #### スタイリング
 
 - **Tailwind CSS v4**: ユーティリティファーストCSS
 - **shadcn/ui**: カスタマイズ可能なコンポーネント（Radix UI + Tailwind）
-- **lucide-react 0.544.0**: アイコン
+- **lucide-react 0.562.0**: アイコン
 - **Sonner 2.0.7**: トースト通知
 
 #### 状態管理
@@ -69,21 +69,21 @@
 
 #### フォーム管理
 
-- **react-hook-form 7.65.0**: フォーム状態管理
-- **zod 4.1.12**: スキーマバリデーション
+- **react-hook-form 7.71.0**: フォーム状態管理
+- **zod 4.3.5**: スキーマバリデーション
 - **@hookform/resolvers 5.2.2**: バリデーションリゾルバー
 
 #### ユーティリティ
 
 - **date-fns 4.1.0 + date-fns-tz 3.2.0**: 日付操作
 - **clsx 2.1.1**: クラス名管理
-- **tailwind-merge 3.3.1**: Tailwindクラス競合解決
+- **tailwind-merge 3.4.0**: Tailwindクラス競合解決
 
 ### バックエンド
 
 ### BaaSプラットフォーム
 
-- **Convex 1.27.1**: サーバーレスバックエンド
+- **Convex 1.31.4**: サーバーレスバックエンド
   - TypeScriptネイティブ
   - リアクティブクエリ（WebSocket自動同期）
   - 組み込みNoSQLデータベース
@@ -94,7 +94,7 @@
   - パスワード認証（bcrypt）
   - OTPメール認証
   - OAuth対応準備完了
-- **jose 6.1.0**: JWT処理
+- **jose 6.1.3**: JWT処理
 - **@oslojs/crypto 1.0.1**: 暗号化ユーティリティ
 
 #### メール送信
