@@ -238,13 +238,15 @@ medicationRecords ─── (n) medicationRecordsHistory
 {
   _id,
   groupId: Id<"groups">,
+  prescriptionId?: Id<"prescriptions">,  // 処方箋ID
   name: string,
   description?: string,
   createdBy: string,
   createdAt: number,
-  isActive: boolean  // 服用中かどうか
+  deletedAt?: number,   // 論理削除日時
+  deletedBy?: string    // 削除者のuserId
 }
-// Indexes: by_groupId, by_groupId_isActive
+// Indexes: by_groupId, by_prescriptionId
 ```
 
 **medicationSchedules**
@@ -255,11 +257,13 @@ medicationRecords ─── (n) medicationRecordsHistory
   medicineId: Id<"medicines">,
   groupId: Id<"groups">,
   timings: ("morning" | "noon" | "evening" | "bedtime" | "asNeeded")[],
-  dosage?: string,
+  dosage?: { amount: number, unit: string },  // 用量（数値+単位）
   notes?: string,
   createdBy: string,
   createdAt: number,
-  updatedAt: number
+  updatedAt: number,
+  deletedAt?: number,   // 論理削除日時
+  deletedBy?: string    // 削除者のuserId
 }
 // Indexes: by_medicineId, by_groupId
 ```
@@ -419,6 +423,6 @@ Convex (Managed Service)
 ## 関連ドキュメント
 
 - [プロジェクト概要](project.md)
-- [技術スタック](tech-stack.md)
 - [テスト戦略](testing-strategy.md)
 - [エラーハンドリング](error-handling.md)
+- [コーディング規約](coding-style.md)
