@@ -130,7 +130,6 @@ pnpm run build
 ## 関連ドキュメント
 
 - [プロジェクト概要](../project.md)
-- [技術スタック](../tech-stack.md)
 
 ---
 
