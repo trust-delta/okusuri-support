@@ -7,8 +7,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TMP_DIR="$SCRIPT_DIR/../tmp/hooks"
 mkdir -p "$TMP_DIR"
 
-THRESHOLD_STEP=5  # 5%刻み
-
 # stdinからJSON入力を読み取り
 INPUT=$(cat)
 
@@ -28,7 +26,6 @@ try {
   // セッションごとのファイルパス
   const tmpDir = '$TMP_DIR';
   const contextFile = tmpDir + '/context-' + sessionId + '.json';
-  const thresholdFile = tmpDir + '/threshold-' + sessionId + '.txt';
 
   // コンテキストファイルが存在しない場合は終了
   if (!fs.existsSync(contextFile)) {
@@ -52,61 +49,55 @@ try {
   const total = inputTokens + cacheCreation + cacheRead;
   const percent = Math.round(total * 100 / windowSize);
 
+  // 60%未満は何もしない
+  if (percent < 60) {
+    process.exit(0);
+  }
+
   // バー表示
   const barLength = 20;
   const filled = Math.round(percent / 100 * barLength);
   const bar = '█'.repeat(filled) + '░'.repeat(barLength - filled);
+  const contextBar = \`[Context] \${bar} \${percent}% (\${total.toLocaleString()} / \${windowSize.toLocaleString()} tokens)\`;
 
-  const message = \`[Context] \${bar} \${percent}% (\${total.toLocaleString()} / \${windowSize.toLocaleString()} tokens)\`;
-  console.log(message);    // Claudeへのコンテキスト
+  // 緊急度に応じたメッセージとオプション
+  let urgency, question, options;
 
-  // 閾値チェック
-  const thresholdStep = $THRESHOLD_STEP;
-  const currentThreshold = Math.floor(percent / thresholdStep) * thresholdStep;
-
-  let lastThreshold = -1;
-  try {
-    lastThreshold = parseInt(fs.readFileSync(thresholdFile, 'utf8').trim());
-    if (isNaN(lastThreshold)) lastThreshold = -1;
-  } catch (e) {
-    // ファイルがなければ-1（未初期化）
+  if (percent >= 75) {
+    urgency = 'CRITICAL';
+    question = \`⚠️ コンテキスト使用率が \${percent}% に達しています。自動compact(77%)が間近です。\`;
+    options = [
+      { label: '/compact を入力する（推奨）', desc: '次のプロンプトで /compact と入力してコンテキストを整理します' },
+      { label: 'このまま続行', desc: '自動compact(77%)が発動するリスクを承知で作業を継続します' }
+    ];
+  } else if (percent >= 70) {
+    urgency = 'WARNING';
+    question = \`⚠️ コンテキスト使用率が \${percent}% です。自動compact(77%)まで残り約 \${77 - percent}% です。\`;
+    options = [
+      { label: '/compact を入力する（推奨）', desc: '次のプロンプトで /compact と入力してコンテキストを整理します' },
+      { label: 'このまま続行', desc: '自動compactが近いですが、作業を継続します' }
+    ];
+  } else {
+    urgency = 'NOTICE';
+    question = \`コンテキスト使用率が \${percent}% です。自動compact(77%)まで残り約 \${77 - percent}% です。\`;
+    options = [
+      { label: 'このまま続行', desc: 'まだ余裕があります。作業を継続します' },
+      { label: '/compact を入力する', desc: '今のうちにコンテキストを整理します' }
+    ];
   }
 
-  // 未初期化の場合、現在の閾値で初期化（アラートなし）
-  if (lastThreshold === -1) {
-    fs.writeFileSync(thresholdFile, String(currentThreshold));
-    lastThreshold = currentThreshold;
-  }
+  // AskUserQuestion用の指示を出力
+  console.log(\`【Claude への必須指示】ユーザーの指示を実行する前に、以下の内容でAskUserQuestionツールを使用して確認してください:\`);
+  console.log(\`\`);
+  console.log(\`header: \"Context \${urgency}\"\`);
+  console.log(\`question: \"\${question}\"\`);
+  console.log(\`options:\`);
+  options.forEach(opt => {
+    console.log(\`  - label: \"\${opt.label}\", description: \"\${opt.desc}\"\`);
+  });
+  console.log(\`\`);
+  console.log(\`contextBar: \${contextBar}\`);
 
-  // 新しい閾値を超えた場合のみアラート
-  if (currentThreshold > lastThreshold) {
-    fs.writeFileSync(thresholdFile, String(currentThreshold));
-
-    // 閾値に応じたメッセージを生成
-    if (currentThreshold >= 70) {
-      // 緊急: 自動compact間近
-      console.log(\`[Context URGENT] コンテキスト使用率が\${currentThreshold}%に達しました。自動compact(約77%)が間近です。\`);
-      console.log(\`【必須アクション】ユーザーの指示を実行する前に、AskUserQuestionツールで以下を確認してください：\`);
-      console.log(\`「コンテキスト使用率が\${percent}%に達し、自動compact(77%)が間近です。自動compactは品質低下を招く可能性があります。\`);
-      console.log(\`次のいずれかを選択してください：\`);
-      console.log(\`1. 今すぐ /compact を実行する\`);
-      console.log(\`2. 現在のタスクを完了してセッションを終了する\`);
-      console.log(\`3. このまま続行する（自動compactのリスクあり）」\`);
-    } else if (currentThreshold >= 60) {
-      // 強い警告
-      console.log(\`[Context WARNING] コンテキスト使用率が\${currentThreshold}%に達しました。自動compact(約77%)まで残り約\${77 - percent}%です。\`);
-      console.log(\`【推奨アクション】ユーザーの指示を実行する前に、AskUserQuestionツールで以下を確認してください：\`);
-      console.log(\`「コンテキスト使用率が\${percent}%です。作業中に自動compact(77%)が発動する可能性が高いです。\`);
-      console.log(\`今のうちに /compact するか、セッションを区切ることを推奨します。どうしますか？」\`);
-    } else if (currentThreshold >= 50) {
-      // 注意喚起 + 確認
-      console.log(\`[Context NOTICE] コンテキスト使用率が\${currentThreshold}%に達しました。\`);
-      console.log(\`【確認推奨】大きなタスクを開始する前に、ユーザーにコンテキスト状況を伝え、必要に応じて /compact やセッション区切りを提案してください。\`);
-    } else {
-      // 情報のみ
-      console.log(\`[Context Info] コンテキスト使用率が\${currentThreshold}%を超えました。\`);
-    }
-  }
 } catch (e) {
   // エラーは静かに無視
 }
