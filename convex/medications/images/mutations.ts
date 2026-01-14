@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
 import { timingValidator } from "./validators";
 
 /**
@@ -15,10 +17,10 @@ export const attachMedicationImage = mutation({
     storageId: v.id("_storage"),
     notes: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"medicationImages">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -29,7 +31,7 @@ export const attachMedicationImage = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // グループ内の患者を取得
@@ -45,7 +47,7 @@ export const attachMedicationImage = mutation({
       .first();
 
     if (!patient) {
-      throw new ConvexError("グループに患者が登録されていません");
+      return error("グループに患者が登録されていません");
     }
 
     const now = Date.now();
@@ -74,7 +76,7 @@ export const attachMedicationImage = mutation({
         updatedAt: now,
       });
 
-      return existingImage._id;
+      return success(existingImage._id);
     } else {
       // 新規作成
       const imageId = await ctx.db.insert("medicationImages", {
@@ -89,7 +91,7 @@ export const attachMedicationImage = mutation({
         updatedAt: now,
       });
 
-      return imageId;
+      return success(imageId);
     }
   },
 });
@@ -101,16 +103,16 @@ export const removeMedicationImage = mutation({
   args: {
     imageId: v.id("medicationImages"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 画像レコードを取得
     const image = await ctx.db.get(args.imageId);
     if (!image) {
-      throw new ConvexError("画像が見つかりません");
+      return error("画像が見つかりません");
     }
 
     // グループメンバーか確認
@@ -121,7 +123,7 @@ export const removeMedicationImage = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // ストレージから画像を削除
@@ -129,6 +131,8 @@ export const removeMedicationImage = mutation({
 
     // レコードを削除
     await ctx.db.delete(args.imageId);
+
+    return success(null);
   },
 });
 
@@ -140,16 +144,16 @@ export const updateMedicationImageNotes = mutation({
     imageId: v.id("medicationImages"),
     notes: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 画像レコードを取得
     const image = await ctx.db.get(args.imageId);
     if (!image) {
-      throw new ConvexError("画像が見つかりません");
+      return error("画像が見つかりません");
     }
 
     // グループメンバーか確認
@@ -160,7 +164,7 @@ export const updateMedicationImageNotes = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // メモを更新
@@ -168,5 +172,7 @@ export const updateMedicationImageNotes = mutation({
       notes: args.notes,
       updatedAt: Date.now(),
     });
+
+    return success(null);
   },
 });

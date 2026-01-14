@@ -76,10 +76,10 @@ export const checkMedicationReminders = internalAction({
             payload,
           });
 
-          if (result.success) {
-            sentCount += result.sent || 0;
+          if (result.isSuccess) {
+            sentCount += result.data.sent || 0;
           } else {
-            errors.push(`Group ${record.groupId}: ${result.message}`);
+            errors.push(`Group ${record.groupId}: ${result.errorMessage}`);
           }
         } catch (error) {
           const errorMessage =

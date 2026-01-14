@@ -61,17 +61,17 @@ export function MonthlyStatsCard({
   year,
   month,
 }: MonthlyStatsCardProps) {
-  const stats = useQuery(api.medications.getMonthlyStats, {
+  const statsResult = useQuery(api.medications.getMonthlyStats, {
     groupId,
     year,
     month,
   });
 
-  if (stats === undefined) {
+  if (statsResult === undefined) {
     return <MonthlyStatsCardSkeleton />;
   }
 
-  if (stats === null) {
+  if (!statsResult.isSuccess) {
     return (
       <Card>
         <CardHeader>
@@ -97,7 +97,7 @@ export function MonthlyStatsCard({
     adherenceRate,
     timingStats,
     asNeeded,
-  } = stats;
+  } = statsResult.data;
 
   return (
     <Card>

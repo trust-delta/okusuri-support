@@ -1,10 +1,11 @@
 "use node";
 
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import webpush from "web-push";
 import { api, internal } from "../_generated/api";
 import { action } from "../_generated/server";
+import { error, type Result, success } from "../types/result";
 
 // VAPID設定
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
@@ -50,27 +51,51 @@ const pushPayloadValidator = v.object({
   data: v.optional(pushNotificationDataValidator),
 });
 
+type TestNotificationResult = {
+  success: boolean;
+  message: string;
+  sent: number;
+  failed: number;
+  errors?: string[];
+};
+
+type SendToUserResult = {
+  success: boolean;
+  message?: string;
+  sent: number;
+  errors?: string[];
+};
+
+type SendToGroupResult = {
+  success: boolean;
+  message: string;
+  sent: number;
+  total?: number;
+  memberCount?: number;
+  errors?: string[];
+};
+
 /**
  * テスト通知を送信
  */
 export const sendTestNotification = action({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<Result<TestNotificationResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // ユーザーのサブスクリプションを取得
     const subscriptions = await ctx.runQuery(api.push.queries.list);
 
     if (subscriptions.length === 0) {
-      return {
+      return success({
         success: false,
         message: "プッシュ通知のサブスクリプションが見つかりませんでした",
         sent: 0,
         failed: 0,
-      };
+      });
     }
 
     const payload = {
@@ -97,14 +122,13 @@ export const sendTestNotification = action({
           JSON.stringify(payload),
         );
         sent++;
-      } catch (error) {
+      } catch (err) {
         failed++;
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
+        const errorMessage = err instanceof Error ? err.message : String(err);
         errors.push(
           `Endpoint ${subscription.endpoint.substring(0, 50)}...: ${errorMessage}`,
         );
-        console.error("Push notification error:", error);
+        console.error("Push notification error:", err);
 
         // サブスクリプションが無効な場合は削除
         if (errorMessage.includes("410") || errorMessage.includes("404")) {
@@ -115,13 +139,13 @@ export const sendTestNotification = action({
       }
     }
 
-    return {
+    return success({
       success: sent > 0,
       message: `${sent}件送信、${failed}件失敗`,
       sent,
       failed,
       errors: errors.length > 0 ? errors : undefined,
-    };
+    });
   },
 });
 
@@ -133,21 +157,21 @@ export const sendToUser = action({
     userId: v.string(),
     payload: pushPayloadValidator,
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<SendToUserResult>> => {
     const currentUserId = await getAuthUserId(ctx);
     if (!currentUserId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 対象ユーザーのサブスクリプションを取得
     const subscriptions = await ctx.runQuery(api.push.queries.list, {});
 
     if (subscriptions.length === 0) {
-      return {
+      return success({
         success: false,
         message: "サブスクリプションが見つかりませんでした",
         sent: 0,
-      };
+      });
     }
 
     let sent = 0;
@@ -166,11 +190,10 @@ export const sendToUser = action({
           JSON.stringify(args.payload),
         );
         sent++;
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
         errors.push(`Failed to send: ${errorMessage}`);
-        console.error("Push notification error:", error);
+        console.error("Push notification error:", err);
 
         // サブスクリプションが無効な場合は削除
         if (errorMessage.includes("410") || errorMessage.includes("404")) {
@@ -181,11 +204,11 @@ export const sendToUser = action({
       }
     }
 
-    return {
+    return success({
       success: sent > 0,
       sent,
       errors: errors.length > 0 ? errors : undefined,
-    };
+    });
   },
 });
 
@@ -197,20 +220,10 @@ export const sendToGroup = action({
     groupId: v.id("groups"),
     payload: pushPayloadValidator,
   },
-  handler: async (
-    ctx,
-    args,
-  ): Promise<{
-    success: boolean;
-    message: string;
-    sent: number;
-    total?: number;
-    memberCount?: number;
-    errors?: string[];
-  }> => {
+  handler: async (ctx, args): Promise<Result<SendToGroupResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーを取得
@@ -219,11 +232,11 @@ export const sendToGroup = action({
     });
 
     if (!members || members.length === 0) {
-      return {
+      return success({
         success: false,
         message: "グループメンバーが見つかりませんでした",
         sent: 0,
-      };
+      });
     }
 
     // 各メンバーのサブスクリプションを取得して通知送信
@@ -254,11 +267,10 @@ export const sendToGroup = action({
             JSON.stringify(args.payload),
           );
           sent++;
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : String(err);
           errors.push(`Failed to send: ${errorMessage}`);
-          console.error("Push notification error:", error);
+          console.error("Push notification error:", err);
 
           // サブスクリプションが無効な場合は削除
           if (errorMessage.includes("410") || errorMessage.includes("404")) {
@@ -270,13 +282,13 @@ export const sendToGroup = action({
       }
     }
 
-    return {
+    return success({
       success: sent > 0,
       message: `${sent}/${totalSubscriptions}件送信（メンバー数: ${members.length}）`,
       sent,
       total: totalSubscriptions,
       memberCount: members.length,
       errors: errors.length > 0 ? errors : undefined,
-    };
+    });
   },
 });

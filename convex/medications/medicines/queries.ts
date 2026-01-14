@@ -1,6 +1,13 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Doc } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
+
+type MedicineWithDetails = Doc<"medicines"> & {
+  prescriptionName?: string;
+  dosageUnit?: string;
+};
 
 /**
  * グループの薬一覧を取得
@@ -9,10 +16,10 @@ export const getGroupMedicines = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<MedicineWithDetails[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -23,7 +30,7 @@ export const getGroupMedicines = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 削除されていない薬を取得
@@ -62,7 +69,7 @@ export const getGroupMedicines = query({
       }),
     );
 
-    return medicinesWithDetails;
+    return success(medicinesWithDetails);
   },
 });
 
@@ -73,15 +80,15 @@ export const getMedicineRecordCount = query({
   args: {
     medicineId: v.id("medicines"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<number>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const medicine = await ctx.db.get(args.medicineId);
     if (!medicine) {
-      throw new ConvexError("薬が見つかりません");
+      return error("薬が見つかりません");
     }
 
     // グループメンバーか確認
@@ -92,7 +99,7 @@ export const getMedicineRecordCount = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // この薬の服薬記録を取得（削除されていないもの）
@@ -106,6 +113,6 @@ export const getMedicineRecordCount = query({
       )
       .collect();
 
-    return records.length;
+    return success(records.length);
   },
 });

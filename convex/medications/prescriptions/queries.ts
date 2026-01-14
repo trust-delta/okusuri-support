@@ -1,7 +1,17 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Doc, Id } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
 import { getActiveMedicationsForDate } from "./helpers";
+
+type PrescriptionWithImage = Doc<"prescriptions"> & {
+  imageUrl: string | null;
+};
+
+type MedicineWithSchedule = Doc<"medicines"> & {
+  schedule: Doc<"medicationSchedules"> | null;
+};
 
 /**
  * グループの処方箋一覧を取得
@@ -10,10 +20,10 @@ export const getPrescriptions = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<PrescriptionWithImage[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -24,7 +34,7 @@ export const getPrescriptions = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 処方箋一覧を取得（開始日の降順）
@@ -50,7 +60,7 @@ export const getPrescriptions = query({
       }),
     );
 
-    return prescriptionsWithImageUrl;
+    return success(prescriptionsWithImageUrl);
   },
 });
 
@@ -61,10 +71,10 @@ export const getDeletedPrescriptions = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Doc<"prescriptions">[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -75,7 +85,7 @@ export const getDeletedPrescriptions = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 削除された処方箋一覧を取得（削除日の降順）
@@ -92,7 +102,7 @@ export const getDeletedPrescriptions = query({
       return bTime - aTime;
     });
 
-    return deletedPrescriptions;
+    return success(deletedPrescriptions);
   },
 });
 
@@ -103,15 +113,15 @@ export const getPrescription = query({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Doc<"prescriptions">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription || prescription.deletedAt !== undefined) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // グループメンバーか確認
@@ -122,10 +132,10 @@ export const getPrescription = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
-    return prescription;
+    return success(prescription);
   },
 });
 
@@ -136,15 +146,15 @@ export const getPrescriptionMedicines = query({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<MedicineWithSchedule[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription || prescription.deletedAt !== undefined) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // グループメンバーか確認
@@ -155,7 +165,7 @@ export const getPrescriptionMedicines = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // この処方箋に紐付く薬を取得
@@ -183,7 +193,7 @@ export const getPrescriptionMedicines = query({
       }),
     );
 
-    return medicinesWithSchedules;
+    return success(medicinesWithSchedules);
   },
 });
 
@@ -195,10 +205,15 @@ export const getActiveMedicationsForDateQuery = query({
     groupId: v.id("groups"),
     date: v.string(), // YYYY-MM-DD
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<
+    Result<Awaited<ReturnType<typeof getActiveMedicationsForDate>>>
+  > => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -209,9 +224,14 @@ export const getActiveMedicationsForDateQuery = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
-    return await getActiveMedicationsForDate(ctx, args.groupId, args.date);
+    const result = await getActiveMedicationsForDate(
+      ctx,
+      args.groupId,
+      args.date,
+    );
+    return success(result);
   },
 });

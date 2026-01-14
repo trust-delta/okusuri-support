@@ -253,14 +253,16 @@ describe("パフォーマンステスト - 招待機能", () => {
       const endTimeAll = performance.now();
       const latencyAll = endTimeAll - startTimeAll;
 
-      expect(allInvitations).toHaveLength(100);
+      expect(allInvitations.isSuccess).toBe(true);
+      if (!allInvitations.isSuccess)
+        throw new Error("Failed to get invitations");
+      expect(allInvitations.data).toHaveLength(100);
       console.log(`全件取得レイテンシ: ${latencyAll.toFixed(2)}ms`);
 
       // クライアント側でのフィルタリング（有効な招待のみ）
       const startTimeFilter = performance.now();
-      const validInvitations = allInvitations.filter(
-        (inv: (typeof allInvitations)[number]) =>
-          !inv.isUsed && inv.expiresAt > Date.now(),
+      const validInvitations = allInvitations.data.filter(
+        (inv) => !inv.isUsed && inv.expiresAt > Date.now(),
       );
       const endTimeFilter = performance.now();
       const latencyFilter = endTimeFilter - startTimeFilter;

@@ -130,8 +130,12 @@ export function MedicationGroupedRecordsList({
     );
   }
 
+  // Result型からデータを取得
+  const medicationsData = medications.isSuccess ? medications.data : [];
+  const recordsData = records.isSuccess ? records.data : [];
+
   // 薬がない場合
-  if (medications.length === 0) {
+  if (medicationsData.length === 0) {
     return (
       <div>
         {title && (
@@ -151,22 +155,16 @@ export function MedicationGroupedRecordsList({
   }
 
   // 薬ごとにタイミング別に展開
-  const medicationItems = medications.flatMap(
-    (med: (typeof medications)[number]) =>
-      med.timings.map((timing: string) => ({
-        medicineId: med.medicineId,
-        scheduleId: med.scheduleId,
-        medicineName: med.medicineName,
-        prescriptionId: med.prescriptionId,
-        prescriptionName: med.prescriptionName,
-        timing: timing as
-          | "morning"
-          | "noon"
-          | "evening"
-          | "bedtime"
-          | "asNeeded",
-        dosage: med.dosage,
-      })),
+  const medicationItems = medicationsData.flatMap((med) =>
+    med.timings.map((timing: string) => ({
+      medicineId: med.medicineId,
+      scheduleId: med.scheduleId,
+      medicineName: med.medicineName,
+      prescriptionId: med.prescriptionId,
+      prescriptionName: med.prescriptionName,
+      timing: timing as "morning" | "noon" | "evening" | "bedtime" | "asNeeded",
+      dosage: med.dosage,
+    })),
   );
 
   // グルーピング処理
@@ -250,8 +248,8 @@ export function MedicationGroupedRecordsList({
         // グループ内の薬の記録状態を取得
         const itemsWithRecordStatus = items.map(
           (item: (typeof items)[number]) => {
-            const record = records?.find(
-              (r: (typeof records)[number]) =>
+            const record = recordsData.find(
+              (r) =>
                 r.medicineId === item.medicineId && r.timing === item.timing,
             );
             return {
@@ -322,8 +320,8 @@ export function MedicationGroupedRecordsList({
             {/* グループ内の薬 */}
             <div className="space-y-2">
               {items.map((item: (typeof items)[number], index: number) => {
-                const record = records?.find(
-                  (r: (typeof records)[number]) =>
+                const record = recordsData.find(
+                  (r) =>
                     r.medicineId === item.medicineId &&
                     r.timing === item.timing,
                 );

@@ -162,8 +162,10 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(invitations).toHaveLength(1);
-      expect(invitations[0]?.code).toBe("FIRST");
+      expect(invitations.isSuccess).toBe(true);
+      if (!invitations.isSuccess) throw new Error("Failed to get invitations");
+      expect(invitations.data).toHaveLength(1);
+      expect(invitations.data[0]?.code).toBe("FIRST");
 
       // 招待を2件目作成
       await asUser.mutation(internal.invitations.createInvitationInternal, {
@@ -178,13 +180,11 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(invitations).toHaveLength(2);
-      expect(
-        invitations.map((i: (typeof invitations)[number]) => i.code),
-      ).toContain("FIRST");
-      expect(
-        invitations.map((i: (typeof invitations)[number]) => i.code),
-      ).toContain("SECOND");
+      expect(invitations.isSuccess).toBe(true);
+      if (!invitations.isSuccess) throw new Error("Failed to get invitations");
+      expect(invitations.data).toHaveLength(2);
+      expect(invitations.data.map((i) => i.code)).toContain("FIRST");
+      expect(invitations.data.map((i) => i.code)).toContain("SECOND");
     });
   });
 

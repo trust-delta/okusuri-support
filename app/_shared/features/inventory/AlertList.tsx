@@ -74,7 +74,10 @@ export function AlertList({ groupId }: AlertListProps) {
     );
   }
 
-  if (alerts.length === 0) {
+  // Result型からデータを取得
+  const alertsData = alerts.isSuccess ? alerts.data : [];
+
+  if (alertsData.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -116,7 +119,7 @@ export function AlertList({ groupId }: AlertListProps) {
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
               在庫アラート
-              <Badge variant="destructive">{alerts.length}</Badge>
+              <Badge variant="destructive">{alertsData.length}</Badge>
             </CardTitle>
             <CardDescription>確認が必要なアラートがあります</CardDescription>
           </div>
@@ -126,7 +129,7 @@ export function AlertList({ groupId }: AlertListProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {alerts.map((alert) => {
+        {alertsData.map((alert) => {
           const Icon = ALERT_ICONS[alert.alertType];
           const timeAgo = formatDistanceToNow(new Date(alert.createdAt), {
             addSuffix: true,

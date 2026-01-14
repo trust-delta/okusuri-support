@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
 
 /**
  * 処方箋を作成（薬も一緒に登録）
@@ -36,10 +38,10 @@ export const createPrescription = mutation({
       ),
     ),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"prescriptions">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -50,12 +52,12 @@ export const createPrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 日付の妥当性チェック
     if (args.endDate && args.startDate > args.endDate) {
-      throw new ConvexError("終了日は開始日より後である必要があります");
+      return error("終了日は開始日より後である必要があります");
     }
 
     const now = Date.now();
@@ -119,7 +121,7 @@ export const createPrescription = mutation({
       }
     }
 
-    return prescriptionId;
+    return success(prescriptionId);
   },
 });
 
@@ -135,15 +137,15 @@ export const updatePrescription = mutation({
     clearEndDate: v.optional(v.boolean()), // trueの場合、終了日を削除
     notes: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"prescriptions">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // グループメンバーか確認
@@ -154,7 +156,7 @@ export const updatePrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 更新後の値を計算
@@ -168,7 +170,7 @@ export const updatePrescription = mutation({
 
     // 日付の妥当性チェック（終了日がある場合のみ）
     if (newEndDate && newStartDate > newEndDate) {
-      throw new ConvexError("終了日は開始日より後である必要があります");
+      return error("終了日は開始日より後である必要があります");
     }
 
     // 更新するフィールドを準備
@@ -194,7 +196,7 @@ export const updatePrescription = mutation({
 
     await ctx.db.patch(args.prescriptionId, updates);
 
-    return args.prescriptionId;
+    return success(args.prescriptionId);
   },
 });
 
@@ -205,20 +207,20 @@ export const deletePrescription = mutation({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 既に論理削除されている場合はエラー
     if (prescription.deletedAt !== undefined) {
-      throw new ConvexError("この処方箋は既に削除されています");
+      return error("この処方箋は既に削除されています");
     }
 
     // グループメンバーか確認
@@ -229,7 +231,7 @@ export const deletePrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // この処方箋に紐付く薬を取得
@@ -283,6 +285,8 @@ export const deletePrescription = mutation({
         });
       }
     }
+
+    return success(null);
   },
 });
 
@@ -294,22 +298,20 @@ export const permanentlyDeletePrescription = mutation({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 論理削除されていない場合はエラー
     if (prescription.deletedAt === undefined) {
-      throw new ConvexError(
-        "この処方箋は削除されていません。先に削除してください。",
-      );
+      return error("この処方箋は削除されていません。先に削除してください。");
     }
 
     // グループメンバーか確認
@@ -320,7 +322,7 @@ export const permanentlyDeletePrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // この処方箋に紐付く薬を取得（論理削除されたものも含む）
@@ -359,6 +361,8 @@ export const permanentlyDeletePrescription = mutation({
 
     // 処方箋を物理削除
     await ctx.db.delete(args.prescriptionId);
+
+    return success(null);
   },
 });
 
@@ -369,25 +373,25 @@ export const deactivatePrescription = mutation({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 既に論理削除されている場合はエラー
     if (prescription.deletedAt !== undefined) {
-      throw new ConvexError("削除された処方箋は無効化できません");
+      return error("削除された処方箋は無効化できません");
     }
 
     // 既に無効化されている場合はエラー
     if (!prescription.isActive) {
-      throw new ConvexError("この処方箋は既に無効化されています");
+      return error("この処方箋は既に無効化されています");
     }
 
     // グループメンバーか確認
@@ -398,7 +402,7 @@ export const deactivatePrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // isActiveをfalseに設定
@@ -406,6 +410,8 @@ export const deactivatePrescription = mutation({
       isActive: false,
       updatedAt: Date.now(),
     });
+
+    return success(null);
   },
 });
 
@@ -416,25 +422,25 @@ export const activatePrescription = mutation({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 既に論理削除されている場合はエラー
     if (prescription.deletedAt !== undefined) {
-      throw new ConvexError("削除された処方箋は有効化できません");
+      return error("削除された処方箋は有効化できません");
     }
 
     // 既に有効化されている場合はエラー
     if (prescription.isActive) {
-      throw new ConvexError("この処方箋は既に有効化されています");
+      return error("この処方箋は既に有効化されています");
     }
 
     // グループメンバーか確認
@@ -445,7 +451,7 @@ export const activatePrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // isActiveをtrueに設定
@@ -453,6 +459,8 @@ export const activatePrescription = mutation({
       isActive: true,
       updatedAt: Date.now(),
     });
+
+    return success(null);
   },
 });
 
@@ -463,20 +471,20 @@ export const restorePrescription = mutation({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 論理削除されていない場合はエラー
     if (prescription.deletedAt === undefined) {
-      throw new ConvexError("この処方箋は削除されていません");
+      return error("この処方箋は削除されていません");
     }
 
     // グループメンバーか確認
@@ -487,7 +495,7 @@ export const restorePrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 処方箋を復元（deletedAtとdeletedByをundefinedに）
@@ -544,6 +552,8 @@ export const restorePrescription = mutation({
         }
       }
     }
+
+    return success(null);
   },
 });
 
@@ -559,21 +569,21 @@ export const duplicatePrescription = mutation({
     endDate: v.optional(v.string()), // YYYY-MM-DD
     notes: v.optional(v.string()), // 省略時は元の処方箋の備考をコピー
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"prescriptions">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 元の処方箋を取得
     const sourcePrescription = await ctx.db.get(args.prescriptionId);
     if (!sourcePrescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 論理削除されている場合はエラー
     if (sourcePrescription.deletedAt !== undefined) {
-      throw new ConvexError("削除された処方箋は複製できません");
+      return error("削除された処方箋は複製できません");
     }
 
     // グループメンバーか確認
@@ -584,12 +594,12 @@ export const duplicatePrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 日付の妥当性チェック
     if (args.endDate && args.startDate > args.endDate) {
-      throw new ConvexError("終了日は開始日より後である必要があります");
+      return error("終了日は開始日より後である必要があります");
     }
 
     const now = Date.now();
@@ -673,6 +683,6 @@ export const duplicatePrescription = mutation({
       }
     }
 
-    return newPrescriptionId;
+    return success(newPrescriptionId);
   },
 });

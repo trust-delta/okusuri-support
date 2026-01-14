@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
 
 /**
  * 薬名統合グループを作成
@@ -14,10 +16,10 @@ export const createMedicineGroup = mutation({
     medicineNames: v.array(v.string()), // 統合する薬名リスト
     notes: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"medicineGroups">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -28,16 +30,16 @@ export const createMedicineGroup = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // バリデーション
     if (!args.canonicalName.trim()) {
-      throw new ConvexError("代表名を入力してください");
+      return error("代表名を入力してください");
     }
 
     if (args.medicineNames.length === 0) {
-      throw new ConvexError("少なくとも1つの薬名を指定してください");
+      return error("少なくとも1つの薬名を指定してください");
     }
 
     // 重複チェック：既に他のグループに含まれている薬名がないか確認
@@ -49,7 +51,7 @@ export const createMedicineGroup = mutation({
     for (const existingGroup of existingGroups) {
       for (const medicineName of args.medicineNames) {
         if (existingGroup.medicineNames.includes(medicineName)) {
-          throw new ConvexError(
+          return error(
             `薬名「${medicineName}」は既に別のグループ「${existingGroup.canonicalName}」に含まれています`,
           );
         }
@@ -67,7 +69,7 @@ export const createMedicineGroup = mutation({
       updatedAt: now,
     });
 
-    return medicineGroupId;
+    return success(medicineGroupId);
   },
 });
 
@@ -81,16 +83,16 @@ export const updateMedicineGroup = mutation({
     medicineNames: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"medicineGroups">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 既存のグループを取得
     const existingGroup = await ctx.db.get(args.medicineGroupId);
     if (!existingGroup) {
-      throw new ConvexError("指定された薬名グループが見つかりません");
+      return error("指定された薬名グループが見つかりません");
     }
 
     // グループメンバーか確認
@@ -101,16 +103,16 @@ export const updateMedicineGroup = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // バリデーション
     if (args.canonicalName !== undefined && !args.canonicalName.trim()) {
-      throw new ConvexError("代表名を入力してください");
+      return error("代表名を入力してください");
     }
 
     if (args.medicineNames !== undefined && args.medicineNames.length === 0) {
-      throw new ConvexError("少なくとも1つの薬名を指定してください");
+      return error("少なくとも1つの薬名を指定してください");
     }
 
     // 重複チェック：他のグループに含まれている薬名がないか確認
@@ -124,7 +126,7 @@ export const updateMedicineGroup = mutation({
       for (const otherGroup of otherGroups) {
         for (const medicineName of args.medicineNames) {
           if (otherGroup.medicineNames.includes(medicineName)) {
-            throw new ConvexError(
+            return error(
               `薬名「${medicineName}」は既に別のグループ「${otherGroup.canonicalName}」に含まれています`,
             );
           }
@@ -156,7 +158,7 @@ export const updateMedicineGroup = mutation({
 
     await ctx.db.patch(args.medicineGroupId, updateData);
 
-    return args.medicineGroupId;
+    return success(args.medicineGroupId);
   },
 });
 
@@ -167,16 +169,16 @@ export const deleteMedicineGroup = mutation({
   args: {
     medicineGroupId: v.id("medicineGroups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 既存のグループを取得
     const existingGroup = await ctx.db.get(args.medicineGroupId);
     if (!existingGroup) {
-      throw new ConvexError("指定された薬名グループが見つかりません");
+      return error("指定された薬名グループが見つかりません");
     }
 
     // グループメンバーか確認
@@ -187,10 +189,12 @@ export const deleteMedicineGroup = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // グループを削除
     await ctx.db.delete(args.medicineGroupId);
+
+    return success(null);
   },
 });

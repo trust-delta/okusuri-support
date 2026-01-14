@@ -37,9 +37,17 @@ export function NotificationSettingsCard() {
 
     try {
       const result = await sendTestNotification();
+      // Result型のハンドリング
+      if (!result.isSuccess) {
+        setTestResult({
+          success: false,
+          message: result.errorMessage,
+        });
+        return;
+      }
       setTestResult({
-        success: result.success,
-        message: result.message || "テスト通知を送信しました",
+        success: result.data.success,
+        message: result.data.message || "テスト通知を送信しました",
       });
     } catch {
       setTestResult({

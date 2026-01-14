@@ -1,6 +1,41 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Doc } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
+
+type InventoryWithMedicineName = Doc<"medicineInventory"> & {
+  medicineName: string;
+};
+
+type InventoryWithLowStock = InventoryWithMedicineName & {
+  isLowStock: boolean;
+};
+
+type LowStockInventory = InventoryWithMedicineName & {
+  isCritical: boolean;
+};
+
+type OutOfStockWithPrescription = Doc<"medicineInventory"> & {
+  medicineName: string;
+  prescriptionName: string | undefined;
+};
+
+type ConsumptionRecordWithDetails = Doc<"medicineConsumptionRecords"> & {
+  medicineName: string;
+  unit: string;
+};
+
+type DailyConsumptionSummary = {
+  date: string;
+  medicineId: Doc<"medicines">["_id"];
+  totalConsumed: number;
+  scheduled: number;
+  extra: number;
+  lost: number;
+  adjustment: number;
+  refill: number;
+};
 
 /**
  * 薬の在庫情報を取得
@@ -9,16 +44,19 @@ export const getInventoryByMedicine = query({
   args: {
     medicineId: v.id("medicines"),
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<Result<InventoryWithMedicineName | null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 薬を取得
     const medicine = await ctx.db.get(args.medicineId);
     if (!medicine) {
-      return null;
+      return success(null);
     }
 
     // グループメンバーか確認
@@ -29,7 +67,7 @@ export const getInventoryByMedicine = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 在庫情報を取得
@@ -39,13 +77,13 @@ export const getInventoryByMedicine = query({
       .first();
 
     if (!inventory) {
-      return null;
+      return success(null);
     }
 
-    return {
+    return success({
       ...inventory,
       medicineName: medicine.name,
-    };
+    });
   },
 });
 
@@ -57,10 +95,10 @@ export const getInventoriesByGroup = query({
     groupId: v.id("groups"),
     trackingOnly: v.optional(v.boolean()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<InventoryWithLowStock[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -71,7 +109,7 @@ export const getInventoriesByGroup = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 在庫一覧を取得
@@ -100,7 +138,7 @@ export const getInventoriesByGroup = query({
       }),
     );
 
-    return inventoriesWithNames;
+    return success(inventoriesWithNames);
   },
 });
 
@@ -111,10 +149,10 @@ export const getLowStockInventories = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<LowStockInventory[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -125,7 +163,7 @@ export const getLowStockInventories = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 在庫一覧を取得
@@ -154,7 +192,7 @@ export const getLowStockInventories = query({
       }),
     );
 
-    return inventoriesWithNames;
+    return success(inventoriesWithNames);
   },
 });
 
@@ -166,16 +204,19 @@ export const getConsumptionHistory = query({
     inventoryId: v.id("medicineInventory"),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<Result<Doc<"medicineConsumptionRecords">[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 在庫を取得
     const inventory = await ctx.db.get(args.inventoryId);
     if (!inventory) {
-      throw new ConvexError("在庫情報が見つかりません");
+      return error("在庫情報が見つかりません");
     }
 
     // グループメンバーか確認
@@ -186,7 +227,7 @@ export const getConsumptionHistory = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 消費記録を取得（新しい順）
@@ -196,7 +237,7 @@ export const getConsumptionHistory = query({
       .order("desc")
       .take(args.limit ?? 50);
 
-    return records;
+    return success(records);
   },
 });
 
@@ -217,10 +258,13 @@ export const getGroupConsumptionHistory = query({
       ),
     ),
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<Result<ConsumptionRecordWithDetails[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -231,7 +275,7 @@ export const getGroupConsumptionHistory = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 消費記録を取得（新しい順）
@@ -259,7 +303,7 @@ export const getGroupConsumptionHistory = query({
       }),
     );
 
-    return recordsWithNames;
+    return success(recordsWithNames);
   },
 });
 
@@ -271,10 +315,10 @@ export const getOutOfStockWithActivePrescription = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<OutOfStockWithPrescription[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -285,7 +329,7 @@ export const getOutOfStockWithActivePrescription = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 在庫が0の薬を取得
@@ -330,7 +374,9 @@ export const getOutOfStockWithActivePrescription = query({
       }),
     );
 
-    return results.filter((r): r is NonNullable<typeof r> => r !== null);
+    return success(
+      results.filter((r): r is NonNullable<typeof r> => r !== null),
+    );
   },
 });
 
@@ -343,10 +389,10 @@ export const getDailyConsumption = query({
     medicineId: v.id("medicines"),
     date: v.string(), // YYYY-MM-DD
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<DailyConsumptionSummary>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -357,7 +403,7 @@ export const getDailyConsumption = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 日付の範囲を計算
@@ -395,11 +441,11 @@ export const getDailyConsumption = query({
       }
     }
 
-    return {
+    return success({
       date: args.date,
       medicineId: args.medicineId,
       totalConsumed: summary.scheduled + summary.extra + summary.lost,
       ...summary,
-    };
+    });
   },
 });

@@ -141,7 +141,15 @@ export function PrescriptionMedicinesList({
     }
   };
 
-  const openEditDialog = (medicine: NonNullable<typeof medicines>[number]) => {
+  const openEditDialog = (medicine: {
+    _id: Id<"medicines">;
+    name: string;
+    description?: string | null;
+    schedule?: {
+      dosage?: { amount: number; unit: string } | null;
+      timings: string[];
+    } | null;
+  }) => {
     setEditDialogMedicine({ id: medicine._id, name: medicine.name });
     setEditFormData({
       name: medicine.name,
@@ -244,6 +252,9 @@ export function PrescriptionMedicinesList({
     );
   }
 
+  // Result型からデータを取得
+  const medicinesData = medicines.isSuccess ? medicines.data : [];
+
   return (
     <div className="border-t pt-4">
       <div className="flex items-center justify-between mb-3">
@@ -261,13 +272,13 @@ export function PrescriptionMedicinesList({
         </Button>
       </div>
 
-      {medicines.length === 0 ? (
+      {medicinesData.length === 0 ? (
         <div className="text-sm text-muted-foreground py-4 text-center">
           この処方箋には薬が登録されていません
         </div>
       ) : (
         <div className="space-y-2">
-          {medicines.map((medicine) => (
+          {medicinesData.map((medicine) => (
             <div key={medicine._id} className="p-3 bg-muted rounded-lg">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -342,9 +353,9 @@ export function PrescriptionMedicinesList({
               「{deleteDialogMedicine?.name}」を削除しますか？
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {recordCount !== undefined && recordCount > 0 ? (
+              {recordCount?.isSuccess && recordCount.data > 0 ? (
                 <>
-                  この薬に紐付く服薬記録（{recordCount}件）も削除されます。
+                  この薬に紐付く服薬記録（{recordCount.data}件）も削除されます。
                   <br />
                   削除した記録は履歴から確認できます。
                 </>

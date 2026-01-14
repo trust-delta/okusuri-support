@@ -181,9 +181,14 @@ export function DeletedPrescriptionList({
     );
   }
 
+  // Result型からデータを取得
+  const deletedPrescriptionsData = deletedPrescriptions.isSuccess
+    ? deletedPrescriptions.data
+    : [];
+
   return (
     <div className="space-y-4">
-      {deletedPrescriptions.length === 0 ? (
+      {deletedPrescriptionsData.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Trash2 className="h-12 w-12 text-muted-foreground mb-4" />
@@ -194,104 +199,102 @@ export function DeletedPrescriptionList({
         </Card>
       ) : (
         <div className="grid gap-4">
-          {deletedPrescriptions.map(
-            (prescription: (typeof deletedPrescriptions)[number]) => {
-              const isExpanded = expandedPrescriptions.has(prescription._id);
-              return (
-                <Card
-                  key={prescription._id}
-                  className="border-red-200 dark:border-red-900"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-muted-foreground">
-                            {prescription.name}
-                          </CardTitle>
-                          <span className="text-xs px-2 py-1 bg-destructive/10 text-destructive rounded">
-                            削除済み
-                          </span>
-                        </div>
-                        <CardDescription className="flex flex-col gap-2 mt-2">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {formatDate(prescription.startDate)}
-                            {prescription.endDate && (
-                              <> 〜 {formatDate(prescription.endDate)}</>
-                            )}
-                            {!prescription.endDate && "〜 継続中"}
-                          </span>
-                          {prescription.deletedAt && (
-                            <span className="text-xs text-red-600 dark:text-red-400">
-                              削除日時: {formatDateTime(prescription.deletedAt)}
-                            </span>
-                          )}
-                        </CardDescription>
+          {deletedPrescriptionsData.map((prescription) => {
+            const isExpanded = expandedPrescriptions.has(prescription._id);
+            return (
+              <Card
+                key={prescription._id}
+                className="border-red-200 dark:border-red-900"
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-muted-foreground">
+                          {prescription.name}
+                        </CardTitle>
+                        <span className="text-xs px-2 py-1 bg-destructive/10 text-destructive rounded">
+                          削除済み
+                        </span>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleExpanded(prescription._id)}
-                        >
-                          {isExpanded ? (
-                            <>
-                              <ChevronUp className="h-4 w-4 mr-1" />
-                              閉じる
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-4 w-4 mr-1" />
-                              詳細
-                            </>
+                      <CardDescription className="flex flex-col gap-2 mt-2">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(prescription.startDate)}
+                          {prescription.endDate && (
+                            <> 〜 {formatDate(prescription.endDate)}</>
                           )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            setRestoreDialogPrescriptionId(prescription._id)
-                          }
-                          className="border-green-500 text-green-600 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950"
-                          title="復元"
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            setPermanentDeleteDialogPrescriptionId(
-                              prescription._id,
-                            )
-                          }
-                          className="border-red-500 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
-                          title="完全削除"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          {!prescription.endDate && "〜 継続中"}
+                        </span>
+                        {prescription.deletedAt && (
+                          <span className="text-xs text-red-600 dark:text-red-400">
+                            削除日時: {formatDateTime(prescription.deletedAt)}
+                          </span>
+                        )}
+                      </CardDescription>
                     </div>
-                  </CardHeader>
-                  {(prescription.notes || isExpanded) && (
-                    <CardContent className="space-y-4">
-                      {prescription.notes && (
-                        <p className="text-sm text-muted-foreground">
-                          {prescription.notes}
-                        </p>
-                      )}
-                      {isExpanded && (
-                        <DeletedPrescriptionMedicinesList
-                          prescriptionId={prescription._id}
-                        />
-                      )}
-                    </CardContent>
-                  )}
-                </Card>
-              );
-            },
-          )}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleExpanded(prescription._id)}
+                      >
+                        {isExpanded ? (
+                          <>
+                            <ChevronUp className="h-4 w-4 mr-1" />
+                            閉じる
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4 mr-1" />
+                            詳細
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          setRestoreDialogPrescriptionId(prescription._id)
+                        }
+                        className="border-green-500 text-green-600 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950"
+                        title="復元"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          setPermanentDeleteDialogPrescriptionId(
+                            prescription._id,
+                          )
+                        }
+                        className="border-red-500 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+                        title="完全削除"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                {(prescription.notes || isExpanded) && (
+                  <CardContent className="space-y-4">
+                    {prescription.notes && (
+                      <p className="text-sm text-muted-foreground">
+                        {prescription.notes}
+                      </p>
+                    )}
+                    {isExpanded && (
+                      <DeletedPrescriptionMedicinesList
+                        prescriptionId={prescription._id}
+                      />
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 
