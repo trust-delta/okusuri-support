@@ -213,4 +213,4 @@ router.push("/dashboard") // 招待受諾を促すメッセージ表示
 
 - [認証機能](auth.md)
 - [グループ管理](group.md)
-- [アーキテクチャ](../../context/architecture.md)
+- [アーキテクチャ](../../architecture.md)

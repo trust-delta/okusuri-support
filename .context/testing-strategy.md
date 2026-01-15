@@ -1,6 +1,6 @@
 # テスト戦略
 
-**最終更新**: 2025年10月16日
+**最終更新**: 2026年01月16日
 
 ## テストピラミッド
 
@@ -257,4 +257,4 @@ await user.type(input, "あ".repeat(51)); // maxLength={50}の場合
 
 - [プロジェクト概要](project.md)
 - [アーキテクチャ](architecture.md)
-- [技術スタック](tech-stack.md)
+- [エラーハンドリング](error-handling.md)

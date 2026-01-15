@@ -287,6 +287,6 @@ if (!args.[field]) {
 
 - [API仕様](../api/[feature]-api.md)
 - [API設計規約](../api/conventions.md)
-- [プロジェクト概要](../../context/project.md)
-- [アーキテクチャ](../../context/architecture.md)
-- [テスト戦略](../../context/testing-strategy.md)
+- [プロジェクト概要](../../project.md)
+- [アーキテクチャ](../../architecture.md)
+- [テスト戦略](../../testing-strategy.md)

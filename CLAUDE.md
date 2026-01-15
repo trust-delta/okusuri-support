@@ -14,10 +14,10 @@
 - [.context/project.md](./.context/project.md) - プロジェクト情報、技術スタック
 - [.context/architecture.md](./.context/architecture.md) - アーキテクチャ
 - [.context/coding-style.md](./.context/coding-style.md) - コーディング規則
-- [.context/coding-style.md](./.context/error-handling.md) - エラーハンドリング
+- [.context/error-handling.md](./.context/error-handling.md) - エラーハンドリング
 - [.context/testing-strategy.md](./.context/testing-strategy.md) - テスト戦略
 - [.context/decisions/](./.context/decisions/) - 決定記録
-- [.context/runbook/](./.context/runbook/) - 作業手順書
+- [.context/runbooks/](./.context/runbooks/) - 作業手順書
 - [.context/specs/](./.context/specs/) - 詳細仕様書
 
 ## 言語について

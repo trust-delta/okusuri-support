@@ -201,6 +201,6 @@ const identity = await ctx.auth.getUserIdentity()
 
 ## 関連ドキュメント
 
-- [プロジェクト概要](../../context/project.md)
-- [アーキテクチャ](../../context/architecture.md)
+- [プロジェクト概要](../../project.md)
+- [アーキテクチャ](../../architecture.md)
 - [グループ管理](group.md)

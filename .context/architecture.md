@@ -4,7 +4,7 @@
 
 ## 概要
 
-Feature-Based Architecture（機能ベース）を採用したフルスタックTypeScriptアプリケーション。Next.js 15（App Router）+ Convex（BaaS）によるリアルタイム同期とサーバーレス構成。
+Feature-Based Architecture（機能ベース）を採用したフルスタックTypeScriptアプリケーション。Next.js 16（App Router）+ Convex（BaaS）によるリアルタイム同期とサーバーレス構成。
 
 ---
 
