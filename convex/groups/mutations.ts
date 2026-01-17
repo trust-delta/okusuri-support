@@ -6,6 +6,7 @@ import { mutation } from "../_generated/server";
 import { zid, zMutation } from "../functions";
 import { createDefaultPrescription } from "../medications/prescriptions/helpers";
 import { error, type Result, success } from "../types/result";
+import { createDefaultNotificationSettings } from "./notification_settings/helpers";
 
 /**
  * 新しいグループを作成
@@ -43,6 +44,9 @@ export const createGroup = mutation({
 
     // デフォルト処方箋を作成
     await createDefaultPrescription(ctx, groupId, userId);
+
+    // デフォルト通知設定を作成
+    await createDefaultNotificationSettings(ctx, groupId);
 
     return success(groupId);
   },
@@ -169,6 +173,9 @@ export const completeOnboardingWithNewGroup = mutation({
 
     // デフォルト処方箋を作成
     await createDefaultPrescription(ctx, groupId, userId);
+
+    // デフォルト通知設定を作成
+    await createDefaultNotificationSettings(ctx, groupId);
 
     return success({ groupId });
   },

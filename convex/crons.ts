@@ -15,4 +15,11 @@ crons.interval(
   checkMedicationReminders,
 );
 
+// スヌーズ再通知チェック（5分ごと）
+const checkSnoozedReminders = makeFunctionReference<"action">(
+  "scheduler:checkSnoozedReminders",
+);
+
+crons.interval("snoozed-reminders", { minutes: 5 }, checkSnoozedReminders);
+
 export default crons;

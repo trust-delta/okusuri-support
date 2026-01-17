@@ -25,4 +25,15 @@ export const groupsSchema = {
     .index("by_userId", ["userId"])
     .index("by_groupId", ["groupId"])
     .index("by_groupId_leftAt", ["groupId", "leftAt"]),
+
+  // グループ通知設定: グループ単位の通知時刻設定
+  groupNotificationSettings: defineTable({
+    groupId: v.id("groups"),
+    morningTime: v.number(), // 分単位 (0-1439)、デフォルト: 480 (8:00)
+    noonTime: v.number(), // デフォルト: 720 (12:00)
+    eveningTime: v.number(), // デフォルト: 1080 (18:00)
+    bedtimeTime: v.number(), // デフォルト: 1260 (21:00)
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_groupId", ["groupId"]),
 };

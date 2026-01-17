@@ -7,6 +7,7 @@ import { GroupHeader } from "./_components/GroupHeader";
 import { GroupMembersCard } from "./_components/GroupMembersCard";
 import { GroupStatsCard } from "./_components/GroupStatsCard";
 import { InviteSection } from "./_components/InviteSection";
+import { NotificationTimeSettings } from "./_components/NotificationTimeSettings";
 
 export default async function GroupPage() {
   const token = await convexAuthNextjsToken();
@@ -74,6 +75,9 @@ export default async function GroupPage() {
 
         {/* メンバー一覧 */}
         <GroupMembersCard preloadedMembers={groupMembers} />
+
+        {/* 通知時刻設定 */}
+        <NotificationTimeSettings groupId={activeGroupId} />
 
         {/* 招待管理（アコーディオン） */}
         <InviteSection groupId={activeGroupId} />
