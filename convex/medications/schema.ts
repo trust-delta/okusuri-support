@@ -93,6 +93,10 @@ export const medicinesSchema = {
     ),
     recordedBy: v.string(), // 記録者 Convex AuthユーザーID (服薬者本人またはサポーター)
     notes: v.optional(v.string()), // メモ
+    // スヌーズ関連フィールド
+    snoozedUntil: v.optional(v.number()), // スヌーズ解除時刻（timestamp）
+    snoozeCount: v.optional(v.number()), // スヌーズ回数（最大3回）
+    lastSnoozedAt: v.optional(v.number()), // 最後のスヌーズ時刻
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()), // 論理削除日時
@@ -109,7 +113,8 @@ export const medicinesSchema = {
       "patientId",
       "timing",
       "scheduledDate",
-    ]),
+    ])
+    .index("by_status_snoozedUntil", ["status", "snoozedUntil"]),
 
   // 服薬記録履歴: 削除・編集前の全ての履歴を保存
   medicationRecordsHistory: defineTable({

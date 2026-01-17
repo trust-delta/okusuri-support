@@ -46,9 +46,8 @@ interface GroupCreationFormProps {
 }
 
 // convex-helpers/zod4との組み合わせで型推論が深くなりすぎる問題を回避
-// biome-ignore format: @ts-expect-errorは次の1行にのみ適用されるため改行禁止
-// @ts-expect-error TS2589: convex-helpers/zod4との組み合わせで型推論が複雑になる既知の問題
-const completeOnboardingMutation: FunctionReference<"mutation"> = api.groups.completeOnboardingWithNewGroup;
+const completeOnboardingMutation: FunctionReference<"mutation"> =
+  api.groups.completeOnboardingWithNewGroup;
 
 export function GroupCreationForm({ onBack }: GroupCreationFormProps) {
   const router = useRouter();

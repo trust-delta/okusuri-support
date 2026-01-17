@@ -407,6 +407,8 @@ export function MedicationGroupedRecordsList({
                           recordStatus={record?.status}
                           recordNotes={record?.notes}
                           medicineName={item.medicineName}
+                          snoozeCount={record?.snoozeCount}
+                          snoozedUntil={record?.snoozedUntil}
                         />
                       )}
                     </div>
