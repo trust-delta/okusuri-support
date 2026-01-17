@@ -1,6 +1,6 @@
 # テスト戦略
 
-**最終更新**: 2026年01月17日
+**最終更新**: 2026年01月18日
 
 ## テストピラミッド
 
@@ -146,23 +146,61 @@ expect(screen.getByText("表示テキスト")).toBeInTheDocument()
 
 ## テストデータ管理
 
+### 開発環境用テストアカウント（固定OTP）
+
+Chrome DevTools MCPやE2Eテストで使用する固定テストアカウントを設定できます。
+
+#### セットアップ手順
+
+1. **Convex環境変数の設定**（Convex Dashboard > Settings > Environment Variables）
+   ```
+   TEST_ACCOUNT_EMAIL=test@example.com
+   TEST_ACCOUNT_FIXED_OTP=12345678
+   ```
+
+2. **動作確認**
+   - ログイン画面で「メールアドレスでログイン」を選択
+   - `test@example.com` と任意のパスワードを入力
+   - OTP入力画面で `12345678` を入力
+   - ログイン成功
+
+> ⚠️ **注意**: `TEST_ACCOUNT_FIXED_OTP`が設定されている場合、すべてのOTPが固定値になります。
+> 本番環境には絶対に設定しないでください。
+
+#### 利用可能なテストアカウント
+
+```typescript
+// e2e/helpers/fixtures.ts
+import { testFixtures } from "./fixtures";
+
+testFixtures.user      // デフォルトテストユーザー
+testFixtures.supporter // サポーター用
+testFixtures.patient   // 患者用
+```
+
 ### Fixture
 ```typescript
 // e2e/helpers/fixtures.ts
-export const testUser = {
-  email: "test@example.com",
-  password: "password123",
-}
+export const testFixtures = {
+  user: {
+    email: "test@example.com",
+    password: "TestPassword123!",
+    otp: "12345678",
+    displayName: "テストユーザー",
+  },
+  // ...
+};
 ```
 
 ### ヘルパー
 ```typescript
 // e2e/helpers/auth.ts
-export async function login(page: Page, email: string) {
-  await page.goto("/login")
-  await page.fill('input[name="email"]', email)
-  await page.click('button[type="submit"]')
-}
+import { signInWithTestAccount } from "./auth";
+import { testFixtures } from "./fixtures";
+
+// 固定テストアカウントでログイン
+await signInWithTestAccount(page); // デフォルトユーザー
+await signInWithTestAccount(page, testFixtures.supporter); // サポーター
 ```
 
 ---

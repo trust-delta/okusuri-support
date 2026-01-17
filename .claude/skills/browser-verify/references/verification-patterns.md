@@ -1,5 +1,33 @@
 # 検証パターン集
 
+## ログイン検証（認証必須ページ用）
+
+固定テストアカウントでログインしてから検証する。
+
+```
+1. navigate_page("http://localhost:3000/login")
+2. take_snapshot() でログイン画面確認
+3. click("メールアドレスでログイン" ボタン)
+4. take_snapshot() でパスワード入力フォーム確認
+5. fill(emailフィールド, "test@example.com")
+6. fill(passwordフィールド, "TestPassword123!")
+7. click(送信ボタン)
+8. take_snapshot() でOTP入力画面確認
+9. 各OTP入力フィールドに "12345678" を1桁ずつ入力
+10. click(確認ボタン)
+11. take_snapshot() でダッシュボード表示確認
+12. list_console_messages() でエラー確認
+```
+
+**テストアカウント情報**:
+- Email: `test@example.com`
+- Password: `TestPassword123!`（8文字以上なら何でも可）
+- OTP: `12345678`（固定）
+
+**注意**: OTP入力は8つの個別フィールドに1桁ずつ入力する。
+
+---
+
 ## ページ巡回検証
 
 全ページを巡回してエラーを検出する。

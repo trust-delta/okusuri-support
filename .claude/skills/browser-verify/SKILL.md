@@ -15,6 +15,19 @@ Chrome DevTools MCPで実装を検証し、問題があれば修正するスキ�
 
 - Chrome DevTools MCP設定済み (`--browser-url=http://127.0.0.1:9222`)
 - 開発サーバー起動可能 (`npm run dev` etc.)
+- テストアカウント設定済み（Convex環境変数）
+
+## テストアカウント
+
+認証が必要なページの検証には固定テストアカウントを使用する。
+
+| 項目 | 値 |
+|------|-----|
+| Email | `test@example.com` |
+| Password | 任意（8文字以上、例: `TestPassword123!`） |
+| OTP | `12345678` |
+
+**設定場所**: `e2e/helpers/fixtures.ts`
 
 ## 検証フロー
 
