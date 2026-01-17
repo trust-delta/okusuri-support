@@ -16,8 +16,8 @@
     "test:e2e:debug": "playwright test --debug",
     "prepare": "husky",
     "depcruise": "depcruise app convex --config .dependency-cruiser.cjs",
-    "depcruise:html": "depcruise app convex --config .dependency-cruiser.cjs --output-type html > dependency-graph.html",
-    "depcruise:svg": "depcruise app convex --config .dependency-cruiser.cjs --output-type dot | dot -T svg > dependency-graph.svg"
+    "depcruise:html": "depcruise app convex --config .dependency-cruiser.cjs --output-type html > reports/dependency-graph.html",
+    "depcruise:svg": "depcruise app convex --config .dependency-cruiser.cjs --output-type dot | dot -T svg > reports/dependency-graph.svg"
   },
   "dependencies": {
     "@auth/core": "^0.37.2",

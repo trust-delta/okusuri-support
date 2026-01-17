@@ -21,6 +21,9 @@ yarn.lock
 /playwright-report/
 /test-results/
 
+# reports
+/reports/
+
 # next.js
 /.next/
 /out/
