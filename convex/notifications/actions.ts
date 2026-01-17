@@ -25,6 +25,7 @@ export const testMedicationReminders = action({
 
     // 内部actionを呼び出し
     const result = await ctx.runAction(
+      // @ts-expect-error Convex型インスタンス化の深度制限を回避
       internal.scheduler.checkMedicationReminders,
       {},
     );

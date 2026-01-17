@@ -33,12 +33,10 @@ const TIMING_LABELS: Record<TimingKey, { label: string; description: string }> =
 export function NotificationTimeSettings({
   groupId,
 }: NotificationTimeSettingsProps) {
-  const settingsResult = useQuery(api.groups.notification_settings.index.get, {
+  const settingsResult = useQuery(api.groups.getNotificationSettings, {
     groupId,
   });
-  const updateMutation = useMutation(
-    api.groups.notification_settings.index.update,
-  );
+  const updateMutation = useMutation(api.groups.updateNotificationSettings);
 
   const [localSettings, setLocalSettings] = useState<Record<
     TimingKey,
