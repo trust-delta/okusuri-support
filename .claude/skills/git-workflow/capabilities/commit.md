@@ -45,10 +45,6 @@ git add <file1> <file2>
 <type>: <subject>
 
 <body>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **ルール**:
@@ -62,10 +58,6 @@ git commit -m "$(cat <<'EOF'
 <type>: <subject>
 
 <body>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```

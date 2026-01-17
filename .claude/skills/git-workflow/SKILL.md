@@ -81,10 +81,6 @@ PRテンプレートに従ってPull Requestを作成します。
 <type>: <subject>
 
 [body]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### タイプ一覧
@@ -113,10 +109,6 @@ feat: 処方箋の複製機能を追加
 
 既存の処方箋をコピーして新しい処方箋を作成できるようにした。
 これにより、似た処方箋を効率的に登録できる。
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ---
@@ -140,8 +132,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Related
 - Issue: #<issue番号>（該当する場合）
 - 仕様書: `.context/specs/features/<name>.md`（該当する場合）
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ---
@@ -195,4 +185,4 @@ gh pr create --base develop --title "fix: <説明>" --body "..."
 
 ---
 
-**最終更新**: 2026年01月13日
+**最終更新**: 2026年01月18日
