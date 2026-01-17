@@ -1,6 +1,6 @@
 # コーディングスタイルガイド
 
-> **最終更新**: 2026年01月11日
+> **最終更新**: 2026年01月17日
 > **目的**: おくすりサポートプロジェクトの統一されたコーディング規約
 
 ---
@@ -21,7 +21,7 @@
 ## ツール設定
 
 ### Linter/Formatter
-- **ツール**: Biome 2.2.0
+- **ツール**: Biome 2.3.x
 - **設定ファイル**: `biome.json`
 - **実行コマンド**:
   - フォーマット: `pnpm run format`
@@ -159,7 +159,7 @@ app/_shared/features/auth/
 
 #### Server Component（デフォルト）
 ```typescript
-// src/app/(authenticated)/dashboard/page.tsx
+// app/(private)/dashboard/page.tsx
 import { Card } from "@/shared/components/ui/card";
 
 export default function DashboardPage() {
@@ -173,7 +173,7 @@ export default function DashboardPage() {
 
 #### Client Component
 ```typescript
-// src/features/medication/components/medication-recorder.tsx
+// app/_shared/features/medication/MedicationRecorder.tsx
 "use client";
 
 import { useQuery } from "convex/react";
@@ -660,7 +660,7 @@ import { api } from "../../../convex/_generated/api";
 
 #### Suspense境界
 ```typescript
-// src/app/(authenticated)/layout.tsx
+// app/(private)/layout.tsx
 <Suspense fallback={<div>読み込み中...</div>}>
   {children}
 </Suspense>

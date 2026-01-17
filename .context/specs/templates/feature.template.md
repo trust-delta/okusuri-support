@@ -245,7 +245,7 @@ if (!args.[field]) {
 - [ ] [シナリオ1]
 - [ ] [シナリオ2]
 
-テスト実装: `src/features/[feature]/__tests__/`
+テスト実装: `app/_shared/features/[feature]/__tests__/`
 
 ---
 

@@ -147,7 +147,9 @@ describe("招待機能 - 統合テスト", () => {
         },
       );
 
-      expect(invitations).toHaveLength(0);
+      expect(invitations.isSuccess).toBe(true);
+      if (!invitations.isSuccess) throw new Error("Failed to get invitations");
+      expect(invitations.data).toHaveLength(0);
 
       // 招待を1件作成
       await asUser.mutation(internal.invitations.createInvitationInternal, {

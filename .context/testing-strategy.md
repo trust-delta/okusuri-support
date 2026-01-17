@@ -1,6 +1,6 @@
 # テスト戦略
 
-**最終更新**: 2026年01月16日
+**最終更新**: 2026年01月17日
 
 ## テストピラミッド
 
@@ -33,7 +33,7 @@ npm run test:coverage # カバレッジ
 ```
 
 **対象**: Reactコンポーネント、カスタムフック、ユーティリティ関数
-**ディレクトリ**: `src/features/*/__tests__/`
+**ディレクトリ**: `app/_shared/features/*/__tests__/`
 
 ### convex-test（Convexバックエンド）
 **対象**: Convex Queries/Mutations/Actions
@@ -55,7 +55,7 @@ npm run test:e2e:ui    # UIモード
 ### ユニットテスト
 
 ```typescript
-// src/features/group/hooks/__tests__/useGroupActions.test.ts
+// app/_shared/features/group/__tests__/use-group-actions.test.ts
 import { renderHook, waitFor } from "@testing-library/react"
 import { expect, test } from "vitest"
 
