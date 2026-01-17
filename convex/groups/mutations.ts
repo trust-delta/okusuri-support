@@ -1,7 +1,9 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import { z } from "zod/v4";
 import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
+import { zid, zMutation } from "../functions";
 import { createDefaultPrescription } from "../medications/prescriptions/helpers";
 import { error, type Result, success } from "../types/result";
 
@@ -47,13 +49,24 @@ export const createGroup = mutation({
 });
 
 /**
- * グループ情報を更新
+ * グループ情報を更新（Zodバリデーション版）
+ *
+ * Zod による境界バリデーションを使用して、入力値の検証を行います。
+ * - name: 1〜100文字（空白のみは不可）
+ * - description: 最大500文字
  */
-export const updateGroup = mutation({
+export const updateGroup = zMutation({
   args: {
-    groupId: v.id("groups"),
-    name: v.optional(v.string()),
-    description: v.optional(v.string()),
+    groupId: zid("groups"),
+    name: z
+      .string()
+      .min(1, "グループ名を入力してください")
+      .max(100, "グループ名は100文字以内で入力してください")
+      .optional(),
+    description: z
+      .string()
+      .max(500, "説明は500文字以内で入力してください")
+      .optional(),
   },
   handler: async (ctx, args): Promise<Result<void>> => {
     const userId = await getAuthUserId(ctx);
@@ -91,19 +104,14 @@ export const updateGroup = mutation({
     }> = {};
 
     if (args.name !== undefined) {
-      if (args.name.trim().length === 0) {
+      const trimmedName = args.name.trim();
+      if (trimmedName.length === 0) {
         return error("グループ名を入力してください");
       }
-      if (args.name.length > 100) {
-        return error("グループ名は100文字以内で入力してください");
-      }
-      updates.name = args.name.trim();
+      updates.name = trimmedName;
     }
 
     if (args.description !== undefined) {
-      if (args.description.length > 500) {
-        return error("説明は500文字以内で入力してください");
-      }
       updates.description =
         args.description.trim().length > 0
           ? args.description.trim()

@@ -87,7 +87,10 @@ export const sendTestNotification = action({
     }
 
     // ユーザーのサブスクリプションを取得
-    const subscriptions = await ctx.runQuery(api.push.queries.list);
+    const subscriptions = await ctx.runQuery(
+      // @ts-expect-error convex-helpers/zod4との型深度競合を回避
+      api.push.queries.list,
+    );
 
     if (subscriptions.length === 0) {
       return success({

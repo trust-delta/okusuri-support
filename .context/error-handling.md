@@ -1,6 +1,6 @@
 # エラーハンドリング
 
-**最終更新**: 2026年01月16日
+**最終更新**: 2026年01月17日
 
 ## エラー処理戦略
 
@@ -123,6 +123,74 @@ export function CreateGroupButton() {
 
 ---
 
+## Zod 境界バリデーション
+
+convex-helpers を使用して、Convex 関数の引数に Zod スキーマによる境界バリデーションを適用できます。フロントエンドと同じ Zod スキーマを使用することで、型安全性と一貫したバリデーションを実現します。
+
+### 関数ビルダー
+
+```typescript
+// convex/functions.ts で定義
+import { zQuery, zMutation, zAction, zid } from "@/convex/functions";
+```
+
+| ビルダー | 用途 |
+|----------|------|
+| `zQuery` | Zod バリデーション付き query |
+| `zMutation` | Zod バリデーション付き mutation |
+| `zAction` | Zod バリデーション付き action |
+| `zInternalQuery` | 内部 query |
+| `zInternalMutation` | 内部 mutation |
+| `zInternalAction` | 内部 action |
+| `zid("tableName")` | Document ID バリデーター |
+
+### 使用例
+
+```typescript
+import { z } from "zod/v4";
+import { zid, zMutation } from "../functions";
+import { error, type Result, success } from "../types/result";
+
+export const updateGroup = zMutation({
+  args: {
+    groupId: zid("groups"),
+    name: z.string()
+      .min(1, "グループ名を入力してください")
+      .max(100, "グループ名は100文字以内")
+      .optional(),
+    description: z.string()
+      .max(500, "説明は500文字以内")
+      .optional(),
+  },
+  handler: async (ctx, args): Promise<Result<void>> => {
+    // Zod バリデーションは args が handler に渡される前に実行される
+    // args は既にバリデーション済み
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+    // ...
+  },
+});
+```
+
+### 従来の `v` バリデーターとの違い
+
+| 観点 | `v` (Convex標準) | `z` (Zod) |
+|------|------------------|-----------|
+| エラーメッセージ | 自動生成（英語） | カスタマイズ可能 |
+| フロントエンドとの共有 | 不可 | 可能 |
+| 複雑なバリデーション | 限定的 | 柔軟 |
+| 型推論 | 良好 | 良好 |
+
+### 注意事項
+
+- `z` は `zod/v4` からインポートすること（Zod 4.x 構文）
+- 既存の `v` バリデーターを使用する関数はそのまま動作する
+- 新規関数では `zMutation`, `zQuery` の使用を推奨
+
+---
+
 ## エラーの種類
 
 ### 1. バリデーションエラー
@@ -135,10 +203,8 @@ const schema = z.object({
   name: z.string().min(1, "必須です").max(50, "50文字以内"),
 });
 
-// サーバー側バリデーション
-if (!args.name || args.name.trim() === "") {
-  return error("グループ名は必須です");
-}
+// サーバー側バリデーション（Zod境界バリデーション使用時は不要）
+// Zod でバリデーション済みの場合、手動チェックは省略可能
 ```
 
 ### 2. 認証エラー
