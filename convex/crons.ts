@@ -1,15 +1,18 @@
-// @ts-nocheck
-// convex-helpers/zod4 との組み合わせで型推論が複雑になるためこのファイルの型チェックをスキップ
-import { cronJobs } from "convex/server";
-import { internal } from "./_generated/api";
+import { cronJobs, makeFunctionReference } from "convex/server";
 
 const crons = cronJobs();
 
 // 服薬リマインダーチェック（15分ごと）
+// convex-helpers/zod4との組み合わせでinternal APIの型推論が深くなりすぎるため、
+// makeFunctionReferenceを使用して直接参照を作成
+const checkMedicationReminders = makeFunctionReference<"action">(
+  "scheduler:checkMedicationReminders",
+);
+
 crons.interval(
   "medication-reminders",
   { minutes: 15 },
-  internal.scheduler.checkMedicationReminders,
+  checkMedicationReminders,
 );
 
 export default crons;
