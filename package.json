@@ -14,7 +14,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
-    "prepare": "husky"
+    "prepare": "husky",
+    "depcruise": "depcruise app convex --config .dependency-cruiser.cjs",
+    "depcruise:html": "depcruise app convex --config .dependency-cruiser.cjs --output-type html > dependency-graph.html",
+    "depcruise:svg": "depcruise app convex --config .dependency-cruiser.cjs --output-type dot | dot -T svg > dependency-graph.svg"
   },
   "dependencies": {
     "@auth/core": "^0.37.2",
@@ -76,6 +79,7 @@
     "@vitest/coverage-v8": "4.0.16",
     "@vitest/ui": "^4.0.17",
     "convex-test": "^0.0.41",
+    "dependency-cruiser": "^17.3.6",
     "gray-matter": "^4.0.3",
     "happy-dom": "^20.1.0",
     "husky": "^9.1.7",
