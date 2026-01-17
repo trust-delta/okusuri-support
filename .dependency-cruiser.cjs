@@ -116,6 +116,8 @@ module.exports = {
           "instrumentation",
           // middleware
           "middleware\\.ts$",
+          // convex-test セットアップファイル
+          "^convex/test\\.setup\\.ts$",
         ],
       },
       to: {},
