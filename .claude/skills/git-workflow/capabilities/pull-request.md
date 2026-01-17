@@ -46,8 +46,6 @@ gh pr create --base develop --title "<type>: <説明>" --body "$(cat <<'EOF'
 
 ## Related
 - 仕様書: `.context/specs/features/<name>.md`
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```

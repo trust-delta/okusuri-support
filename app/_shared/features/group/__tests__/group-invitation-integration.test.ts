@@ -371,15 +371,22 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
         api.invitations.queries.listGroupInvitations,
         { groupId },
       );
-      expect(invitations).toHaveLength(1);
+      expect(invitations.isSuccess).toBe(true);
+      if (!invitations.isSuccess) throw new Error("Failed to get invitations");
+      expect(invitations.data).toHaveLength(1);
 
-      // 非メンバーは一覧取得不可
+      // 非メンバーは一覧取得不可（Result型でisSuccess: falseが返される）
       const asNonMember = t.withIdentity({ subject: nonMemberId });
-      await expect(
-        asNonMember.query(api.invitations.queries.listGroupInvitations, {
-          groupId,
-        }),
-      ).rejects.toThrow();
+      const nonMemberResult = await asNonMember.query(
+        api.invitations.queries.listGroupInvitations,
+        { groupId },
+      );
+      expect(nonMemberResult.isSuccess).toBe(false);
+      if (!nonMemberResult.isSuccess) {
+        expect(nonMemberResult.errorMessage).toBe(
+          "このグループのメンバーではありません",
+        );
+      }
     });
   });
 });

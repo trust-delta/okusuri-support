@@ -197,8 +197,10 @@ describe("パフォーマンステスト - 招待機能", () => {
       const endTime = performance.now();
       const latency = endTime - startTime;
 
-      // 100件取得できていることを確認
-      expect(invitations).toHaveLength(100);
+      // Result型の確認と100件取得できていることを確認
+      expect(invitations.isSuccess).toBe(true);
+      if (!invitations.isSuccess) throw new Error("Failed to get invitations");
+      expect(invitations.data).toHaveLength(100);
 
       // 2秒以内であることを確認
       expect(latency).toBeLessThan(2000);

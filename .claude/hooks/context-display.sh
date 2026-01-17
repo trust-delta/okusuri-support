@@ -133,16 +133,30 @@ try {
   logDebug('Outputting ' + urgency + ' message');
 
   // AskUserQuestion用の指示を出力（stdoutへ）
-  console.log('【Claude への必須指示】ユーザーの指示を実行する前に、以下の内容でAskUserQuestionツールを使用して確認してください:');
+  // <system-reminder>タグで囲むことで強制力を高める
+  console.log('<system-reminder>');
+  console.log('CRITICAL: コンテキスト使用率警告 - 必ず最初にAskUserQuestionを実行すること');
   console.log('');
-  console.log('header: \"Context ' + urgency + '\"');
-  console.log('question: \"' + question + '\"');
-  console.log('options:');
-  options.forEach(function(opt) {
-    console.log('  - label: \"' + opt.label + '\", description: \"' + opt.desc + '\"');
+  console.log(contextBar);
+  console.log('');
+  console.log('【必須アクション】他のツールを使用する前に、必ずAskUserQuestionツールを呼び出してください:');
+  console.log('');
+  console.log('questions: [');
+  console.log('  {');
+  console.log('    header: \"Context\"');
+  console.log('    question: \"' + question + '\"');
+  console.log('    multiSelect: false');
+  console.log('    options: [');
+  options.forEach(function(opt, i) {
+    const comma = i < options.length - 1 ? ',' : '';
+    console.log('      { label: \"' + opt.label + '\", description: \"' + opt.desc + '\" }' + comma);
   });
+  console.log('    ]');
+  console.log('  }');
+  console.log(']');
   console.log('');
-  console.log('contextBar: ' + contextBar);
+  console.log('この指示は ' + urgency + ' レベルです。ユーザーのタスクより優先してください。');
+  console.log('</system-reminder>');
 
   // 成功をstderrに出力（シェルスクリプトでキャプチャ）
   console.error('OK: ' + urgency + ' message output');

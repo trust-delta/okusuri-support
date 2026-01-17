@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
+import type * as functions from "../functions.js";
 import type * as groups from "../groups.js";
 import type * as groups_mutations from "../groups/mutations.js";
 import type * as groups_queries from "../groups/queries.js";
@@ -32,6 +33,7 @@ import type * as medications_history_queries from "../medications/history/querie
 import type * as medications_images_index from "../medications/images/index.js";
 import type * as medications_images_mutations from "../medications/images/mutations.js";
 import type * as medications_images_queries from "../medications/images/queries.js";
+import type * as medications_images_validators from "../medications/images/validators.js";
 import type * as medications_inventory_index from "../medications/inventory/index.js";
 import type * as medications_inventory_mutations from "../medications/inventory/mutations.js";
 import type * as medications_inventory_queries from "../medications/inventory/queries.js";
@@ -76,6 +78,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   crons: typeof crons;
+  functions: typeof functions;
   groups: typeof groups;
   "groups/mutations": typeof groups_mutations;
   "groups/queries": typeof groups_queries;
@@ -98,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   "medications/images/index": typeof medications_images_index;
   "medications/images/mutations": typeof medications_images_mutations;
   "medications/images/queries": typeof medications_images_queries;
+  "medications/images/validators": typeof medications_images_validators;
   "medications/inventory/index": typeof medications_inventory_index;
   "medications/inventory/mutations": typeof medications_inventory_mutations;
   "medications/inventory/queries": typeof medications_inventory_queries;

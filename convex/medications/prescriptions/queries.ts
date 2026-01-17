@@ -1,6 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import type { Doc, Id } from "../../_generated/dataModel";
+import type { Doc } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
 import { error, type Result, success } from "../../types/result";
 import { getActiveMedicationsForDate } from "./helpers";
