@@ -65,6 +65,74 @@ export const getPrescriptions = query({
 });
 
 /**
+ * フィルター付きで処方箋一覧を取得
+ */
+export const getFilteredPrescriptions = query({
+  args: {
+    groupId: v.id("groups"),
+    filter: v.string(), // "active" | "inactive"
+    today: v.string(), // YYYY-MM-DD形式
+  },
+  handler: async (ctx, args): Promise<Result<PrescriptionWithImage[]>> => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      return error("このグループのメンバーではありません");
+    }
+
+    // 処方箋一覧を取得（開始日の降順）
+    const prescriptions = await ctx.db
+      .query("prescriptions")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+
+    // startDateで降順ソート（新しい順）
+    prescriptions.sort((a, b) => b.startDate.localeCompare(a.startDate));
+
+    // フィルター適用
+    const filteredPrescriptions = prescriptions.filter((prescription) => {
+      const isExpired =
+        prescription.endDate && prescription.endDate < args.today;
+      const isInactive = !prescription.isActive;
+
+      if (args.filter === "active") {
+        // 有効な処方箋: 期限内かつアクティブ
+        return !isExpired && !isInactive;
+      } else {
+        // 無効な処方箋: 期限切れまたは無効化済み
+        return isExpired || isInactive;
+      }
+    });
+
+    // 各処方箋の画像URLを取得
+    const prescriptionsWithImageUrl = await Promise.all(
+      filteredPrescriptions.map(async (prescription) => {
+        const imageUrl = prescription.imageId
+          ? await ctx.storage.getUrl(prescription.imageId)
+          : null;
+        return {
+          ...prescription,
+          imageUrl,
+        };
+      }),
+    );
+
+    return success(prescriptionsWithImageUrl);
+  },
+});
+
+/**
  * グループの削除された処方箋一覧を取得（ゴミ箱用）
  */
 export const getDeletedPrescriptions = query({
