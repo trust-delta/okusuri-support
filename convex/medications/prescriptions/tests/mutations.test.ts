@@ -264,7 +264,7 @@ describe("updatePrescription - 処方箋更新", () => {
     it("処方箋を更新できる", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId, groupId, prescriptionId } = await t.run(async (ctx) => {
+      const { userId, prescriptionId } = await t.run(async (ctx) => {
         const userId = await ctx.db.insert("users", {});
         const groupId = await ctx.db.insert("groups", {
           name: "テストグループ",

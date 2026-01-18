@@ -127,7 +127,7 @@ describe("subscribe - プッシュサブスクリプション登録", () => {
     it("別のユーザーのエンドポイントでも更新される（デバイス共有ケース）", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId1, userId2 } = await t.run(async (ctx) => {
+      const { userId2 } = await t.run(async (ctx) => {
         const userId1 = await ctx.db.insert("users", {});
         const userId2 = await ctx.db.insert("users", {});
 
@@ -250,7 +250,7 @@ describe("unsubscribe - プッシュサブスクリプション削除", () => {
     it("他人のサブスクリプションは削除できない", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId1, userId2 } = await t.run(async (ctx) => {
+      const { userId2 } = await t.run(async (ctx) => {
         const userId1 = await ctx.db.insert("users", {});
         const userId2 = await ctx.db.insert("users", {});
 

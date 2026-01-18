@@ -169,6 +169,19 @@
           }
         }
       }
+    },
+    {
+      "includes": [
+        "app/(private)/history/_components/MonthlyStatsCard.tsx",
+        "app/_shared/features/medication/MedicationGroupedRecordsList.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noTsIgnore": "off"
+          }
+        }
+      }
     }
   ]
 }

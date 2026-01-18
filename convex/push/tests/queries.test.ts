@@ -74,7 +74,7 @@ describe("list - サブスクリプション一覧取得", () => {
     it("他のユーザーのサブスクリプションは取得しない", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId1, userId2 } = await t.run(async (ctx) => {
+      const { userId1 } = await t.run(async (ctx) => {
         const userId1 = await ctx.db.insert("users", {});
         const userId2 = await ctx.db.insert("users", {});
 
@@ -170,7 +170,7 @@ describe("getByEndpoint - エンドポイントでサブスクリプション取
     it("他のユーザーのサブスクリプションはnullを返す", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId1, userId2 } = await t.run(async (ctx) => {
+      const { userId2 } = await t.run(async (ctx) => {
         const userId1 = await ctx.db.insert("users", {});
         const userId2 = await ctx.db.insert("users", {});
 

@@ -169,74 +169,73 @@ describe("restoreMedicationRecord - 服薬記録の復元", () => {
     it("削除された記録を復元できる", async () => {
       const t = convexTest(schema, modules);
 
-      const { userId, historyId, medicineId, scheduleId, groupId } =
-        await t.run(async (ctx) => {
-          const userId = await ctx.db.insert("users", {});
-          const groupId = await ctx.db.insert("groups", {
-            name: "テストグループ",
-            createdBy: userId,
-            createdAt: Date.now(),
-          });
-          await ctx.db.insert("groupMembers", {
-            groupId,
-            userId,
-            role: "patient",
-            joinedAt: Date.now(),
-          });
-          const prescriptionId = await ctx.db.insert("prescriptions", {
-            groupId,
-            name: "テスト処方箋",
-            startDate: "2024-01-01",
-            isActive: true,
-            createdBy: userId,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          });
-          const medicineId = await ctx.db.insert("medicines", {
-            groupId,
-            prescriptionId,
-            name: "テスト薬",
-            createdBy: userId,
-            createdAt: Date.now(),
-          });
-          const scheduleId = await ctx.db.insert("medicationSchedules", {
-            medicineId,
-            groupId,
-            timings: ["morning"],
-            createdBy: userId,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          });
-          const recordId = await ctx.db.insert("medicationRecords", {
-            medicineId,
-            scheduleId,
-            groupId,
-            patientId: userId,
-            timing: "morning",
-            scheduledDate: "2024-06-15",
-            status: "taken",
-            recordedBy: userId,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          });
-          const historyId = await ctx.db.insert("medicationRecordsHistory", {
-            originalRecordId: recordId,
-            medicineId,
-            scheduleId,
-            groupId,
-            patientId: userId,
-            timing: "morning",
-            scheduledDate: "2024-06-15",
-            status: "taken",
-            recordedBy: userId,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            historyType: "deleted",
-            archivedAt: Date.now(),
-            archivedBy: userId,
-          });
-          return { userId, historyId, medicineId, scheduleId, groupId };
+      const { userId, historyId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
         });
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+        const prescriptionId = await ctx.db.insert("prescriptions", {
+          groupId,
+          name: "テスト処方箋",
+          startDate: "2024-01-01",
+          isActive: true,
+          createdBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+        const medicineId = await ctx.db.insert("medicines", {
+          groupId,
+          prescriptionId,
+          name: "テスト薬",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+        const scheduleId = await ctx.db.insert("medicationSchedules", {
+          medicineId,
+          groupId,
+          timings: ["morning"],
+          createdBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+        const recordId = await ctx.db.insert("medicationRecords", {
+          medicineId,
+          scheduleId,
+          groupId,
+          patientId: userId,
+          timing: "morning",
+          scheduledDate: "2024-06-15",
+          status: "taken",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+        const historyId = await ctx.db.insert("medicationRecordsHistory", {
+          originalRecordId: recordId,
+          medicineId,
+          scheduleId,
+          groupId,
+          patientId: userId,
+          timing: "morning",
+          scheduledDate: "2024-06-15",
+          status: "taken",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          historyType: "deleted",
+          archivedAt: Date.now(),
+          archivedBy: userId,
+        });
+        return { userId, historyId, medicineId, scheduleId, groupId };
+      });
 
       const asUser = t.withIdentity({ subject: userId });
 
