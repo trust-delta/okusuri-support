@@ -4,8 +4,10 @@
 
 固定テストアカウントでログインしてから検証する。
 
+> **Note**: ポートはデフォルト3000だが、使用中の場合は自動で変わる。`list_pages()` で現在のURLを確認すること。
+
 ```
-1. navigate_page("http://localhost:3000/login")
+1. navigate_page("http://localhost:3000/login")  # ポートは環境に合わせて変更
 2. take_snapshot() でログイン画面確認
 3. click("メールアドレスでログイン" ボタン)
 4. take_snapshot() でパスワード入力フォーム確認

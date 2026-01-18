@@ -1,6 +1,6 @@
 # Worktree作成
 
-機能ブランチとworktreeを同時に作成し、新しいWezTermタブでClaude Codeを起動します。
+機能ブランチとworktreeを同時に作成します。
 
 ## ユースケース
 
@@ -25,14 +25,17 @@
 
 1. 親ディレクトリにworktree作成（例: `../okusuri-support-feature-add-notification`）
 2. 指定したブランチを作成（または既存ブランチを使用）
-3. WezTermの新しいタブでworktreeディレクトリに移動
-4. 新しいタブでClaude Codeを自動起動
 
 ### 結果
 
 ```
 /home/user/works/okusuri-support                          # develop - 元の作業継続
-/home/user/works/okusuri-support-feature-add-notification # feature - 新しいタブで作業
+/home/user/works/okusuri-support-feature-add-notification # feature - 別ディレクトリ
+```
+
+作業を開始するには:
+```bash
+cd ../okusuri-support-feature-add-notification
 ```
 
 ---
@@ -61,4 +64,3 @@ git worktree remove --force ../okusuri-support-feature-add-notification
 1. **同じブランチの二重チェックアウト不可**: 1つのブランチは1つのworktreeでのみ使用可能
 2. **worktree間のClaude設定**: `.claude/`は各worktreeで別々に管理される
 3. **マージ後の削除**: 機能完了後はworktreeも削除すること
-4. **WezTerm必須**: このスクリプトはWezTermの`wezterm cli spawn`に依存

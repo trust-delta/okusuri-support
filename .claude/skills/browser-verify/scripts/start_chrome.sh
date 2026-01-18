@@ -1,7 +1,17 @@
 #!/bin/bash
 # Chrome起動（リモートデバッグモード）- WSL + Windows Chrome対応
+#
+# 環境変数:
+#   DEBUG_PORT  - デバッグポート (default: 9222)
+#   HEADLESS    - true でヘッドレスモード (default: false = ウィンドウ表示)
+#   CHROME_BIN  - Chromeの実行パス (自動検出)
+#
+# 使用例:
+#   bash start_chrome.sh                    # ウィンドウ表示モード
+#   HEADLESS=true bash start_chrome.sh      # ヘッドレスモード
 
 DEBUG_PORT="${DEBUG_PORT:-9222}"
+HEADLESS="${HEADLESS:-false}"
 MAX_WAIT=15
 
 # WSL環境かどうか判定
@@ -27,35 +37,30 @@ if curl -s "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" > /dev/null 2>&1; 
     exit 0
 fi
 
+# ヘッドレスオプションの設定
+HEADLESS_OPTS=""
+if [ "$HEADLESS" = "true" ]; then
+    HEADLESS_OPTS="--headless=new"
+    echo "Mode: Headless"
+else
+    echo "Mode: Visible (with window)"
+fi
+
 # 起動
 echo "Starting Chrome on port ${DEBUG_PORT}..."
 echo "Chrome host: ${CHROME_HOST}"
 
-if is_wsl; then
-    # WSL環境: Windows上のChromeを使用
-    CHROME_BIN="${CHROME_BIN:-/mnt/c/Program Files/Google/Chrome/Application/chrome.exe}"
-    # Windows形式のパスでユーザーデータディレクトリを指定（タイムスタンプ付きで一意に）
-    WIN_USER_DATA_DIR="${WIN_USER_DATA_DIR:-C:\\Temp\\chrome-mcp-profile-$(date +%s)}"
+# Linux Chrome を使用（WSL環境でもWSLgでウィンドウ表示可能）
+CHROME_BIN="${CHROME_BIN:-google-chrome}"
+USER_DATA_DIR="${USER_DATA_DIR:-/tmp/chrome-mcp-profile-$(date +%s)}"
 
-    "$CHROME_BIN" \
-        --remote-debugging-port="$DEBUG_PORT" \
-        --remote-debugging-address=0.0.0.0 \
-        --user-data-dir="$WIN_USER_DATA_DIR" \
-        --no-first-run \
-        --no-default-browser-check \
-        > /dev/null 2>&1 &
-else
-    # Linux環境: ネイティブChromeを使用
-    CHROME_BIN="${CHROME_BIN:-google-chrome}"
-    USER_DATA_DIR="${USER_DATA_DIR:-/tmp/chrome-mcp-profile}"
-
-    "$CHROME_BIN" \
-        --remote-debugging-port="$DEBUG_PORT" \
-        --user-data-dir="$USER_DATA_DIR" \
-        --no-first-run \
-        --no-default-browser-check \
-        > /dev/null 2>&1 &
-fi
+"$CHROME_BIN" \
+    --remote-debugging-port="$DEBUG_PORT" \
+    --user-data-dir="$USER_DATA_DIR" \
+    --no-first-run \
+    --no-default-browser-check \
+    $HEADLESS_OPTS \
+    > /dev/null 2>&1 &
 
 CHROME_PID=$!
 

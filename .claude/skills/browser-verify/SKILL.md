@@ -34,16 +34,29 @@ Chrome DevTools MCPで実装を検証し、問題があれば修正するスキ�
 ### 1. 環境準備
 
 ```bash
-# Chrome起動（未起動の場合）
-bash scripts/start_chrome.sh
+# Chrome起動（ウィンドウ表示モード - デフォルト）
+bash .claude/skills/browser-verify/scripts/start_chrome.sh
+
+# Chrome起動（ヘッドレスモード - バックグラウンド実行）
+HEADLESS=true bash .claude/skills/browser-verify/scripts/start_chrome.sh
+
 # 出力に "CHROME_READY" が含まれていれば成功
 # 含まれていなければ再実行
 
-# 開発サーバー起動
+# 開発サーバー起動（バックグラウンド）
 npm run dev &
+# デフォルトは http://localhost:3000 だが、ポートが使用中の場合は自動で別ポートになる
 ```
 
+**起動オプション**:
+| 環境変数 | デフォルト | 説明 |
+|----------|-----------|------|
+| `HEADLESS` | `false` | `true`でヘッドレスモード（ウィンドウ非表示） |
+| `DEBUG_PORT` | `9222` | Chrome DevToolsのデバッグポート |
+
 **起動確認**: スクリプト実行後、`CHROME_READY` が出力されることを確認。タイムアウト時は `CHROME_FAILED` が出力される。
+
+**モード切り替え時の注意**: 既に起動中のChromeがある場合、モードは変更されない。モードを変更するには、既存のChromeを終了してから再起動する。
 
 ### 2. 基本検証サイクル
 

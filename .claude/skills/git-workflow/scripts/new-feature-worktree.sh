@@ -1,5 +1,5 @@
 #!/bin/bash
-# 機能ブランチ + worktree作成 + Claude Code起動スクリプト
+# 機能ブランチ + worktree作成スクリプト
 #
 # Usage: ./scripts/new-feature-worktree.sh <branch-name>
 # Example: ./scripts/new-feature-worktree.sh feature/add-notification
@@ -35,12 +35,8 @@ else
 fi
 
 echo ""
-echo "✅ Worktree created at: $WORKTREE_DIR"
-echo "✅ Branch: $BRANCH_NAME"
+echo "Worktree created at: $WORKTREE_DIR"
+echo "Branch: $BRANCH_NAME"
 echo ""
-echo "Opening Claude Code in new WezTerm tab..."
-
-# WezTermの新しいタブでClaude Codeを起動
-wezterm cli spawn --cwd "$WORKTREE_DIR" -- claude
-
-echo "✅ Done! New tab opened with Claude Code."
+echo "To start working:"
+echo "  cd $WORKTREE_DIR"
