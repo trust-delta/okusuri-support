@@ -79,7 +79,7 @@ export function MedicationGroupedRecordsList({
 
   // その日に有効な薬剤をグルーピング済みで取得（バックエンドでグルーピング）
   const groupedMedications = useQuery(
-    // @ts-expect-error Convex型インスタンス化の深度制限を回避
+    // @ts-ignore Convex型インスタンス化の深度制限を回避（環境により発生有無が異なる）
     api.medications.prescriptions.queries.getGroupedMedicationsForDate,
     {
       groupId,
