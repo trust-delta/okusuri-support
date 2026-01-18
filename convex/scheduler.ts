@@ -6,7 +6,7 @@ import { internalAction } from "./_generated/server";
 /**
  * 通知設定の型
  */
-type NotificationSettings = {
+export type NotificationSettings = {
   morningTime: number;
   noonTime: number;
   eveningTime: number;
@@ -227,7 +227,7 @@ export const checkSnoozedReminders = internalAction({
  * @param settings グループの通知設定
  * @returns タイミング文字列、または該当なしの場合null
  */
-function determineTimingFromSettings(
+export function determineTimingFromSettings(
   currentTimeInMinutes: number,
   settings: NotificationSettings,
 ): "morning" | "noon" | "evening" | "bedtime" | null {
@@ -260,7 +260,7 @@ function determineTimingFromSettings(
  * @param isSnoozeReminder スヌーズ再通知かどうか
  * @returns 通知ペイロード
  */
-function createNotificationPayload(
+export function createNotificationPayload(
   record: {
     _id: string;
     medicineName: string;
