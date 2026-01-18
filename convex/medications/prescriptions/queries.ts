@@ -235,3 +235,106 @@ export const getActiveMedicationsForDateQuery = query({
     return success(result);
   },
 });
+
+// タイミングの順序
+const TIMING_ORDER: Record<string, number> = {
+  morning: 1,
+  noon: 2,
+  evening: 3,
+  bedtime: 4,
+  asNeeded: 5,
+};
+
+type MedicationItem = {
+  medicineId: string;
+  scheduleId: string;
+  medicineName: string;
+  prescriptionId: string;
+  prescriptionName: string;
+  timing: "morning" | "noon" | "evening" | "bedtime" | "asNeeded";
+  dosage?: { amount: number; unit: string };
+};
+
+type GroupedMedicationsResult = {
+  groupName: string;
+  items: MedicationItem[];
+}[];
+
+/**
+ * 指定日に有効な薬剤をグルーピングして取得
+ * フロントエンドのグルーピング処理をバックエンドに移行
+ */
+export const getGroupedMedicationsForDate = query({
+  args: {
+    groupId: v.id("groups"),
+    date: v.string(), // YYYY-MM-DD
+    groupBy: v.union(v.literal("timing"), v.literal("prescription")),
+  },
+  handler: async (ctx, args): Promise<Result<GroupedMedicationsResult>> => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      return error("このグループのメンバーではありません");
+    }
+
+    const medications = await getActiveMedicationsForDate(
+      ctx,
+      args.groupId,
+      args.date,
+    );
+
+    // 薬ごとにタイミング別に展開
+    const medicationItems: MedicationItem[] = medications.flatMap((med) =>
+      med.timings.map((timing) => ({
+        medicineId: med.medicineId,
+        scheduleId: med.scheduleId,
+        medicineName: med.medicineName,
+        prescriptionId: med.prescriptionId,
+        prescriptionName: med.prescriptionName,
+        timing: timing as MedicationItem["timing"],
+        dosage: med.dosage,
+      })),
+    );
+
+    // グルーピング処理
+    const groupedMap: Record<string, MedicationItem[]> = {};
+
+    for (const item of medicationItems) {
+      const key =
+        args.groupBy === "timing" ? item.timing : item.prescriptionName;
+      if (!groupedMap[key]) {
+        groupedMap[key] = [];
+      }
+      groupedMap[key].push(item);
+    }
+
+    // ソートしてresultに変換
+    const result: GroupedMedicationsResult = Object.entries(groupedMap)
+      .sort(([a], [b]) => {
+        if (args.groupBy === "timing") {
+          // タイミング順でソート
+          const orderA = TIMING_ORDER[a] ?? 99;
+          const orderB = TIMING_ORDER[b] ?? 99;
+          return orderA - orderB;
+        }
+        // 処方箋名でソート（50音順）
+        return a.localeCompare(b, "ja");
+      })
+      .map(([groupName, items]) => ({
+        groupName,
+        items,
+      }));
+
+    return success(result);
+  },
+});

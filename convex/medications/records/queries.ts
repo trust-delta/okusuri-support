@@ -166,6 +166,137 @@ export const getMonthlyRecords = query({
 });
 
 /**
+ * フィルタリング付きで服薬記録を取得
+ * フロントエンドのフィルタリング処理をバックエンドに移行
+ */
+export const getFilteredRecords = query({
+  args: {
+    groupId: v.id("groups"),
+    patientId: v.optional(v.string()),
+    year: v.number(),
+    month: v.number(), // 1-12
+    filters: v.optional(
+      v.object({
+        searchQuery: v.optional(v.string()), // 薬名検索（部分一致）
+        status: v.optional(
+          v.union(
+            v.literal("all"),
+            v.literal("pending"),
+            v.literal("taken"),
+            v.literal("skipped"),
+          ),
+        ),
+        timing: v.optional(
+          v.union(
+            v.literal("all"),
+            v.literal("morning"),
+            v.literal("noon"),
+            v.literal("evening"),
+            v.literal("bedtime"),
+            v.literal("asNeeded"),
+          ),
+        ),
+        memoOnly: v.optional(v.boolean()), // メモ付きのみ
+      }),
+    ),
+  },
+  handler: async (ctx, args): Promise<Result<Doc<"medicationRecords">[]>> => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      return error("このグループのメンバーではありません");
+    }
+
+    // 月の範囲を計算（YYYY-MM-DD形式）
+    const startDate = `${args.year}-${String(args.month).padStart(2, "0")}-01`;
+    const endDay = new Date(args.year, args.month, 0).getDate();
+    const endDate = `${args.year}-${String(args.month).padStart(2, "0")}-${String(endDay).padStart(2, "0")}`;
+
+    // patientIdが指定されている場合は、その患者の記録のみを取得
+    let records: Doc<"medicationRecords">[];
+    if (args.patientId) {
+      const targetPatientId = args.patientId;
+      if (membership.role !== "supporter" && targetPatientId !== userId) {
+        return error("他のユーザーの記録を閲覧する権限がありません");
+      }
+      records = await ctx.db
+        .query("medicationRecords")
+        .withIndex("by_patientId_scheduledDate", (q) =>
+          q
+            .eq("patientId", targetPatientId)
+            .gte("scheduledDate", startDate)
+            .lte("scheduledDate", endDate),
+        )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
+        .collect();
+    } else {
+      records = await ctx.db
+        .query("medicationRecords")
+        .withIndex("by_groupId_scheduledDate", (q) =>
+          q
+            .eq("groupId", args.groupId)
+            .gte("scheduledDate", startDate)
+            .lte("scheduledDate", endDate),
+        )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
+        .collect();
+    }
+
+    // フィルタリングをバックエンドで実行
+    const filters = args.filters;
+    if (!filters) {
+      return success(records);
+    }
+
+    const filteredRecords = records.filter((record) => {
+      // 薬名検索（部分一致、大文字小文字を区別しない）
+      if (filters.searchQuery && filters.searchQuery.trim() !== "") {
+        const query = filters.searchQuery.toLowerCase();
+        const medicineName = record.simpleMedicineName ?? "";
+        if (!medicineName.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+
+      // ステータスフィルター
+      if (filters.status && filters.status !== "all") {
+        if (record.status !== filters.status) {
+          return false;
+        }
+      }
+
+      // タイミングフィルター
+      if (filters.timing && filters.timing !== "all") {
+        if (record.timing !== filters.timing) {
+          return false;
+        }
+      }
+
+      // メモ付きのみフィルター
+      if (filters.memoOnly) {
+        if (!record.notes) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    return success(filteredRecords);
+  },
+});
+
+/**
  * 指定月の統計情報を取得
  */
 /**

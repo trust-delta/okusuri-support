@@ -656,6 +656,513 @@ describe("getMonthlyRecords - 指定月の服薬記録取得", () => {
   });
 });
 
+describe("getFilteredRecords - フィルタリング付き服薬記録取得", () => {
+  describe("認証チェック", () => {
+    it("認証されていない場合はエラーを返す", async () => {
+      const t = convexTest(schema, modules);
+
+      const groupId = await t.run(async (ctx) => {
+        return await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: "creator",
+          createdAt: Date.now(),
+        });
+      });
+
+      const result = await t.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+        },
+      );
+
+      expect(result.isSuccess).toBe(false);
+      if (!result.isSuccess) {
+        expect(result.errorMessage).toBe("認証が必要です");
+      }
+    });
+  });
+
+  describe("フィルタリング機能", () => {
+    it("フィルターなしで全件取得できる", async () => {
+      const t = convexTest(schema, modules);
+
+      const { userId, groupId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+
+        // 3件の記録を作成
+        for (let i = 1; i <= 3; i++) {
+          await ctx.db.insert("medicationRecords", {
+            groupId,
+            patientId: userId,
+            scheduledDate: `2025-01-0${i}`,
+            timing: "morning",
+            status: "taken",
+            simpleMedicineName: `テスト薬${i}`,
+            recordedBy: userId,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }
+
+        return { userId, groupId };
+      });
+
+      const asUser = t.withIdentity({ subject: userId });
+
+      const result = await asUser.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+        },
+      );
+
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data).toHaveLength(3);
+      }
+    });
+
+    it("薬名検索で部分一致フィルタリングできる", async () => {
+      const t = convexTest(schema, modules);
+
+      const { userId, groupId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+
+        // 異なる薬名の記録
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-01",
+          timing: "morning",
+          status: "taken",
+          simpleMedicineName: "アスピリン",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-02",
+          timing: "morning",
+          status: "taken",
+          simpleMedicineName: "ロキソニン",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-03",
+          timing: "morning",
+          status: "taken",
+          simpleMedicineName: "アスピリン錠",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        return { userId, groupId };
+      });
+
+      const asUser = t.withIdentity({ subject: userId });
+
+      const result = await asUser.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+          filters: {
+            searchQuery: "アスピリン",
+          },
+        },
+      );
+
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data).toHaveLength(2);
+        for (const record of result.data) {
+          expect(record.simpleMedicineName).toContain("アスピリン");
+        }
+      }
+    });
+
+    it("ステータスでフィルタリングできる", async () => {
+      const t = convexTest(schema, modules);
+
+      const { userId, groupId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-01",
+          timing: "morning",
+          status: "taken",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-02",
+          timing: "morning",
+          status: "skipped",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-03",
+          timing: "morning",
+          status: "pending",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        return { userId, groupId };
+      });
+
+      const asUser = t.withIdentity({ subject: userId });
+
+      const result = await asUser.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+          filters: {
+            status: "taken",
+          },
+        },
+      );
+
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]?.status).toBe("taken");
+      }
+    });
+
+    it("タイミングでフィルタリングできる", async () => {
+      const t = convexTest(schema, modules);
+
+      const { userId, groupId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-01",
+          timing: "morning",
+          status: "taken",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-01",
+          timing: "evening",
+          status: "taken",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        return { userId, groupId };
+      });
+
+      const asUser = t.withIdentity({ subject: userId });
+
+      const result = await asUser.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+          filters: {
+            timing: "evening",
+          },
+        },
+      );
+
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]?.timing).toBe("evening");
+      }
+    });
+
+    it("メモ付きのみでフィルタリングできる", async () => {
+      const t = convexTest(schema, modules);
+
+      const { userId, groupId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-01",
+          timing: "morning",
+          status: "taken",
+          notes: "体調良好",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-02",
+          timing: "morning",
+          status: "taken",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        return { userId, groupId };
+      });
+
+      const asUser = t.withIdentity({ subject: userId });
+
+      const result = await asUser.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+          filters: {
+            memoOnly: true,
+          },
+        },
+      );
+
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]?.notes).toBe("体調良好");
+      }
+    });
+
+    it("複数のフィルターを組み合わせできる", async () => {
+      const t = convexTest(schema, modules);
+
+      const { userId, groupId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+
+        // ターゲット: アスピリン、taken、morning
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-01",
+          timing: "morning",
+          status: "taken",
+          simpleMedicineName: "アスピリン",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        // アスピリンだがskipped
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-02",
+          timing: "morning",
+          status: "skipped",
+          simpleMedicineName: "アスピリン",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        // takenだがロキソニン
+        await ctx.db.insert("medicationRecords", {
+          groupId,
+          patientId: userId,
+          scheduledDate: "2025-01-03",
+          timing: "morning",
+          status: "taken",
+          simpleMedicineName: "ロキソニン",
+          recordedBy: userId,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        return { userId, groupId };
+      });
+
+      const asUser = t.withIdentity({ subject: userId });
+
+      const result = await asUser.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+          filters: {
+            searchQuery: "アスピリン",
+            status: "taken",
+          },
+        },
+      );
+
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0]?.simpleMedicineName).toBe("アスピリン");
+        expect(result.data[0]?.status).toBe("taken");
+      }
+    });
+
+    it("status=allの場合は全てのステータスを含む", async () => {
+      const t = convexTest(schema, modules);
+
+      const { userId, groupId } = await t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", {});
+        const groupId = await ctx.db.insert("groups", {
+          name: "テストグループ",
+          createdBy: userId,
+          createdAt: Date.now(),
+        });
+
+        await ctx.db.insert("groupMembers", {
+          groupId,
+          userId,
+          role: "patient",
+          joinedAt: Date.now(),
+        });
+
+        for (const status of ["taken", "skipped", "pending"] as const) {
+          await ctx.db.insert("medicationRecords", {
+            groupId,
+            patientId: userId,
+            scheduledDate: "2025-01-01",
+            timing: "morning",
+            status,
+            recordedBy: userId,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }
+
+        return { userId, groupId };
+      });
+
+      const asUser = t.withIdentity({ subject: userId });
+
+      const result = await asUser.query(
+        api.medications.records.queries.getFilteredRecords,
+        {
+          groupId,
+          year: 2025,
+          month: 1,
+          filters: {
+            status: "all",
+          },
+        },
+      );
+
+      expect(result.isSuccess).toBe(true);
+      if (result.isSuccess) {
+        expect(result.data).toHaveLength(3);
+      }
+    });
+  });
+});
+
 describe("getMonthlyStats - 月間統計取得", () => {
   describe("認証チェック", () => {
     it("認証されていない場合はエラーを返す", async () => {
