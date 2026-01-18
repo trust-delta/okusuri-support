@@ -79,6 +79,7 @@ export function MedicationGroupedRecordsList({
 
   // その日に有効な薬剤をグルーピング済みで取得（バックエンドでグルーピング）
   const groupedMedications = useQuery(
+    // @ts-expect-error Convex型インスタンス化の深度制限を回避
     api.medications.prescriptions.queries.getGroupedMedicationsForDate,
     {
       groupId,
@@ -188,8 +189,7 @@ export function MedicationGroupedRecordsList({
         // グループ内の薬の記録状態を取得
         const itemsWithRecordStatus = items.map((item) => {
           const record = recordsData.find(
-            (r) =>
-              r.medicineId === item.medicineId && r.timing === item.timing,
+            (r) => r.medicineId === item.medicineId && r.timing === item.timing,
           );
           return {
             medicineId: item.medicineId as Id<"medicines">,
@@ -340,7 +340,9 @@ export function MedicationGroupedRecordsList({
                           timing={item.timing}
                           scheduledDate={scheduledDate}
                           medicineId={item.medicineId as Id<"medicines">}
-                          scheduleId={item.scheduleId as Id<"medicationSchedules">}
+                          scheduleId={
+                            item.scheduleId as Id<"medicationSchedules">
+                          }
                           recordId={record?._id}
                           recordStatus={record?.status}
                           recordNotes={record?.notes}

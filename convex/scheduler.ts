@@ -103,7 +103,7 @@ export const checkMedicationReminders = internalAction({
 
         // このグループの記録のみフィルタ
         const groupRecords = pendingRecords.filter(
-          (r) => r.groupId === groupId,
+          (r: { groupId: string }) => r.groupId === groupId,
         );
         totalCheckedCount += groupRecords.length;
 

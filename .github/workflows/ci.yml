@@ -38,7 +38,13 @@ jobs:
       - name: 依存関係をインストール
         run: pnpm install --frozen-lockfile
 
-      - name: 型チェック・Lint を実行
+      - name: 型チェックを実行（Next.js アプリ）
+        run: pnpm run typecheck
+
+      - name: 型チェックを実行（Convex バックエンド）
+        run: pnpm run typecheck:convex
+
+      - name: Lint を実行
         run: pnpm run lint
 
       - name: ビルドを実行

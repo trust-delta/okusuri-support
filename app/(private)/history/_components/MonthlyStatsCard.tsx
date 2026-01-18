@@ -61,11 +61,15 @@ export function MonthlyStatsCard({
   year,
   month,
 }: MonthlyStatsCardProps) {
-  const statsResult = useQuery(api.medications.getMonthlyStats, {
-    groupId,
-    year,
-    month,
-  });
+  const statsResult = useQuery(
+    // @ts-expect-error Convex型インスタンス化の深度制限を回避
+    api.medications.getMonthlyStats,
+    {
+      groupId,
+      year,
+      month,
+    },
+  );
 
   if (statsResult === undefined) {
     return <MonthlyStatsCardSkeleton />;

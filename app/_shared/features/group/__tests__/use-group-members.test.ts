@@ -26,25 +26,27 @@ describe("useGroupMembers", () => {
     expect(result.current.members).toEqual([]);
   });
 
-  it("メンバーが取得できた場合、ソートされたメンバーを返す", () => {
+  it("メンバーが取得できた場合、バックエンドから受け取ったメンバーをそのまま返す", () => {
+    // バックエンドでソート済みのデータを想定
+    // ソート順のテストはバックエンドのテスト（convex/groups/tests/）で実施
     const mockMembers = [
       {
         userId: "user-1" as Id<"users">,
-        role: "supporter" as const,
-        joinedAt: 200,
-        name: "サポーター1",
-      },
-      {
-        userId: "user-2" as Id<"users">,
         role: "patient" as const,
         joinedAt: 100,
         name: "患者1",
       },
       {
-        userId: "user-3" as Id<"users">,
+        userId: "user-2" as Id<"users">,
         role: "supporter" as const,
         joinedAt: 150,
         name: "サポーター2",
+      },
+      {
+        userId: "user-3" as Id<"users">,
+        role: "supporter" as const,
+        joinedAt: 200,
+        name: "サポーター1",
       },
     ];
 
@@ -55,13 +57,8 @@ describe("useGroupMembers", () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.members).toHaveLength(3);
 
-    // 患者が最初に来る
-    const firstMember = result.current.members[0];
-    expect(firstMember).toBeDefined();
-    expect(firstMember?.role).toBe("patient");
-    expect(firstMember?.name).toBe("患者1");
-
-    // サポーターはjoinedAt順（150 < 200）
+    // バックエンドから受け取った順序がそのまま維持される
+    expect(result.current.members[0]?.name).toBe("患者1");
     expect(result.current.members[1]?.name).toBe("サポーター2");
     expect(result.current.members[2]?.name).toBe("サポーター1");
   });
@@ -75,25 +72,27 @@ describe("useGroupMembers", () => {
     expect(result.current.members).toEqual([]);
   });
 
-  it("同じロールのメンバーは参加日時順にソートされる", () => {
+  it("バックエンドから受け取った順序を維持する（ソートはバックエンドで実施）", () => {
+    // バックエンドでソート済みのデータを想定
+    // フロントエンドは順序を変更しない
     const mockMembers = [
       {
         userId: "user-1" as Id<"users">,
-        role: "patient" as const,
-        joinedAt: 300,
-        name: "患者3",
-      },
-      {
-        userId: "user-2" as Id<"users">,
         role: "patient" as const,
         joinedAt: 100,
         name: "患者1",
       },
       {
-        userId: "user-3" as Id<"users">,
+        userId: "user-2" as Id<"users">,
         role: "patient" as const,
         joinedAt: 200,
         name: "患者2",
+      },
+      {
+        userId: "user-3" as Id<"users">,
+        role: "patient" as const,
+        joinedAt: 300,
+        name: "患者3",
       },
     ];
 
@@ -101,6 +100,7 @@ describe("useGroupMembers", () => {
 
     const { result } = renderHook(() => useGroupMembers(mockGroupId));
 
+    // バックエンドから受け取った順序がそのまま維持される
     expect(result.current.members[0]?.name).toBe("患者1");
     expect(result.current.members[1]?.name).toBe("患者2");
     expect(result.current.members[2]?.name).toBe("患者3");

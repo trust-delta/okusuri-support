@@ -1,6 +1,6 @@
 # コーディングスタイルガイド
 
-> **最終更新**: 2026年01月17日
+> **最終更新**: 2026年01月19日
 > **目的**: おくすりサポートプロジェクトの統一されたコーディング規約
 
 ---
@@ -43,6 +43,28 @@
   "lineWidth": 80
 }
 ```
+
+### TypeScript型チェック
+
+型チェックは `tsc --noEmit` に統一しています。`next build` の型チェックはスキップされます。
+
+**スクリプト**:
+```bash
+# Next.js アプリの型チェック
+pnpm run typecheck
+
+# Convex バックエンドの型チェック
+pnpm run typecheck:convex
+```
+
+**設定**:
+- `tsconfig.json`: Next.js アプリ領域（`app/**`）のみを対象
+- `convex/tsconfig.json`: Convex バックエンド領域を対象
+- `next.config.ts`: `typescript.ignoreBuildErrors: true` で型チェックを `tsc` に委譲
+
+**理由**: Next.js 16 の Turbopack と `tsc` で TS2589（Convex型深度エラー）の挙動が異なるため、一貫性のために `tsc` に統一しています。
+
+> 詳細: [決定記録: TypeScript型チェックの統一](./decisions/2026-01-19-typescript-typecheck-unification.md)
 
 ---
 
@@ -363,6 +385,55 @@ args: {
 export { createGroup, updateGroup } from "./mutations";
 export { getUserGroupStatus, getGroupMembers } from "./queries";
 ```
+
+### 型インスタンス化エラー（TS2589）対策
+
+Convexの型システムは複雑なため、TypeScriptの型深度制限エラー（TS2589: Type instantiation is excessively deep）が発生することがあります。
+
+#### 対処法1: `@ts-expect-error`（推奨：本番コード）
+
+型情報を保持しつつエラーを回避できます。**エラーが発生する式の直前**に配置します。
+
+**バックエンド（actions.ts など）**:
+```typescript
+// ✅ 正しい位置（エラー発生箇所の直前）
+const subscriptions = await ctx.runQuery(
+  // @ts-expect-error Convex型インスタンス化の深度制限を回避
+  internal.push.queries.listByUserId,
+  { userId: member.userId },
+);
+```
+
+**フロントエンド（useQuery/useMutation）**:
+```typescript
+// ✅ useQuery での使用例
+const statsResult = useQuery(
+  // @ts-expect-error Convex型インスタンス化の深度制限を回避
+  api.medications.getMonthlyStats,
+  { groupId, year, month },
+);
+```
+
+#### 対処法2: 動的インポート（テストコード向け）
+
+テストファイルのように使用箇所が多い場合に有効です。
+
+```typescript
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { api, internal } = require("../../_generated/api");
+```
+
+**注意**: 型情報が失われるため、コールバックパラメータに明示的な型が必要になる場合があります。
+
+#### 使い分け
+
+| ケース | 推奨対処法 |
+|--------|-----------|
+| 本番コード（actions等） | `@ts-expect-error` |
+| フロントエンド | `@ts-expect-error` |
+| テストファイル | `require()` 動的インポート |
+
+> 詳細: [決定記録: Convex型深度エラー対策](./decisions/2026-01-18-convex-type-depth-error-workaround.md)
 
 ---
 

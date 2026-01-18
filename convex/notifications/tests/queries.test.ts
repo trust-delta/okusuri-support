@@ -1,8 +1,11 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { internal } from "../../_generated/api";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
+
+// Convex型インスタンス化の深度制限を回避 - 動的インポート
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { internal } = require("../../_generated/api");
 
 describe("getPendingRecordsByTiming - 未服薬記録取得", () => {
   describe("基本的な取得", () => {
@@ -41,8 +44,8 @@ describe("getPendingRecordsByTiming - 未服薬記録取得", () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].medicineName).toBe("朝の薬");
-      expect(result[0].timing).toBe("morning");
+      expect(result[0]?.medicineName).toBe("朝の薬");
+      expect(result[0]?.timing).toBe("morning");
     });
 
     it("別のタイミングの記録は取得しない", async () => {
@@ -93,7 +96,7 @@ describe("getPendingRecordsByTiming - 未服薬記録取得", () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].medicineName).toBe("朝の薬");
+      expect(result[0]?.medicineName).toBe("朝の薬");
     });
 
     it("別の日付の記録は取得しない", async () => {
@@ -325,8 +328,8 @@ describe("getPendingRecordsByTiming - 未服薬記録取得", () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].medicineName).toBe("スヌーズ期限切れの薬");
-      expect(result[0].snoozeCount).toBe(1);
+      expect(result[0]?.medicineName).toBe("スヌーズ期限切れの薬");
+      expect(result[0]?.snoozeCount).toBe(1);
     });
   });
 
@@ -383,8 +386,8 @@ describe("getPendingRecordsByTiming - 未服薬記録取得", () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].medicineName).toBe("ロキソニン");
-      expect(result[0].dosage).toEqual({ amount: 60, unit: "mg" });
+      expect(result[0]?.medicineName).toBe("ロキソニン");
+      expect(result[0]?.dosage).toEqual({ amount: 60, unit: "mg" });
     });
   });
 });
@@ -425,8 +428,8 @@ describe("getSnoozedRecordsDue - スヌーズ解除記録取得", () => {
     );
 
     expect(result).toHaveLength(1);
-    expect(result[0].medicineName).toBe("スヌーズ解除待ちの薬");
-    expect(result[0].snoozeCount).toBe(1);
+    expect(result[0]?.medicineName).toBe("スヌーズ解除待ちの薬");
+    expect(result[0]?.snoozeCount).toBe(1);
   });
 
   it("まだスヌーズ中の記録は取得しない", async () => {
@@ -677,12 +680,18 @@ describe("getAllGroupsWithNotificationSettings - 全グループ通知設定取�
     expect(result).toHaveLength(2);
 
     // グループ1: カスタム設定
-    const group1 = result.find((g) => g.settings.morningTime === 420);
+    const group1 = result.find(
+      (g: { settings: { morningTime: number } }) =>
+        g.settings.morningTime === 420,
+    );
     expect(group1).toBeDefined();
     expect(group1?.settings.eveningTime).toBe(1110);
 
     // グループ2: デフォルト設定
-    const group2 = result.find((g) => g.settings.morningTime === 480);
+    const group2 = result.find(
+      (g: { settings: { morningTime: number } }) =>
+        g.settings.morningTime === 480,
+    );
     expect(group2).toBeDefined();
     expect(group2?.settings.eveningTime).toBe(1080);
   });

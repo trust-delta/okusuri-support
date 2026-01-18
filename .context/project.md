@@ -1,6 +1,6 @@
 # プロジェクト概要
 
-**最終更新**: 2026年01月14日
+**最終更新**: 2026年01月19日
 
 ---
 
@@ -119,6 +119,9 @@ Feature-Based Architecture
 - **any型**: 禁止
 - **ファイルサイズ**: 最大300行
 - **循環依存**: 禁止
+- **型チェック**: `tsc --noEmit` に統一（`next build` の型チェックはスキップ）
+  - アプリ: `pnpm run typecheck`
+  - Convex: `pnpm run typecheck:convex`
 
 ### 命名規則
 

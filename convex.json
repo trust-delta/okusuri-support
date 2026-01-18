@@ -1,7 +1,5 @@
 {
   "node": {
-    "externalPackages": [
-      "jose"
-    ]
+    "externalPackages": ["jose"]
   }
 }

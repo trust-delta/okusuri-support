@@ -1,7 +1,10 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 import { error, type Result, success } from "../types/result";
+
+// Convex型インスタンス化の深度制限を回避 - 動的インポート
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { internal } = require("../_generated/api");
 
 type ReminderResult = {
   sent: number;
@@ -24,7 +27,6 @@ export const testMedicationReminders = action({
     }
 
     // 内部actionを呼び出し
-    // @ts-expect-error Convex型インスタンス化の深度制限を回避
     const result = await ctx.runAction(
       internal.scheduler.checkMedicationReminders,
       {},

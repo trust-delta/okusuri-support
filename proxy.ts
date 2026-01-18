@@ -1,3 +1,9 @@
+/**
+ * Next.js 16 Proxy（旧 Middleware）
+ *
+ * Convex Auth を使用した認証・ルート保護を行う。
+ * Next.js 16 で middleware.ts から proxy.ts に名称変更。
+ */
 import {
   convexAuthNextjsMiddleware,
   createRouteMatcher,
@@ -18,7 +24,10 @@ const isProtectedRoute = createRouteMatcher([
   "/settings(.*)",
 ]);
 
-export default convexAuthNextjsMiddleware(
+/**
+ * Proxy 関数（Next.js 16 で推奨される名前付きエクスポート）
+ */
+export const proxy = convexAuthNextjsMiddleware(
   async (request, { convexAuth }) => {
     if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
       return nextjsMiddlewareRedirect(request, "/dashboard");
@@ -31,7 +40,6 @@ export default convexAuthNextjsMiddleware(
 );
 
 export const config = {
-  // The following matcher runs middleware on all routes
-  // except static assets.
+  // 静的アセット以外のすべてのルートに適用
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

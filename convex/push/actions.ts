@@ -87,10 +87,8 @@ export const sendTestNotification = action({
     }
 
     // ユーザーのサブスクリプションを取得
-    const subscriptions = await ctx.runQuery(
-      // @ts-expect-error convex-helpers/zod4との型深度競合を回避
-      api.push.queries.list,
-    );
+    // @ts-expect-error Convex型インスタンス化の深度制限を回避
+    const subscriptions = await ctx.runQuery(api.push.queries.list);
 
     if (subscriptions.length === 0) {
       return success({
@@ -249,10 +247,9 @@ export const sendToGroup = action({
 
     for (const member of members) {
       const subscriptions = await ctx.runQuery(
+        // @ts-expect-error Convex型インスタンス化の深度制限を回避
         internal.push.queries.listByUserId,
-        {
-          userId: member.userId,
-        },
+        { userId: member.userId },
       );
 
       totalSubscriptions += subscriptions.length;

@@ -1,8 +1,11 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api, internal } from "../../_generated/api";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
+
+// Convex型インスタンス化の深度制限を回避 - 動的インポート
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { api, internal } = require("../../_generated/api");
 
 describe("list - サブスクリプション一覧取得", () => {
   describe("認証検証", () => {
@@ -47,8 +50,12 @@ describe("list - サブスクリプション一覧取得", () => {
       const result = await asUser.query(api.push.queries.list, {});
 
       expect(result).toHaveLength(2);
-      expect(result.map((s) => s.endpoint)).toContain("https://endpoint1.com");
-      expect(result.map((s) => s.endpoint)).toContain("https://endpoint2.com");
+      expect(result.map((s: { endpoint: string }) => s.endpoint)).toContain(
+        "https://endpoint1.com",
+      );
+      expect(result.map((s: { endpoint: string }) => s.endpoint)).toContain(
+        "https://endpoint2.com",
+      );
     });
 
     it("サブスクリプションがない場合は空配列を返す", async () => {
@@ -97,7 +104,7 @@ describe("list - サブスクリプション一覧取得", () => {
       const result = await asUser1.query(api.push.queries.list, {});
 
       expect(result).toHaveLength(1);
-      expect(result[0].endpoint).toBe("https://user1-endpoint.com");
+      expect(result[0]?.endpoint).toBe("https://user1-endpoint.com");
     });
   });
 });
@@ -233,10 +240,10 @@ describe("listByUserId - ユーザーIDでサブスクリプション取得（�
     });
 
     expect(result1).toHaveLength(2);
-    expect(result1.map((s) => s.endpoint)).toContain(
+    expect(result1.map((s: { endpoint: string }) => s.endpoint)).toContain(
       "https://user1-endpoint1.com",
     );
-    expect(result1.map((s) => s.endpoint)).toContain(
+    expect(result1.map((s: { endpoint: string }) => s.endpoint)).toContain(
       "https://user1-endpoint2.com",
     );
 
@@ -246,7 +253,7 @@ describe("listByUserId - ユーザーIDでサブスクリプション取得（�
     });
 
     expect(result2).toHaveLength(1);
-    expect(result2[0].endpoint).toBe("https://user2-endpoint.com");
+    expect(result2[0]?.endpoint).toBe("https://user2-endpoint.com");
   });
 
   it("サブスクリプションがないユーザーは空配列を返す", async () => {
