@@ -61,6 +61,8 @@ git worktree remove --force ../okusuri-support-feature-add-notification
 
 ## 注意事項
 
-1. **同じブランチの二重チェックアウト不可**: 1つのブランチは1つのworktreeでのみ使用可能
-2. **worktree間のClaude設定**: `.claude/`は各worktreeで別々に管理される
-3. **マージ後の削除**: 機能完了後はworktreeも削除すること
+1. **ベースブランチは develop**: スクリプトは常に `origin/develop` の最新から分岐する
+2. **PRのターゲットも develop**: PR作成時は `--base develop` を指定すること
+3. **同じブランチの二重チェックアウト不可**: 1つのブランチは1つのworktreeでのみ使用可能
+4. **worktree間のClaude設定**: `.claude/`は各worktreeで別々に管理される
+5. **マージ後の削除**: 機能完了後はworktreeも削除すること

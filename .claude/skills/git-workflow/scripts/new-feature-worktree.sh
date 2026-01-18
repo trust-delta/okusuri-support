@@ -14,6 +14,7 @@ if [ -z "$1" ]; then
 fi
 
 BRANCH_NAME="$1"
+BASE_BRANCH="develop"
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 PROJECT_NAME=$(basename "$PROJECT_ROOT")
 WORKTREE_DIR="$(dirname "$PROJECT_ROOT")/${PROJECT_NAME}-$(echo "$BRANCH_NAME" | tr '/' '-')"
@@ -25,18 +26,22 @@ if [ -d "$WORKTREE_DIR" ]; then
   exit 1
 fi
 
+# developの最新を取得
+echo "Fetching latest $BASE_BRANCH..."
+git fetch origin "$BASE_BRANCH"
+
 # ブランチが既に存在するかチェック
 if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
   echo "Branch '$BRANCH_NAME' already exists. Creating worktree with existing branch..."
   git worktree add "$WORKTREE_DIR" "$BRANCH_NAME"
 else
-  echo "Creating new branch '$BRANCH_NAME' and worktree..."
-  git worktree add -b "$BRANCH_NAME" "$WORKTREE_DIR"
+  echo "Creating new branch '$BRANCH_NAME' from $BASE_BRANCH..."
+  git worktree add -b "$BRANCH_NAME" "$WORKTREE_DIR" "origin/$BASE_BRANCH"
 fi
 
 echo ""
 echo "Worktree created at: $WORKTREE_DIR"
-echo "Branch: $BRANCH_NAME"
+echo "Branch: $BRANCH_NAME (based on $BASE_BRANCH)"
 echo ""
 echo "To start working:"
 echo "  cd $WORKTREE_DIR"
