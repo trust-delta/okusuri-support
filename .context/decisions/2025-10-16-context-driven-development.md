@@ -18,23 +18,22 @@ AI支援開発において、フレームワーク固有の設定（例: `.kiro/
 
 ## 決定
 
-### `.ai/`ディレクトリの導入
+### `.context/`ディレクトリの導入
 
 **フレームワーク非依存な汎用コンテキスト管理**を実現。
 
 ```
-.ai/
-├── README.md
-├── context/
-│   ├── project.md
-│   ├── tech-stack.md
-│   ├── architecture.md
-│   ├── testing-strategy.md
-│   ├── error-handling.md
-│   └── adr/
-│       └── YYYY-MM-DD-*.md
-├── spec/        # オプション
-└── runbook/     # オプション
+.context/
+├── project.md
+├── architecture.md
+├── coding-style.md
+├── testing-strategy.md
+├── error-handling.md
+├── decisions/           # 決定記録
+│   └── YYYY-MM-DD-*.md
+├── specs/               # 機能仕様書
+│   └── features/*.md
+└── runbooks/            # 作業手順書
 ```
 
 ---
@@ -42,7 +41,7 @@ AI支援開発において、フレームワーク固有の設定（例: `.kiro/
 ## 原則
 
 ### 1. フレームワーク非依存
-`.ai/`配下は特定フレームワーク（Kiro SSD等）に依存しない
+`.context/`配下は特定フレームワーク（Kiro SSD等）に依存しない
 
 ### 2. 軽量性
 各ファイルは**200行以内**を目安
@@ -59,7 +58,7 @@ AI支援開発において、フレームワーク固有の設定（例: `.kiro/
 
 ✅ **フレームワーク非依存**: どのツールからでもアクセス可能
 ✅ **可搬性**: 他環境への移行が容易
-✅ **一元管理**: 情報を`.ai/`に集約
+✅ **一元管理**: 情報を`.context/`に集約
 ✅ **軽量**: 200行以内で管理しやすい
 
 ---
@@ -90,13 +89,13 @@ AI支援開発において、フレームワーク固有の設定（例: `.kiro/
 ## 実装
 
 ### Phase 1: 基本構造の整備 ✅
-- `.ai/context/` 配下の必須ファイル作成
+- `.context/context/` 配下の必須ファイル作成
 - 決定記録初版作成
 - README.md作成
 
 ### Phase 2: 既存情報の移行（計画中）
 - `.kiro/steering/`から情報を抽出
-- 重複を排除し`.ai/context/`に統合
+- 重複を排除し`.context/context/`に統合
 
 ### Phase 3: 運用最適化（将来）
 - 自動更新スクリプト
@@ -106,9 +105,8 @@ AI支援開発において、フレームワーク固有の設定（例: `.kiro/
 
 ## 関連ドキュメント
 
-- [README.md](../README.md)
-- [project.md](../context/project.md)
-- [architecture.md](../context/architecture.md)
+- [project.md](../project.md)
+- [architecture.md](../architecture.md)
 
 ---
 

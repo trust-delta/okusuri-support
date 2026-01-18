@@ -6,9 +6,13 @@
 
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api, internal } from "@/api";
+import type { Doc } from "../../../../../convex/_generated/dataModel";
 import schema from "../../../../../convex/schema";
 import { modules } from "../../../../../convex/test.setup";
+
+// Convex型インスタンス化の深度制限を回避 - 動的インポート
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { api, internal } = require("../../../../../convex/_generated/api");
 
 describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
   describe("Task 18.1: 既存グループ作成フローとの共存確認", () => {
@@ -38,9 +42,9 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
       expect(result.data.groupId).toBeDefined();
 
       // グループが作成されたことを確認
-      const group = await t.run(async (ctx) => {
+      const group = (await t.run(async (ctx) => {
         return await ctx.db.get(result.data.groupId);
-      });
+      })) as Doc<"groups"> | null;
 
       expect(group).toBeDefined();
       expect(group?.name).toBe("統合テストグループ");
@@ -371,15 +375,22 @@ describe("Phase 5: Task 18 - 既存機能との統合確認", () => {
         api.invitations.queries.listGroupInvitations,
         { groupId },
       );
-      expect(invitations).toHaveLength(1);
+      expect(invitations.isSuccess).toBe(true);
+      if (!invitations.isSuccess) throw new Error("Failed to get invitations");
+      expect(invitations.data).toHaveLength(1);
 
-      // 非メンバーは一覧取得不可
+      // 非メンバーは一覧取得不可（Result型でisSuccess: falseが返される）
       const asNonMember = t.withIdentity({ subject: nonMemberId });
-      await expect(
-        asNonMember.query(api.invitations.queries.listGroupInvitations, {
-          groupId,
-        }),
-      ).rejects.toThrow();
+      const nonMemberResult = await asNonMember.query(
+        api.invitations.queries.listGroupInvitations,
+        { groupId },
+      );
+      expect(nonMemberResult.isSuccess).toBe(false);
+      if (!nonMemberResult.isSuccess) {
+        expect(nonMemberResult.errorMessage).toBe(
+          "このグループのメンバーではありません",
+        );
+      }
     });
   });
 });

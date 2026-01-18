@@ -59,9 +59,11 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
     Set<string>
   >(new Set());
 
+  // バックエンドでフィルタリング済みの処方箋を取得
+  const today = new Date().toISOString().split("T")[0] ?? "";
   const prescriptions = useQuery(
-    api.medications.prescriptions.queries.getPrescriptions,
-    { groupId },
+    api.medications.prescriptions.queries.getFilteredPrescriptions,
+    { groupId, filter, today },
   );
   const deletePrescription = useMutation(
     api.medications.prescriptions.mutations.deletePrescription,
@@ -249,22 +251,10 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
     );
   }
 
-  // フィルタ適用
-  const today = new Date().toISOString().split("T")[0] ?? "";
-  const filteredPrescriptions = prescriptions.filter(
-    (prescription: (typeof prescriptions)[number]) => {
-      const isExpired = prescription.endDate && prescription.endDate < today;
-      const isInactive = !prescription.isActive;
-
-      if (filter === "active") {
-        // 有効な処方箋: 期限内かつアクティブ
-        return !isExpired && !isInactive;
-      } else {
-        // 無効な処方箋: 期限切れまたは無効化済み
-        return isExpired || isInactive;
-      }
-    },
-  );
+  // Result型からデータを取得（バックエンドでフィルタリング済み）
+  const filteredPrescriptions = prescriptions.isSuccess
+    ? prescriptions.data
+    : [];
 
   return (
     <div className="space-y-4">
@@ -273,9 +263,9 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Pill className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
-              {prescriptions.length === 0
-                ? "処方箋が登録されていません"
-                : "該当する処方箋がありません"}
+              {filter === "active"
+                ? "有効な処方箋がありません"
+                : "無効な処方箋がありません"}
             </p>
           </CardContent>
         </Card>

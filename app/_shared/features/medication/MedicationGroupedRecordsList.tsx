@@ -29,17 +29,6 @@ const getTimingLabel = (timing: string) => {
   return MEDICATION_TIMINGS.find((t) => t.value === timing)?.label || timing;
 };
 
-/**
- * タイミングの順序
- */
-const TIMING_ORDER = {
-  morning: 1,
-  noon: 2,
-  evening: 3,
-  bedtime: 4,
-  asNeeded: 5,
-};
-
 interface MedicationGroupedRecordsListProps {
   // 必須
   groupId: Id<"groups">;
@@ -88,12 +77,14 @@ export function MedicationGroupedRecordsList({
     defaultGroupBy,
   );
 
-  // その日に有効な薬剤を取得
-  const medications = useQuery(
-    api.medications.prescriptions.queries.getActiveMedicationsForDateQuery,
+  // その日に有効な薬剤をグルーピング済みで取得（バックエンドでグルーピング）
+  const groupedMedications = useQuery(
+    // @ts-ignore Convex型インスタンス化の深度制限を回避（環境により発生有無が異なる）
+    api.medications.prescriptions.queries.getGroupedMedicationsForDate,
     {
       groupId,
       date: scheduledDate,
+      groupBy,
     },
   );
 
@@ -110,7 +101,7 @@ export function MedicationGroupedRecordsList({
   );
 
   // ローディング中
-  if (medications === undefined || records === undefined) {
+  if (groupedMedications === undefined || records === undefined) {
     return (
       <div className="space-y-4">
         {title && (
@@ -130,8 +121,12 @@ export function MedicationGroupedRecordsList({
     );
   }
 
+  // Result型からデータを取得
+  const grouped = groupedMedications.isSuccess ? groupedMedications.data : [];
+  const recordsData = records.isSuccess ? records.data : [];
+
   // 薬がない場合
-  if (medications.length === 0) {
+  if (grouped.length === 0) {
     return (
       <div>
         {title && (
@@ -149,63 +144,6 @@ export function MedicationGroupedRecordsList({
       </div>
     );
   }
-
-  // 薬ごとにタイミング別に展開
-  const medicationItems = medications.flatMap(
-    (med: (typeof medications)[number]) =>
-      med.timings.map((timing: string) => ({
-        medicineId: med.medicineId,
-        scheduleId: med.scheduleId,
-        medicineName: med.medicineName,
-        prescriptionId: med.prescriptionId,
-        prescriptionName: med.prescriptionName,
-        timing: timing as
-          | "morning"
-          | "noon"
-          | "evening"
-          | "bedtime"
-          | "asNeeded",
-        dosage: med.dosage,
-      })),
-  );
-
-  // グルーピング処理
-  const grouped =
-    groupBy === "timing"
-      ? // 時間帯でグルーピング
-        Object.entries(
-          medicationItems.reduce(
-            (
-              acc: Record<string, typeof medicationItems>,
-              item: (typeof medicationItems)[number],
-            ) => {
-              const timingGroup = acc[item.timing] ?? [];
-              timingGroup.push(item);
-              acc[item.timing] = timingGroup;
-              return acc;
-            },
-            {} as Record<string, typeof medicationItems>,
-          ),
-        ).sort(
-          ([a], [b]) =>
-            TIMING_ORDER[a as keyof typeof TIMING_ORDER] -
-            TIMING_ORDER[b as keyof typeof TIMING_ORDER],
-        )
-      : // 処方箋でグルーピング
-        Object.entries(
-          medicationItems.reduce(
-            (
-              acc: Record<string, typeof medicationItems>,
-              item: (typeof medicationItems)[number],
-            ) => {
-              const prescriptionGroup = acc[item.prescriptionName] ?? [];
-              prescriptionGroup.push(item);
-              acc[item.prescriptionName] = prescriptionGroup;
-              return acc;
-            },
-            {} as Record<string, typeof medicationItems>,
-          ),
-        ).sort(([a], [b]) => a.localeCompare(b));
 
   return (
     <div className="space-y-6">
@@ -246,22 +184,20 @@ export function MedicationGroupedRecordsList({
       )}
 
       {/* グループごとの薬リスト */}
-      {grouped.map(([groupName, items]: [string, typeof medicationItems]) => {
+      {grouped.map((group) => {
+        const { groupName, items } = group;
         // グループ内の薬の記録状態を取得
-        const itemsWithRecordStatus = items.map(
-          (item: (typeof items)[number]) => {
-            const record = records?.find(
-              (r: (typeof records)[number]) =>
-                r.medicineId === item.medicineId && r.timing === item.timing,
-            );
-            return {
-              medicineId: item.medicineId,
-              scheduleId: item.scheduleId,
-              medicineName: item.medicineName,
-              hasRecord: !!record,
-            };
-          },
-        );
+        const itemsWithRecordStatus = items.map((item) => {
+          const record = recordsData.find(
+            (r) => r.medicineId === item.medicineId && r.timing === item.timing,
+          );
+          return {
+            medicineId: item.medicineId as Id<"medicines">,
+            scheduleId: item.scheduleId as Id<"medicationSchedules">,
+            medicineName: item.medicineName,
+            hasRecord: !!record,
+          };
+        });
 
         // 時間帯グルーピング時の画像情報を取得
         const timingImage =
@@ -321,9 +257,9 @@ export function MedicationGroupedRecordsList({
 
             {/* グループ内の薬 */}
             <div className="space-y-2">
-              {items.map((item: (typeof items)[number], index: number) => {
-                const record = records?.find(
-                  (r: (typeof records)[number]) =>
+              {items.map((item, index) => {
+                const record = recordsData.find(
+                  (r) =>
                     r.medicineId === item.medicineId &&
                     r.timing === item.timing,
                 );
@@ -403,12 +339,16 @@ export function MedicationGroupedRecordsList({
                           groupId={groupId}
                           timing={item.timing}
                           scheduledDate={scheduledDate}
-                          medicineId={item.medicineId}
-                          scheduleId={item.scheduleId}
+                          medicineId={item.medicineId as Id<"medicines">}
+                          scheduleId={
+                            item.scheduleId as Id<"medicationSchedules">
+                          }
                           recordId={record?._id}
                           recordStatus={record?.status}
                           recordNotes={record?.notes}
                           medicineName={item.medicineName}
+                          snoozeCount={record?.snoozeCount}
+                          snoozedUntil={record?.snoozedUntil}
                         />
                       )}
                     </div>

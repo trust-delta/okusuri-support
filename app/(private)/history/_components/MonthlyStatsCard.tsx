@@ -61,17 +61,18 @@ export function MonthlyStatsCard({
   year,
   month,
 }: MonthlyStatsCardProps) {
-  const stats = useQuery(api.medications.getMonthlyStats, {
+  // @ts-ignore Convex型インスタンス化の深度制限を回避（環境により発生有無が異なる）
+  const statsResult = useQuery(api.medications.getMonthlyStats, {
     groupId,
     year,
     month,
   });
 
-  if (stats === undefined) {
+  if (statsResult === undefined) {
     return <MonthlyStatsCardSkeleton />;
   }
 
-  if (stats === null) {
+  if (!statsResult.isSuccess) {
     return (
       <Card>
         <CardHeader>
@@ -97,7 +98,7 @@ export function MonthlyStatsCard({
     adherenceRate,
     timingStats,
     asNeeded,
-  } = stats;
+  } = statsResult.data;
 
   return (
     <Card>

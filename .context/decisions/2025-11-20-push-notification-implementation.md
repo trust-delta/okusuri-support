@@ -559,7 +559,7 @@ const jstNow = formatInTimeZone(new Date(), 'Asia/Tokyo', 'HH:mm');
 
 - [プロジェクト概要](../project.md)
 - [アーキテクチャ](../architecture.md)
-- [服薬管理機能仕様](../spec/features/medication.md)
+- [服薬管理機能仕様](../specs/features/medication.md)
 - [処方箋管理機能の導入決定記録](./2025-10-26-prescription-management.md)
 
 ---

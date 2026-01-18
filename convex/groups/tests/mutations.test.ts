@@ -369,17 +369,13 @@ describe("updateGroup - グループ更新", () => {
       const asUser = t.withIdentity({ subject: userId });
 
       const longName = "a".repeat(101);
-      const result = await asUser.mutation(api.groups.mutations.updateGroup, {
-        groupId,
-        name: longName,
-      });
-
-      expect(result.isSuccess).toBe(false);
-      if (!result.isSuccess) {
-        expect(result.errorMessage).toBe(
-          "グループ名は100文字以内で入力してください",
-        );
-      }
+      // Zodバリデーションエラーは ConvexError としてスローされる
+      await expect(
+        asUser.mutation(api.groups.mutations.updateGroup, {
+          groupId,
+          name: longName,
+        }),
+      ).rejects.toThrow("グループ名は100文字以内で入力してください");
     });
 
     it("説明が500文字を超える場合はエラーを返す", async () => {
@@ -406,15 +402,13 @@ describe("updateGroup - グループ更新", () => {
       const asUser = t.withIdentity({ subject: userId });
 
       const longDescription = "a".repeat(501);
-      const result = await asUser.mutation(api.groups.mutations.updateGroup, {
-        groupId,
-        description: longDescription,
-      });
-
-      expect(result.isSuccess).toBe(false);
-      if (!result.isSuccess) {
-        expect(result.errorMessage).toBe("説明は500文字以内で入力してください");
-      }
+      // Zodバリデーションエラーは ConvexError としてスローされる
+      await expect(
+        asUser.mutation(api.groups.mutations.updateGroup, {
+          groupId,
+          description: longDescription,
+        }),
+      ).rejects.toThrow("説明は500文字以内で入力してください");
     });
   });
 

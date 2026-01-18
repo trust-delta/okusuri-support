@@ -83,10 +83,15 @@ export function MedicationImageUpload({
 
       try {
         // アップロードURLを取得
-        const uploadUrl = await generateUploadUrl();
+        const uploadUrlResult = await generateUploadUrl();
+
+        // Result型のハンドリング
+        if (!uploadUrlResult.isSuccess) {
+          throw new Error(uploadUrlResult.errorMessage);
+        }
 
         // ファイルをアップロード
-        const response = await fetch(uploadUrl, {
+        const response = await fetch(uploadUrlResult.data, {
           method: "POST",
           headers: { "Content-Type": file.type },
           body: file,
@@ -96,7 +101,9 @@ export function MedicationImageUpload({
           throw new Error("アップロードに失敗しました");
         }
 
-        const { storageId } = (await response.json()) as { storageId: string };
+        const { storageId } = (await response.json()) as {
+          storageId: Id<"_storage">;
+        };
 
         // 画像を添付
         await attachImage({

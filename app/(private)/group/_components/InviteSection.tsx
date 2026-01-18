@@ -29,26 +29,25 @@ type Props = {
 };
 
 export function InviteSection({ groupId }: Props) {
-  const invitations = useQuery(api.invitations.listGroupInvitations, {
+  const invitationsResult = useQuery(api.invitations.listGroupInvitations, {
     groupId,
   });
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  if (!invitations) {
+  if (!invitationsResult || !invitationsResult.isSuccess) {
     return null;
   }
+
+  const invitations = invitationsResult.data;
 
   const isExpired = (expiresAt: number) => {
     return Date.now() > expiresAt;
   };
 
   const activeInvitations = invitations.filter(
-    (inv: (typeof invitations)[number]) =>
-      !inv.isUsed && !isExpired(inv.expiresAt),
+    (inv) => !inv.isUsed && !isExpired(inv.expiresAt),
   );
-  const usedInvitations = invitations.filter(
-    (inv: (typeof invitations)[number]) => inv.isUsed,
-  );
+  const usedInvitations = invitations.filter((inv) => inv.isUsed);
 
   const handleCopyLink = async (link: string, code: string) => {
     try {

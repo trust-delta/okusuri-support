@@ -1,6 +1,42 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Doc } from "../_generated/dataModel";
 import { query } from "../_generated/server";
+import { error, type Result, success } from "../types/result";
+
+type ValidInvitationResult = {
+  valid: true;
+  invitation: {
+    groupId: Doc<"groups">["_id"];
+    groupName: string;
+    groupDescription: string | undefined;
+    memberCount: number;
+    allowedRoles: Doc<"groupInvitations">["allowedRoles"];
+    expiresAt: number;
+  };
+};
+
+type InvalidInvitationResult = {
+  valid: false;
+  error: string;
+};
+
+type InvitationValidationResult =
+  | ValidInvitationResult
+  | InvalidInvitationResult;
+
+type InvitationListItem = {
+  _id: Doc<"groupInvitations">["_id"];
+  code: string;
+  createdBy: string;
+  createdAt: number;
+  expiresAt: number;
+  allowedRoles: Doc<"groupInvitations">["allowedRoles"];
+  isUsed: boolean;
+  usedBy: string | undefined;
+  usedAt: number | undefined;
+  invitationLink: string;
+};
 
 /**
  * 招待コードを検証してグループ情報を返す
@@ -15,7 +51,7 @@ export const validateInvitationCode = query({
   args: {
     code: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<InvitationValidationResult> => {
     // 1. 招待コードでレコード取得
     const invitation = await ctx.db
       .query("groupInvitations")
@@ -24,7 +60,7 @@ export const validateInvitationCode = query({
 
     if (!invitation) {
       return {
-        valid: false as const,
+        valid: false,
         error: "招待コードが無効です",
       };
     }
@@ -33,7 +69,7 @@ export const validateInvitationCode = query({
     const now = Date.now();
     if (invitation.expiresAt < now) {
       return {
-        valid: false as const,
+        valid: false,
         error: "招待コードが無効です",
       };
     }
@@ -41,7 +77,7 @@ export const validateInvitationCode = query({
     // 3. 使用済みチェック
     if (invitation.isUsed) {
       return {
-        valid: false as const,
+        valid: false,
         error: "招待コードが無効です",
       };
     }
@@ -50,7 +86,7 @@ export const validateInvitationCode = query({
     const group = await ctx.db.get(invitation.groupId);
     if (!group) {
       return {
-        valid: false as const,
+        valid: false,
         error: "招待コードが無効です",
       };
     }
@@ -62,7 +98,7 @@ export const validateInvitationCode = query({
       .collect();
 
     return {
-      valid: true as const,
+      valid: true,
       invitation: {
         groupId: invitation.groupId,
         groupName: group.name,
@@ -82,11 +118,11 @@ export const listGroupInvitations = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<InvitationListItem[]>> => {
     // 1. 認証確認
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 2. グループメンバーシップ確認
@@ -97,7 +133,7 @@ export const listGroupInvitations = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 3. グループの招待一覧取得
@@ -106,7 +142,7 @@ export const listGroupInvitations = query({
       .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
       .collect();
 
-    return invitations.map((inv) => {
+    const result = invitations.map((inv) => {
       const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${inv.code}`;
 
       return {
@@ -122,5 +158,7 @@ export const listGroupInvitations = query({
         invitationLink,
       };
     });
+
+    return success(result);
   },
 });

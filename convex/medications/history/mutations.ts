@@ -1,6 +1,13 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
+
+type RestoreResult = {
+  success: boolean;
+  recordId: Id<"medicationRecords">;
+};
 
 /**
  * 履歴から服薬記録を復元
@@ -9,16 +16,16 @@ export const restoreMedicationRecord = mutation({
   args: {
     historyId: v.id("medicationRecordsHistory"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<RestoreResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 履歴レコードを取得
     const historyRecord = await ctx.db.get(args.historyId);
     if (!historyRecord) {
-      throw new ConvexError("履歴が見つかりません");
+      return error("履歴が見つかりません");
     }
 
     // グループメンバーか確認
@@ -29,7 +36,7 @@ export const restoreMedicationRecord = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     const now = Date.now();
@@ -53,7 +60,7 @@ export const restoreMedicationRecord = mutation({
         updatedAt: now,
       });
 
-      return { success: true, recordId: newRecordId };
+      return success({ success: true, recordId: newRecordId });
     }
 
     // 更新による履歴の場合
@@ -61,7 +68,7 @@ export const restoreMedicationRecord = mutation({
       // 現在のレコードを取得
       const currentRecord = await ctx.db.get(historyRecord.originalRecordId);
       if (!currentRecord) {
-        throw new ConvexError("元のレコードが見つかりません");
+        return error("元のレコードが見つかりません");
       }
 
       // 現在の状態を履歴に保存
@@ -98,9 +105,12 @@ export const restoreMedicationRecord = mutation({
         updatedAt: now,
       });
 
-      return { success: true, recordId: historyRecord.originalRecordId };
+      return success({
+        success: true,
+        recordId: historyRecord.originalRecordId,
+      });
     }
 
-    throw new ConvexError("不明な履歴タイプです");
+    return error("不明な履歴タイプです");
   },
 });

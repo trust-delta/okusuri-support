@@ -1,50 +1,63 @@
 #!/bin/bash
-# Claude Code Context Monitor - Statusline Script
-# コンテキスト情報をセッションごとのファイルに保存し、スキルから読み取り可能にする
+# statusline.sh - ccstatusline のラッパー
+# コンテキスト情報をファイルに保存しつつ、表示は ccstatusline に委譲
+#
+# デバッグモード: HOOK_DEBUG=1 で有効化
+#   例: HOOK_DEBUG=1 claude
+#   ログは $TMP_DIR/statusline-error.log に出力
 
-# 一時ファイル置き場（スクリプトからの相対パス）
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TMP_DIR="$SCRIPT_DIR/../tmp/hooks"
 mkdir -p "$TMP_DIR"
 
-# stdinからJSONを読み取り
+# デバッグ用ログ関数
+log_debug() {
+  if [[ "${HOOK_DEBUG:-0}" == "1" ]]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [statusline] $*" >> "$TMP_DIR/statusline-error.log"
+  fi
+}
+
+log_error() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [statusline] ERROR: $*" >> "$TMP_DIR/statusline-error.log"
+}
+
+# stdin を変数に保存（再利用のため）
 input=$(cat)
 
-# デバッグ: 入力データをログに保存
-echo "$input" > "$TMP_DIR/statusline-debug.json"
+log_debug "Script called"
 
-# Node.jsでJSONを処理
-node -e "
-const input = $input;
+# ファイル保存（hook用）
+# セキュリティ: $inputを直接埋め込むとシェルインジェクションのリスクがあるため、
+# process.argv経由で引数として渡す
+node_output=$(node -e "
 const fs = require('fs');
-
-// セッションIDを取得（なければ 'default'）
-const sessionId = input.session_id || 'default';
-const tmpDir = '$TMP_DIR';
-const outputFile = tmpDir + '/context-' + sessionId + '.json';
-
-const timestamp = new Date().toISOString();
-const output = {
-  timestamp,
-  session_id: sessionId,
-  context_window: input.context_window || null
-};
-
-fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
-
-// ステータスライン表示
-if (input.context_window) {
-  const ctx = input.context_window;
-  const size = ctx.context_window_size || 200000;
-  const usage = ctx.current_usage || {};
-
-  const inputTokens = usage.input_tokens || 0;
-  const cacheCreation = usage.cache_creation_input_tokens || 0;
-  const cacheRead = usage.cache_read_input_tokens || 0;
-
-  const total = inputTokens + cacheCreation + cacheRead;
-  const percent = Math.round(total * 100 / size);
-
-  console.log('CTX:' + percent + '%');
+try {
+  const input = JSON.parse(process.argv[1]);
+  const sessionId = input.session_id || 'default';
+  const tmpDir = process.argv[2];
+  const output = {
+    timestamp: new Date().toISOString(),
+    session_id: sessionId,
+    context_window: input.context_window || null
+  };
+  fs.writeFileSync(tmpDir + '/context-' + sessionId + '.json', JSON.stringify(output, null, 2));
+  console.error('OK: context saved for session ' + sessionId);
+} catch (e) {
+  console.error('FAIL: ' + e.message);
+  process.exit(1);
 }
-" 2>/dev/null
+" "$input" "$TMP_DIR" 2>&1)
+
+node_exit_code=$?
+if [[ $node_exit_code -ne 0 ]]; then
+  log_error "Node.js failed: $node_output"
+else
+  log_debug "$node_output"
+fi
+
+# ccstatusline に渡す
+if [[ "${HOOK_DEBUG:-0}" == "1" ]]; then
+  echo "$input" | npx ccstatusline@latest 2>> "$TMP_DIR/statusline-error.log"
+else
+  echo "$input" | npx ccstatusline@latest 2>/dev/null
+fi

@@ -88,7 +88,11 @@ describe("GroupInvitationManager", () => {
       },
     ];
 
-    vi.mocked(useQuery).mockReturnValue(mockInvitations);
+    // Result型でラップしてモック
+    vi.mocked(useQuery).mockReturnValue({
+      isSuccess: true,
+      data: mockInvitations,
+    });
 
     render(<GroupInvitationManager groupId={mockGroupId} />);
 
@@ -111,7 +115,11 @@ describe("GroupInvitationManager", () => {
       },
     ];
 
-    vi.mocked(useQuery).mockReturnValue(mockInvitations);
+    // Result型でラップしてモック
+    vi.mocked(useQuery).mockReturnValue({
+      isSuccess: true,
+      data: mockInvitations,
+    });
 
     render(<GroupInvitationManager groupId={mockGroupId} />);
 
@@ -138,7 +146,11 @@ describe("GroupInvitationManager", () => {
       },
     ];
 
-    vi.mocked(useQuery).mockReturnValue(mockInvitations);
+    // Result型でラップしてモック
+    vi.mocked(useQuery).mockReturnValue({
+      isSuccess: true,
+      data: mockInvitations,
+    });
 
     render(<GroupInvitationManager groupId={mockGroupId} />);
 
@@ -150,7 +162,7 @@ describe("GroupInvitationManager", () => {
 
   it("招待コード作成ボタンをクリックすると招待が作成される", async () => {
     const user = userEvent.setup();
-    vi.mocked(useQuery).mockReturnValue([]);
+    vi.mocked(useQuery).mockReturnValue({ isSuccess: true, data: [] });
 
     const mockResult = {
       isSuccess: true,
@@ -177,7 +189,7 @@ describe("GroupInvitationManager", () => {
 
   it("招待コード作成中は作成中...と表示される", async () => {
     const user = userEvent.setup();
-    vi.mocked(useQuery).mockReturnValue([]);
+    vi.mocked(useQuery).mockReturnValue({ isSuccess: true, data: [] });
 
     // 遅延を持つPromiseを返す
     mockCreateInvitation.mockImplementation(
@@ -222,7 +234,11 @@ describe("GroupInvitationManager", () => {
       },
     ];
 
-    vi.mocked(useQuery).mockReturnValue(mockInvitations);
+    // Result型でラップしてモック
+    vi.mocked(useQuery).mockReturnValue({
+      isSuccess: true,
+      data: mockInvitations,
+    });
 
     render(<GroupInvitationManager groupId={mockGroupId} />);
 
@@ -245,7 +261,11 @@ describe("GroupInvitationManager", () => {
       },
     ];
 
-    vi.mocked(useQuery).mockReturnValue(mockInvitations);
+    // Result型でラップしてモック
+    vi.mocked(useQuery).mockReturnValue({
+      isSuccess: true,
+      data: mockInvitations,
+    });
 
     render(<GroupInvitationManager groupId={mockGroupId} />);
 
@@ -263,7 +283,7 @@ describe("GroupInvitationManager", () => {
 
   it("招待コード作成がエラーの場合、エラーメッセージを表示", async () => {
     const user = userEvent.setup();
-    vi.mocked(useQuery).mockReturnValue([]);
+    vi.mocked(useQuery).mockReturnValue({ isSuccess: true, data: [] });
 
     mockCreateInvitation.mockRejectedValue(new Error("作成に失敗しました"));
 
@@ -290,7 +310,11 @@ describe("GroupInvitationManager", () => {
       },
     ];
 
-    vi.mocked(useQuery).mockReturnValue(mockInvitations);
+    // Result型でラップしてモック
+    vi.mocked(useQuery).mockReturnValue({
+      isSuccess: true,
+      data: mockInvitations,
+    });
     mockClipboard.writeText.mockRejectedValue(new Error("コピー失敗"));
 
     render(<GroupInvitationManager groupId={mockGroupId} />);

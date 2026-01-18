@@ -160,8 +160,8 @@ const identity = await ctx.auth.getUserIdentity()
 - タブ切り替え
 
 ### フロントエンドコンポーネント
-- `src/features/auth/components/SignInForm.tsx`
-- `src/features/auth/components/OtpForm.tsx`
+- `app/_shared/features/auth/SignInForm.tsx`
+- `app/_shared/features/auth/OtpForm.tsx`
 
 ---
 
@@ -201,6 +201,6 @@ const identity = await ctx.auth.getUserIdentity()
 
 ## 関連ドキュメント
 
-- [プロジェクト概要](../../context/project.md)
-- [アーキテクチャ](../../context/architecture.md)
+- [プロジェクト概要](../../project.md)
+- [アーキテクチャ](../../architecture.md)
 - [グループ管理](group.md)

@@ -30,8 +30,12 @@ export function InventoryPageClient({
   preloadedAlerts: _preloadedAlerts,
   preloadedMedicines,
 }: InventoryPageClientProps) {
-  const inventories = usePreloadedQuery(preloadedInventories);
-  const medicines = usePreloadedQuery(preloadedMedicines);
+  const inventoriesResult = usePreloadedQuery(preloadedInventories);
+  const medicinesResult = usePreloadedQuery(preloadedMedicines);
+
+  // Result型からデータを取得
+  const inventories = inventoriesResult.isSuccess ? inventoriesResult.data : [];
+  const medicines = medicinesResult.isSuccess ? medicinesResult.data : [];
 
   // 残量追跡が未設定の薬を抽出
   const medicinesWithoutInventory = medicines.filter(

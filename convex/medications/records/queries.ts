@@ -1,7 +1,41 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { type QueryCtx, query } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
+
+type TimingStats = {
+  taken: number;
+  skipped: number;
+  pending: number;
+  rate: number;
+};
+
+type DailyStats = Record<
+  string,
+  { taken: number; skipped: number; pending: number; rate: number }
+>;
+
+type MonthlyStatsResult = {
+  totalScheduled: number;
+  totalTaken: number;
+  totalSkipped: number;
+  totalPending: number;
+  adherenceRate: number;
+  dailyStats: DailyStats;
+  timingStats: {
+    morning: TimingStats;
+    noon: TimingStats;
+    evening: TimingStats;
+    bedtime: TimingStats;
+  };
+  asNeeded: {
+    taken: number;
+    skipped: number;
+    pending: number;
+    total: number;
+  };
+};
 
 /**
  * 指定日の服薬記録を取得
@@ -12,10 +46,10 @@ export const getTodayRecords = query({
     scheduledDate: v.string(),
     patientId: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Doc<"medicationRecords">[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -26,7 +60,7 @@ export const getTodayRecords = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // patientIdが指定されている場合は、その患者の記録のみを取得
@@ -36,7 +70,7 @@ export const getTodayRecords = query({
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
       if (membership.role !== "supporter" && targetPatientId !== userId) {
-        throw new ConvexError("他のユーザーの記録を閲覧する権限がありません");
+        return error("他のユーザーの記録を閲覧する権限がありません");
       }
       records = await ctx.db
         .query("medicationRecords")
@@ -58,7 +92,7 @@ export const getTodayRecords = query({
         .collect();
     }
 
-    return records;
+    return success(records);
   },
 });
 
@@ -72,10 +106,10 @@ export const getMonthlyRecords = query({
     year: v.number(),
     month: v.number(), // 1-12
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Doc<"medicationRecords">[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -86,7 +120,7 @@ export const getMonthlyRecords = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 月の範囲を計算（YYYY-MM-DD形式）
@@ -101,7 +135,7 @@ export const getMonthlyRecords = query({
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
       if (membership.role !== "supporter" && targetPatientId !== userId) {
-        throw new ConvexError("他のユーザーの記録を閲覧する権限がありません");
+        return error("他のユーザーの記録を閲覧する権限がありません");
       }
       records = await ctx.db
         .query("medicationRecords")
@@ -127,7 +161,138 @@ export const getMonthlyRecords = query({
         .collect();
     }
 
-    return records;
+    return success(records);
+  },
+});
+
+/**
+ * フィルタリング付きで服薬記録を取得
+ * フロントエンドのフィルタリング処理をバックエンドに移行
+ */
+export const getFilteredRecords = query({
+  args: {
+    groupId: v.id("groups"),
+    patientId: v.optional(v.string()),
+    year: v.number(),
+    month: v.number(), // 1-12
+    filters: v.optional(
+      v.object({
+        searchQuery: v.optional(v.string()), // 薬名検索（部分一致）
+        status: v.optional(
+          v.union(
+            v.literal("all"),
+            v.literal("pending"),
+            v.literal("taken"),
+            v.literal("skipped"),
+          ),
+        ),
+        timing: v.optional(
+          v.union(
+            v.literal("all"),
+            v.literal("morning"),
+            v.literal("noon"),
+            v.literal("evening"),
+            v.literal("bedtime"),
+            v.literal("asNeeded"),
+          ),
+        ),
+        memoOnly: v.optional(v.boolean()), // メモ付きのみ
+      }),
+    ),
+  },
+  handler: async (ctx, args): Promise<Result<Doc<"medicationRecords">[]>> => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return error("認証が必要です");
+    }
+
+    // グループメンバーか確認
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("groupId"), args.groupId))
+      .first();
+
+    if (!membership) {
+      return error("このグループのメンバーではありません");
+    }
+
+    // 月の範囲を計算（YYYY-MM-DD形式）
+    const startDate = `${args.year}-${String(args.month).padStart(2, "0")}-01`;
+    const endDay = new Date(args.year, args.month, 0).getDate();
+    const endDate = `${args.year}-${String(args.month).padStart(2, "0")}-${String(endDay).padStart(2, "0")}`;
+
+    // patientIdが指定されている場合は、その患者の記録のみを取得
+    let records: Doc<"medicationRecords">[];
+    if (args.patientId) {
+      const targetPatientId = args.patientId;
+      if (membership.role !== "supporter" && targetPatientId !== userId) {
+        return error("他のユーザーの記録を閲覧する権限がありません");
+      }
+      records = await ctx.db
+        .query("medicationRecords")
+        .withIndex("by_patientId_scheduledDate", (q) =>
+          q
+            .eq("patientId", targetPatientId)
+            .gte("scheduledDate", startDate)
+            .lte("scheduledDate", endDate),
+        )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
+        .collect();
+    } else {
+      records = await ctx.db
+        .query("medicationRecords")
+        .withIndex("by_groupId_scheduledDate", (q) =>
+          q
+            .eq("groupId", args.groupId)
+            .gte("scheduledDate", startDate)
+            .lte("scheduledDate", endDate),
+        )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
+        .collect();
+    }
+
+    // フィルタリングをバックエンドで実行
+    const filters = args.filters;
+    if (!filters) {
+      return success(records);
+    }
+
+    const filteredRecords = records.filter((record) => {
+      // 薬名検索（部分一致、大文字小文字を区別しない）
+      if (filters.searchQuery && filters.searchQuery.trim() !== "") {
+        const query = filters.searchQuery.toLowerCase();
+        const medicineName = record.simpleMedicineName ?? "";
+        if (!medicineName.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+
+      // ステータスフィルター
+      if (filters.status && filters.status !== "all") {
+        if (record.status !== filters.status) {
+          return false;
+        }
+      }
+
+      // タイミングフィルター
+      if (filters.timing && filters.timing !== "all") {
+        if (record.timing !== filters.timing) {
+          return false;
+        }
+      }
+
+      // メモ付きのみフィルター
+      if (filters.memoOnly) {
+        if (!record.notes) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    return success(filteredRecords);
   },
 });
 
@@ -215,10 +380,10 @@ export const getMonthlyStats = query({
     year: v.number(),
     month: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<MonthlyStatsResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -229,7 +394,7 @@ export const getMonthlyStats = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 月の範囲を計算
@@ -244,7 +409,7 @@ export const getMonthlyStats = query({
       const targetPatientId = args.patientId;
       // サポーターでない場合は自分の記録のみ
       if (membership.role !== "supporter" && targetPatientId !== userId) {
-        throw new ConvexError("他のユーザーの記録を閲覧する権限がありません");
+        return error("他のユーザーの記録を閲覧する権限がありません");
       }
       records = await ctx.db
         .query("medicationRecords")
@@ -279,10 +444,7 @@ export const getMonthlyStats = query({
     let asNeededSkipped = 0;
     let asNeededPending = 0;
 
-    const dailyStats: Record<
-      string,
-      { taken: number; skipped: number; pending: number; rate: number }
-    > = {};
+    const dailyStats: DailyStats = {};
     const timingStats = {
       morning: { taken: 0, skipped: 0, pending: 0, rate: 0 },
       noon: { taken: 0, skipped: 0, pending: 0, rate: 0 },
@@ -406,7 +568,7 @@ export const getMonthlyStats = query({
     const adherenceRate =
       totalScheduled > 0 ? (totalTaken / totalScheduled) * 100 : 0;
 
-    return {
+    return success({
       totalScheduled,
       totalTaken,
       totalSkipped,
@@ -421,6 +583,6 @@ export const getMonthlyStats = query({
         pending: asNeededPending,
         total: asNeededTaken + asNeededSkipped + asNeededPending,
       },
-    };
+    });
   },
 });

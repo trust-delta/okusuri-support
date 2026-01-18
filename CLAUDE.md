@@ -14,16 +14,35 @@
 - [.context/project.md](./.context/project.md) - プロジェクト情報、技術スタック
 - [.context/architecture.md](./.context/architecture.md) - アーキテクチャ
 - [.context/coding-style.md](./.context/coding-style.md) - コーディング規則
-- [.context/coding-style.md](./.context/error-handling.md) - エラーハンドリング
+- [.context/error-handling.md](./.context/error-handling.md) - エラーハンドリング
 - [.context/testing-strategy.md](./.context/testing-strategy.md) - テスト戦略
 - [.context/decisions/](./.context/decisions/) - 決定記録
-- [.context/runbook/](./.context/runbook/) - 作業手順書
+- [.context/runbooks/](./.context/runbooks/) - 作業手順書
 - [.context/specs/](./.context/specs/) - 詳細仕様書
 
 ## 言語について
 
 - 応答は全て日本語で行うこと
 - コミットメッセージなども日本語で記述すること
+
+## ユーザへの確認
+
+- ユーザに確認が必要な場合は、**必ず `AskUserQuestion` ツールを使用すること**
+- テキストで「続けますか？」「どうしますか？」と聞くのは禁止
+- 選択肢を提示することで、ユーザの意図を明確に把握できる
+- 自由記述が必要な場合でも、想定される選択肢を提示した上で「その他」を選べるようにする
+- 「次のステップ」など後続タスクを提案する場合も、`AskUserQuestion` で選択肢として提示すること
+
+**悪い例:**
+```
+次のステップ:
+- 服薬画像管理のテスト作成
+- ストレージ管理のテスト作成
+続けますか？
+```
+
+**良い例:**
+`AskUserQuestion` を使って選択肢を提示する
 
 ## TypeScript
 

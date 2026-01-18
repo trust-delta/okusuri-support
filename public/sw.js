@@ -1,5 +1,5 @@
 // Service Worker for PWA and Push Notifications
-// Version: 1.0.0
+// Version: 1.1.0 - Added notification actions support
 
 const CACHE_NAME = "okusuri-support-v1";
 const STATIC_CACHE_URLS = ["/", "/manifest.json"];
@@ -79,6 +79,7 @@ self.addEventListener("push", (event) => {
     badge: "/icon-192x192.png",
     tag: "default",
     data: {},
+    actions: [],
   };
 
   // Parse push data if available
@@ -94,17 +95,25 @@ self.addEventListener("push", (event) => {
     }
   }
 
+  // Build notification options
+  const notificationOptions = {
+    body: notificationData.body,
+    icon: notificationData.icon,
+    badge: notificationData.badge,
+    tag: notificationData.tag,
+    data: notificationData.data,
+    requireInteraction: true,
+    vibrate: [200, 100, 200],
+  };
+
+  // Add actions if provided
+  if (notificationData.actions && notificationData.actions.length > 0) {
+    notificationOptions.actions = notificationData.actions;
+  }
+
   const promiseChain = self.registration.showNotification(
     notificationData.title,
-    {
-      body: notificationData.body,
-      icon: notificationData.icon,
-      badge: notificationData.badge,
-      tag: notificationData.tag,
-      data: notificationData.data,
-      requireInteraction: false,
-      vibrate: [200, 100, 200],
-    },
+    notificationOptions,
   );
 
   event.waitUntil(promiseChain);
@@ -113,26 +122,59 @@ self.addEventListener("push", (event) => {
 // Notification click event - handle notification clicks
 self.addEventListener("notificationclick", (event) => {
   console.log("[Service Worker] Notification click event");
+  console.log("[Service Worker] Action:", event.action);
 
   event.notification.close();
 
-  const urlToOpen = event.notification.data?.url || "/";
+  const notificationData = event.notification.data || {};
+  const action = event.action;
+  const recordId = notificationData.recordId;
 
-  event.waitUntil(
-    clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((clientList) => {
-        // Check if there's already a window/tab open
-        for (const client of clientList) {
-          if (client.url === urlToOpen && "focus" in client) {
-            return client.focus();
-          }
-        }
+  // Handle action buttons
+  if (action && recordId) {
+    if (action === "taken") {
+      // Open app with action parameter to mark as taken
+      const urlToOpen = `/?action=taken&recordId=${recordId}`;
+      event.waitUntil(openOrFocusWindow(urlToOpen));
+      return;
+    }
 
-        // If not, open a new window/tab
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
-        }
-      }),
-  );
+    if (action === "snooze") {
+      // Open app with action parameter to snooze (default 10 minutes)
+      const urlToOpen = `/?action=snooze&recordId=${recordId}&minutes=10`;
+      event.waitUntil(openOrFocusWindow(urlToOpen));
+      return;
+    }
+  }
+
+  // Default behavior: open the URL from notification data
+  const urlToOpen = notificationData.url || "/";
+  event.waitUntil(openOrFocusWindow(urlToOpen));
 });
+
+// Helper function to open or focus window
+async function openOrFocusWindow(url) {
+  const clientList = await clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+
+  // Try to find an existing window to focus
+  for (const client of clientList) {
+    // Check if there's already a window open on the same origin
+    if (
+      new URL(client.url).origin === self.location.origin &&
+      "focus" in client
+    ) {
+      await client.focus();
+      // Navigate to the target URL
+      await client.navigate(url);
+      return;
+    }
+  }
+
+  // If not, open a new window/tab
+  if (clients.openWindow) {
+    return clients.openWindow(url);
+  }
+}

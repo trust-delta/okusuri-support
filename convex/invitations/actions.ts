@@ -1,9 +1,12 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { action } from "../_generated/server";
 import { error, type Result } from "../types/result";
+
+// Convex型インスタンス化の深度制限を回避 - 動的インポート
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { internal } = require("../_generated/api");
 
 /**
  * 招待コードを生成

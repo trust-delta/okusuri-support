@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "typecheck": "tsc --noEmit",
+    "typecheck:convex": "tsc --noEmit -p convex/tsconfig.json",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
@@ -14,7 +16,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
-    "prepare": "husky"
+    "prepare": "husky",
+    "depcruise": "depcruise app convex --config .dependency-cruiser.cjs",
+    "depcruise:html": "depcruise app convex --config .dependency-cruiser.cjs --output-type html > reports/dependency-graph.html",
+    "depcruise:svg": "depcruise app convex --config .dependency-cruiser.cjs --output-type dot | dot -T svg > reports/dependency-graph.svg"
   },
   "dependencies": {
     "@auth/core": "^0.37.2",
@@ -40,13 +45,14 @@
     "@sentry/nextjs": "^10.33.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "convex": "^1.31.3",
+    "convex": "^1.31.4",
+    "convex-helpers": "^0.1.111",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "import-in-the-middle": "^2.0.1",
+    "import-in-the-middle": "^2.0.2",
     "input-otp": "^1.4.2",
     "jose": "^6.1.3",
-    "lucide-react": "^0.544.0",
+    "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "next-themes": "^0.4.6",
     "react": "19.2.3",
@@ -59,7 +65,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "web-push": "^3.6.7",
-    "zod": "^4.1.12"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.11",
@@ -74,8 +80,9 @@
     "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitest/coverage-v8": "4.0.16",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/ui": "^4.0.17",
     "convex-test": "^0.0.41",
+    "dependency-cruiser": "^17.3.6",
     "gray-matter": "^4.0.3",
     "happy-dom": "^20.1.0",
     "husky": "^9.1.7",
@@ -84,7 +91,7 @@
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.8",
     "typescript": "^5",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   },
   "lint-staged": {
     "*": "biome check --write --no-errors-on-unmatched"

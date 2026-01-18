@@ -1,7 +1,17 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError } from "convex/values";
-import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
+import { error, type Result, success } from "../types/result";
+
+// Convex型インスタンス化の深度制限を回避 - 動的インポート
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { internal } = require("../_generated/api");
+
+type ReminderResult = {
+  sent: number;
+  checked?: number;
+  errors?: string[];
+  message: string;
+};
 
 /**
  * 服薬リマインダーを手動実行（テスト用）
@@ -10,17 +20,10 @@ import { action } from "../_generated/server";
  */
 export const testMedicationReminders = action({
   args: {},
-  handler: async (
-    ctx,
-  ): Promise<{
-    sent: number;
-    checked?: number;
-    errors?: string[];
-    message: string;
-  }> => {
+  handler: async (ctx): Promise<Result<ReminderResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // 内部actionを呼び出し
@@ -29,6 +32,6 @@ export const testMedicationReminders = action({
       {},
     );
 
-    return result;
+    return success(result);
   },
 });

@@ -1,6 +1,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,12 @@ const otpFormSchema = z.object({
 
 type OtpFormSchema = z.infer<typeof otpFormSchema>;
 
+// 開発環境用テストアカウント設定
+const DEV_TEST_ACCOUNT = {
+  email: "test@example.com",
+  otp: "12345678",
+} as const;
+
 export function PasswordSignIn() {
   const { signIn } = useAuthActions();
   const [step, setStep] = useState<
@@ -65,6 +71,19 @@ export function PasswordSignIn() {
       code: "",
     },
   });
+
+  // 開発環境でテストアカウントの場合、OTPを自動設定
+  useEffect(() => {
+    if (
+      process.env.NODE_ENV === "development" &&
+      typeof step === "object" &&
+      step.email.toLowerCase() === DEV_TEST_ACCOUNT.email.toLowerCase()
+    ) {
+      otpForm.setValue("code", DEV_TEST_ACCOUNT.otp, {
+        shouldValidate: true,
+      });
+    }
+  }, [step, otpForm]);
   const handleAuthSubmit = async (values: AuthFormSchema) => {
     if (typeof step !== "string") return;
 

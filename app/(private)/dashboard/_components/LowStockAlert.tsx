@@ -18,23 +18,31 @@ interface LowStockAlertProps {
  */
 export function LowStockAlert({ groupId }: LowStockAlertProps) {
   // 処方箋継続中で在庫切れの薬（緊急）
-  const outOfStockItems = useQuery(
+  const outOfStockResult = useQuery(
     api.medications.getOutOfStockWithActivePrescription,
     { groupId },
   );
 
   // 残量警告（注意）
-  const lowStockInventories = useQuery(api.medications.getLowStockInventories, {
+  const lowStockResult = useQuery(api.medications.getLowStockInventories, {
     groupId,
   });
 
+  // Result型からデータを取得
+  const outOfStockItems = outOfStockResult?.isSuccess
+    ? outOfStockResult.data
+    : [];
+  const lowStockInventories = lowStockResult?.isSuccess
+    ? lowStockResult.data
+    : [];
+
   // 在庫切れ以外の低在庫（在庫切れは上で表示するので除外）
-  const lowStockOnly = lowStockInventories?.filter(
+  const lowStockOnly = lowStockInventories.filter(
     (inv) => inv.currentQuantity > 0,
   );
 
-  const hasOutOfStock = outOfStockItems && outOfStockItems.length > 0;
-  const hasLowStock = lowStockOnly && lowStockOnly.length > 0;
+  const hasOutOfStock = outOfStockItems.length > 0;
+  const hasLowStock = lowStockOnly.length > 0;
 
   if (!hasOutOfStock && !hasLowStock) {
     return null;

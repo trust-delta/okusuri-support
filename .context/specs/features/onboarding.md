@@ -119,21 +119,21 @@ await ctx.db.patch(userId, {
 
 ### コンポーネント
 
-- `src/features/onboarding/components/RoleSelection.tsx`
+- `app/_shared/features/onboarding/RoleSelection.tsx`
   - ロール選択UI
   - 患者/支援者の説明
 
-- `src/features/onboarding/components/ProfileSetup.tsx`
+- `app/_shared/features/onboarding/ProfileSetup.tsx`
   - 表示名入力フォーム
   - 画像アップロード（オプション）
 
-- `src/features/onboarding/components/OnboardingWizard.tsx`
+- `app/_shared/features/onboarding/OnboardingWizard.tsx`
   - ステップ管理
   - 進捗表示
 
 ### ページ
 
-- `src/app/onboarding/page.tsx`
+- `app/(public)/onboarding/page.tsx`
   - オンボーディングメインページ
   - 未認証時はログインへリダイレクト
 
@@ -213,4 +213,4 @@ router.push("/dashboard") // 招待受諾を促すメッセージ表示
 
 - [認証機能](auth.md)
 - [グループ管理](group.md)
-- [アーキテクチャ](../../context/architecture.md)
+- [アーキテクチャ](../../architecture.md)

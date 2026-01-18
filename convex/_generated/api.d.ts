@@ -10,8 +10,13 @@
 
 import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
+import type * as functions from "../functions.js";
 import type * as groups from "../groups.js";
 import type * as groups_mutations from "../groups/mutations.js";
+import type * as groups_notification_settings_helpers from "../groups/notification_settings/helpers.js";
+import type * as groups_notification_settings_index from "../groups/notification_settings/index.js";
+import type * as groups_notification_settings_mutations from "../groups/notification_settings/mutations.js";
+import type * as groups_notification_settings_queries from "../groups/notification_settings/queries.js";
 import type * as groups_queries from "../groups/queries.js";
 import type * as http from "../http.js";
 import type * as invitation_code_generator from "../invitation_code_generator.js";
@@ -32,6 +37,7 @@ import type * as medications_history_queries from "../medications/history/querie
 import type * as medications_images_index from "../medications/images/index.js";
 import type * as medications_images_mutations from "../medications/images/mutations.js";
 import type * as medications_images_queries from "../medications/images/queries.js";
+import type * as medications_images_validators from "../medications/images/validators.js";
 import type * as medications_inventory_index from "../medications/inventory/index.js";
 import type * as medications_inventory_mutations from "../medications/inventory/mutations.js";
 import type * as medications_inventory_queries from "../medications/inventory/queries.js";
@@ -44,6 +50,7 @@ import type * as medications_prescriptions_queries from "../medications/prescrip
 import type * as medications_records_index from "../medications/records/index.js";
 import type * as medications_records_mutations from "../medications/records/mutations.js";
 import type * as medications_records_queries from "../medications/records/queries.js";
+import type * as medications_records_snooze from "../medications/records/snooze.js";
 import type * as medications_statistics_helpers from "../medications/statistics/helpers.js";
 import type * as medications_statistics_index from "../medications/statistics/index.js";
 import type * as medications_statistics_queries from "../medications/statistics/queries.js";
@@ -76,8 +83,13 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   crons: typeof crons;
+  functions: typeof functions;
   groups: typeof groups;
   "groups/mutations": typeof groups_mutations;
+  "groups/notification_settings/helpers": typeof groups_notification_settings_helpers;
+  "groups/notification_settings/index": typeof groups_notification_settings_index;
+  "groups/notification_settings/mutations": typeof groups_notification_settings_mutations;
+  "groups/notification_settings/queries": typeof groups_notification_settings_queries;
   "groups/queries": typeof groups_queries;
   http: typeof http;
   invitation_code_generator: typeof invitation_code_generator;
@@ -98,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   "medications/images/index": typeof medications_images_index;
   "medications/images/mutations": typeof medications_images_mutations;
   "medications/images/queries": typeof medications_images_queries;
+  "medications/images/validators": typeof medications_images_validators;
   "medications/inventory/index": typeof medications_inventory_index;
   "medications/inventory/mutations": typeof medications_inventory_mutations;
   "medications/inventory/queries": typeof medications_inventory_queries;
@@ -110,6 +123,7 @@ declare const fullApi: ApiFromModules<{
   "medications/records/index": typeof medications_records_index;
   "medications/records/mutations": typeof medications_records_mutations;
   "medications/records/queries": typeof medications_records_queries;
+  "medications/records/snooze": typeof medications_records_snooze;
   "medications/statistics/helpers": typeof medications_statistics_helpers;
   "medications/statistics/index": typeof medications_statistics_index;
   "medications/statistics/queries": typeof medications_statistics_queries;

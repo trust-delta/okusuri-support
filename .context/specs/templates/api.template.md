@@ -213,4 +213,4 @@ const result = await ctx.runAction(api.[feature].[functionName], {
 
 - [API設計規約](../api/conventions.md)
 - [機能仕様](../features/[feature].md)
-- [プロジェクト概要](../../context/project.md)
+- [プロジェクト概要](../../project.md)

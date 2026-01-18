@@ -16,10 +16,10 @@ yarn.lock
 
 # testing
 /coverage
-
-# playwright
-/playwright-report/
 /test-results/
+
+# reports (dependency-cruiser, playwright, coverage, etc.)
+/reports/
 
 # next.js
 /.next/

@@ -299,8 +299,8 @@ npx convex env set KEY value
 セットアップが完了したら、以下のドキュメントを参照して開発を進めてください：
 
 1. [開発ワークフロー](./development-workflow.md) - ブランチ戦略とコミット規約
-2. [プロジェクト概要](../.context/project_overview.md) - プロジェクトの全体像
-3. [アーキテクチャ](../.context/architecture.md) - 技術スタックと設計方針
+2. [プロジェクト概要](../project.md) - プロジェクトの全体像
+3. [アーキテクチャ](../architecture.md) - 技術スタックと設計方針
 
 ---
 

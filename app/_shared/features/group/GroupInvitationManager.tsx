@@ -112,9 +112,10 @@ export function GroupInvitationManager({
     );
   }
 
-  const activeInvitations = invitations.filter(
-    (inv: (typeof invitations)[number]) => !inv.isUsed,
-  );
+  // Result型からデータを取得
+  const invitationsData = invitations.isSuccess ? invitations.data : [];
+
+  const activeInvitations = invitationsData.filter((inv) => !inv.isUsed);
 
   return (
     <div className="space-y-4">
@@ -211,16 +212,15 @@ export function GroupInvitationManager({
         </p>
       )}
 
-      {invitations.filter((inv: (typeof invitations)[number]) => inv.isUsed)
-        .length > 0 && (
+      {invitationsData.filter((inv) => inv.isUsed).length > 0 && (
         <div className="mt-6 pt-6 border-t border-border">
           <h3 className="text-sm font-medium text-foreground/80 mb-3">
             使用済みの招待コード
           </h3>
           <div className="space-y-2">
-            {invitations
-              .filter((inv: (typeof invitations)[number]) => inv.isUsed)
-              .map((invitation: (typeof invitations)[number]) => (
+            {invitationsData
+              .filter((inv) => inv.isUsed)
+              .map((invitation) => (
                 <div
                   key={invitation._id}
                   className="border border-border rounded-lg p-3 opacity-60"

@@ -1,11 +1,36 @@
 import { formatInTimeZone } from "date-fns-tz";
 import { api, internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 import { internalAction } from "./_generated/server";
+
+/**
+ * 通知設定の型
+ */
+export type NotificationSettings = {
+  morningTime: number;
+  noonTime: number;
+  eveningTime: number;
+  bedtimeTime: number;
+};
+
+/**
+ * タイミングごとの時刻設定キー
+ */
+const TIMING_SETTINGS_KEY: Record<
+  "morning" | "noon" | "evening" | "bedtime",
+  keyof NotificationSettings
+> = {
+  morning: "morningTime",
+  noon: "noonTime",
+  evening: "eveningTime",
+  bedtime: "bedtimeTime",
+};
 
 /**
  * 服薬リマインダーをチェックして通知を送信
  *
- * 15分ごとに実行され、現在時刻に該当する服薬スケジュールを検索し、
+ * 15分ごとに実行され、各グループの通知設定に基づいて
+ * 現在時刻に該当する服薬スケジュールを検索し、
  * 該当するユーザーにプッシュ通知を送信します。
  */
 export const checkMedicationReminders = internalAction({
@@ -33,72 +58,90 @@ export const checkMedicationReminders = internalAction({
         formatInTimeZone(now, "Asia/Tokyo", "mm"),
         10,
       );
+      const currentTimeInMinutes = jstHour * 60 + jstMinute;
 
       console.log(`[Medication Reminders] JST Time: ${jstDate} ${jstTime}`);
 
-      // 現在時刻のタイミングを判定
-      const currentTiming = determineTimingFromTime(jstHour, jstMinute);
-
-      if (!currentTiming) {
-        console.log(
-          "[Medication Reminders] No timing matched for current time",
-        );
-        return { sent: 0, message: "通知対象の時間ではありません" };
-      }
-
-      console.log(`[Medication Reminders] Current timing: ${currentTiming}`);
-
-      // 該当する服薬記録を検索
-      const pendingRecords = await ctx.runQuery(
-        internal.notifications.queries.getPendingRecordsByTiming,
-        {
-          date: jstDate,
-          timing: currentTiming,
-        },
+      // 全グループの通知設定を取得
+      const groupSettings = await ctx.runQuery(
+        internal.notifications.queries.getAllGroupsWithNotificationSettings,
+        {},
       );
 
       console.log(
-        `[Medication Reminders] Found ${pendingRecords.length} pending records`,
+        `[Medication Reminders] Found ${groupSettings.length} groups with settings`,
       );
 
-      let sentCount = 0;
+      let totalSentCount = 0;
+      let totalCheckedCount = 0;
       const errors: string[] = [];
 
-      // 各記録について通知を送信
-      for (const record of pendingRecords) {
-        try {
-          // 通知内容を作成
-          const payload = createNotificationPayload(record, currentTiming);
+      // 各グループの設定に基づいて通知を判定
+      for (const { groupId, settings } of groupSettings) {
+        // 現在時刻にマッチするタイミングを判定
+        const matchedTiming = determineTimingFromSettings(
+          currentTimeInMinutes,
+          settings,
+        );
 
-          // グループに通知を送信（sendToGroupが内部的にメンバーのサブスクリプションを取得）
-          const result = await ctx.runAction(api.push.actions.sendToGroup, {
-            groupId: record.groupId,
-            payload,
-          });
+        if (!matchedTiming) {
+          continue;
+        }
 
-          if (result.success) {
-            sentCount += result.sent || 0;
-          } else {
-            errors.push(`Group ${record.groupId}: ${result.message}`);
+        console.log(
+          `[Medication Reminders] Group ${groupId}: timing=${matchedTiming}`,
+        );
+
+        // 該当する服薬記録を検索
+        const pendingRecords = await ctx.runQuery(
+          internal.notifications.queries.getPendingRecordsByTiming,
+          {
+            date: jstDate,
+            timing: matchedTiming,
+          },
+        );
+
+        // このグループの記録のみフィルタ
+        const groupRecords = pendingRecords.filter(
+          (r: { groupId: string }) => r.groupId === groupId,
+        );
+        totalCheckedCount += groupRecords.length;
+
+        // 各記録について通知を送信
+        for (const record of groupRecords) {
+          try {
+            const payload = createNotificationPayload(record, matchedTiming);
+            const result = await ctx.runAction(api.push.actions.sendToGroup, {
+              groupId: groupId as Id<"groups">,
+              payload,
+            });
+
+            if (result.isSuccess) {
+              totalSentCount += result.data.sent || 0;
+            } else {
+              errors.push(`Group ${groupId}: ${result.errorMessage}`);
+            }
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            errors.push(`Record ${record._id}: ${errorMessage}`);
+            console.error(
+              "[Medication Reminders] Error processing record:",
+              error,
+            );
           }
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          errors.push(`Record ${record._id}: ${errorMessage}`);
-          console.error(
-            "[Medication Reminders] Error processing record:",
-            error,
-          );
         }
       }
 
-      console.log(`[Medication Reminders] Sent ${sentCount} notifications`);
+      console.log(
+        `[Medication Reminders] Sent ${totalSentCount} notifications`,
+      );
 
       return {
-        sent: sentCount,
-        checked: pendingRecords.length,
+        sent: totalSentCount,
+        checked: totalCheckedCount,
         errors: errors.length > 0 ? errors : undefined,
-        message: `${sentCount}件の通知を送信しました`,
+        message: `${totalSentCount}件の通知を送信しました`,
       };
     } catch (error) {
       console.error("[Medication Reminders] Fatal error:", error);
@@ -108,32 +151,101 @@ export const checkMedicationReminders = internalAction({
 });
 
 /**
- * 時刻からタイミングを判定
+ * スヌーズ解除時刻を過ぎた記録の再通知
  *
- * @param hour 時（0-23）
- * @param minute 分（0-59）
+ * 5分ごとに実行され、スヌーズ解除時刻を過ぎた記録に再通知を送信します。
+ */
+export const checkSnoozedReminders = internalAction({
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<{
+    sent: number;
+    checked?: number;
+    errors?: string[];
+    message: string;
+  }> => {
+    console.log("[Snoozed Reminders] Checking for snoozed records...");
+
+    try {
+      // スヌーズ解除時刻を過ぎた記録を取得
+      const dueRecords = await ctx.runQuery(
+        internal.notifications.queries.getSnoozedRecordsDue,
+        {},
+      );
+
+      console.log(`[Snoozed Reminders] Found ${dueRecords.length} due records`);
+
+      let sentCount = 0;
+      const errors: string[] = [];
+
+      // 各記録について通知を送信
+      for (const record of dueRecords) {
+        try {
+          const payload = createNotificationPayload(
+            record,
+            record.timing,
+            true,
+          );
+          const result = await ctx.runAction(api.push.actions.sendToGroup, {
+            groupId: record.groupId as Id<"groups">,
+            payload,
+          });
+
+          if (result.isSuccess) {
+            sentCount += result.data.sent || 0;
+          } else {
+            errors.push(`Group ${record.groupId}: ${result.errorMessage}`);
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          errors.push(`Record ${record._id}: ${errorMessage}`);
+          console.error("[Snoozed Reminders] Error processing record:", error);
+        }
+      }
+
+      console.log(`[Snoozed Reminders] Sent ${sentCount} notifications`);
+
+      return {
+        sent: sentCount,
+        checked: dueRecords.length,
+        errors: errors.length > 0 ? errors : undefined,
+        message: `${sentCount}件のスヌーズ再通知を送信しました`,
+      };
+    } catch (error) {
+      console.error("[Snoozed Reminders] Fatal error:", error);
+      throw error;
+    }
+  },
+});
+
+/**
+ * グループの通知設定に基づいてタイミングを判定
+ *
+ * @param currentTimeInMinutes 現在時刻（分単位）
+ * @param settings グループの通知設定
  * @returns タイミング文字列、または該当なしの場合null
  */
-function determineTimingFromTime(
-  hour: number,
-  minute: number,
+export function determineTimingFromSettings(
+  currentTimeInMinutes: number,
+  settings: NotificationSettings,
 ): "morning" | "noon" | "evening" | "bedtime" | null {
-  // 各タイミングの時刻設定（±15分の範囲でマッチ）
-  const timings = [
-    { timing: "morning" as const, hour: 8, minute: 0 },
-    { timing: "noon" as const, hour: 12, minute: 0 },
-    { timing: "evening" as const, hour: 18, minute: 0 },
-    { timing: "bedtime" as const, hour: 21, minute: 0 },
+  const timings: Array<"morning" | "noon" | "evening" | "bedtime"> = [
+    "morning",
+    "noon",
+    "evening",
+    "bedtime",
   ];
 
-  for (const config of timings) {
-    const targetMinutes = config.hour * 60 + config.minute;
-    const currentMinutes = hour * 60 + minute;
-    const diff = Math.abs(targetMinutes - currentMinutes);
+  for (const timing of timings) {
+    const settingKey = TIMING_SETTINGS_KEY[timing];
+    const targetMinutes = settings[settingKey];
+    const diff = Math.abs(targetMinutes - currentTimeInMinutes);
 
     // 15分以内ならマッチ
     if (diff <= 15) {
-      return config.timing;
+      return timing;
     }
   }
 
@@ -145,16 +257,19 @@ function determineTimingFromTime(
  *
  * @param record 服薬記録
  * @param timing タイミング
+ * @param isSnoozeReminder スヌーズ再通知かどうか
  * @returns 通知ペイロード
  */
-function createNotificationPayload(
+export function createNotificationPayload(
   record: {
     _id: string;
     medicineName: string;
     dosage?: { amount: number; unit: string };
     groupId: string;
+    snoozeCount?: number;
   },
   timing: string,
+  isSnoozeReminder = false,
 ): {
   title: string;
   body: string;
@@ -165,7 +280,9 @@ function createNotificationPayload(
     url: string;
     recordId: string;
     timing: string;
+    isSnoozeReminder: boolean;
   };
+  actions?: Array<{ action: string; title: string }>;
 } {
   // タイミングの日本語表記
   const timingLabels: Record<string, string> = {
@@ -183,16 +300,37 @@ function createNotificationPayload(
     dosageText = ` ${record.dosage.amount}${record.dosage.unit}`;
   }
 
+  // スヌーズ再通知の場合はタイトルを変更
+  const title = isSnoozeReminder
+    ? "服薬リマインダー（再通知）"
+    : "服薬リマインダー";
+
+  // スヌーズ回数に基づいてアクションを設定
+  const snoozeCount = record.snoozeCount ?? 0;
+  const MAX_SNOOZE_COUNT = 3;
+  const canSnooze = snoozeCount < MAX_SNOOZE_COUNT;
+
+  // 通知アクションボタン
+  const actions: Array<{ action: string; title: string }> = [
+    { action: "taken", title: "服用済み" },
+  ];
+
+  if (canSnooze) {
+    actions.push({ action: "snooze", title: "後で（10分）" });
+  }
+
   return {
-    title: "服薬リマインダー",
+    title,
     body: `${record.medicineName}${dosageText}（${timingLabel}）`,
     icon: "/icon-192x192.png",
     badge: "/icon-192x192.png",
     tag: `medication-reminder-${record._id}`,
     data: {
-      url: "/", // ホーム画面に遷移
+      url: "/",
       recordId: record._id,
       timing,
+      isSnoozeReminder,
     },
+    actions,
   };
 }

@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Doc } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
+import { error, type Result, success } from "../../types/result";
 
 /**
  * 未読アラートを取得
@@ -9,10 +11,10 @@ export const getUnreadAlerts = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Doc<"inventoryAlerts">[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -23,7 +25,7 @@ export const getUnreadAlerts = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 未読アラートを取得（新しい順）
@@ -35,7 +37,7 @@ export const getUnreadAlerts = query({
       .order("desc")
       .collect();
 
-    return alerts;
+    return success(alerts);
   },
 });
 
@@ -46,10 +48,10 @@ export const getUnreadAlertCount = query({
   args: {
     groupId: v.id("groups"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<number>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -60,7 +62,7 @@ export const getUnreadAlertCount = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 未読アラート数を取得
@@ -71,7 +73,7 @@ export const getUnreadAlertCount = query({
       )
       .collect();
 
-    return alerts.length;
+    return success(alerts.length);
   },
 });
 
@@ -90,10 +92,10 @@ export const getAlertHistory = query({
       ),
     ),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Doc<"inventoryAlerts">[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // グループメンバーか確認
@@ -104,7 +106,7 @@ export const getAlertHistory = query({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // アラート履歴を取得（新しい順）
@@ -120,6 +122,6 @@ export const getAlertHistory = query({
       ? alerts.filter((a) => a.alertType === args.alertType)
       : alerts;
 
-    return filteredAlerts;
+    return success(filteredAlerts);
   },
 });

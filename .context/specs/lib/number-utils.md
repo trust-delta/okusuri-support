@@ -242,7 +242,6 @@ export function roundToDecimal(
 ## 関連ドキュメント
 
 - [text-utils.md](./text-utils.md) - テキストフォーマットユーティリティ
-- [date-fns.md](./date-fns.md) - 日付フォーマットユーティリティ
 - [コーディングスタイルガイド](../../coding-style.md)
 - [プロジェクト概要](../../project.md)
 

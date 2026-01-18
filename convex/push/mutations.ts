@@ -1,6 +1,23 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
+import { error, type Result, success } from "../types/result";
+
+type SubscribeResult = {
+  subscriptionId: Id<"pushSubscriptions">;
+  isNew: boolean;
+};
+
+type UnsubscribeResult = {
+  success: boolean;
+  message: string;
+};
+
+type UnsubscribeAllResult = {
+  success: boolean;
+  count: number;
+};
 
 /**
  * プッシュサブスクリプションを登録または更新
@@ -16,10 +33,10 @@ export const subscribe = mutation({
     }),
     userAgent: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<SubscribeResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const now = Date.now();
@@ -41,7 +58,7 @@ export const subscribe = mutation({
         updatedAt: now,
       });
 
-      return { subscriptionId: existing._id, isNew: false };
+      return success({ subscriptionId: existing._id, isNew: false });
     }
 
     // 新規サブスクリプションを作成
@@ -54,7 +71,7 @@ export const subscribe = mutation({
       updatedAt: now,
     });
 
-    return { subscriptionId, isNew: true };
+    return success({ subscriptionId, isNew: true });
   },
 });
 
@@ -65,10 +82,10 @@ export const unsubscribe = mutation({
   args: {
     endpoint: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<UnsubscribeResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     // エンドポイントで検索
@@ -79,20 +96,23 @@ export const unsubscribe = mutation({
 
     if (!subscription) {
       // 既に削除されている場合はスキップ
-      return {
+      return success({
         success: true,
         message: "サブスクリプションが見つかりませんでした",
-      };
+      });
     }
 
     // 自分のサブスクリプションのみ削除可能
     if (subscription.userId !== userId) {
-      throw new ConvexError("このサブスクリプションを削除する権限がありません");
+      return error("このサブスクリプションを削除する権限がありません");
     }
 
     await ctx.db.delete(subscription._id);
 
-    return { success: true, message: "サブスクリプションを削除しました" };
+    return success({
+      success: true,
+      message: "サブスクリプションを削除しました",
+    });
   },
 });
 
@@ -101,10 +121,10 @@ export const unsubscribe = mutation({
  */
 export const unsubscribeAll = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<Result<UnsubscribeAllResult>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const subscriptions = await ctx.db
@@ -116,6 +136,6 @@ export const unsubscribeAll = mutation({
       await ctx.db.delete(subscription._id);
     }
 
-    return { success: true, count: subscriptions.length };
+    return success({ success: true, count: subscriptions.length });
   },
 });

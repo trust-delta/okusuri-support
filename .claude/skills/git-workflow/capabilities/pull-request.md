@@ -7,8 +7,8 @@ PRテンプレートに従ってPull Requestを作成します。
 ### 1. 現在の状態確認
 ```bash
 git status
-git log main..HEAD --oneline
-git diff main...HEAD --stat
+git log develop..HEAD --oneline
+git diff develop...HEAD --stat
 ```
 
 ### 2. リモートへのプッシュ
@@ -31,7 +31,7 @@ git push -u origin $(git branch --show-current)
 ### 4. PR作成
 
 ```bash
-gh pr create --title "<type>: <説明>" --body "$(cat <<'EOF'
+gh pr create --base develop --title "<type>: <説明>" --body "$(cat <<'EOF'
 ## Summary
 <変更内容の概要を1-3行で>
 
@@ -46,8 +46,6 @@ gh pr create --title "<type>: <説明>" --body "$(cat <<'EOF'
 
 ## Related
 - 仕様書: `.context/specs/features/<name>.md`
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
@@ -134,7 +132,7 @@ fix: ログイン時の認証エラーを修正
 
 ## 注意事項
 
-1. **ベースブランチ**: 通常は `main`
+1. **ベースブランチ**: 通常は `develop`（リリース時のみ `main`）
 2. **レビュワー**: 必要に応じて指定
 3. **ラベル**: 適切なラベルを付与
 4. **ドラフト**: WIPの場合は `--draft` オプション

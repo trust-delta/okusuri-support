@@ -20,11 +20,13 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
     scheduledDate: today,
   });
 
+  // Result型からデータを取得
+  const recordsData = records?.isSuccess ? records.data : [];
+
   const getRecordByTiming = (timing: string) => {
-    if (!records) return null;
-    return records.find(
-      (r: (typeof records)[number]) =>
-        r.timing === timing && r.scheduledDate === today,
+    if (!recordsData) return null;
+    return recordsData.find(
+      (r) => r.timing === timing && r.scheduledDate === today,
     );
   };
 
@@ -90,11 +92,11 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
           );
         })}
 
-        {records && records.length > 0 && (
+        {recordsData && recordsData.length > 0 && (
           <div className="mt-6 pt-6 border-t border-border">
             <h3 className="font-medium mb-2 text-foreground">記録履歴</h3>
             <div className="space-y-2">
-              {records.map((rec: (typeof records)[number]) => (
+              {recordsData.map((rec) => (
                 <div key={rec._id} className="text-sm text-muted-foreground">
                   {
                     MEDICATION_TIMINGS.find((t) => t.value === rec.timing)

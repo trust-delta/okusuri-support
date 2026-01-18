@@ -318,8 +318,6 @@ export function sanitizeInput(text: string): string
 ## 関連ドキュメント
 
 - [number-utils.md](./number-utils.md) - 数値フォーマットユーティリティ
-- [date-fns.md](./date-fns.md) - 日付フォーマットユーティリティ
-- [utils.md](./utils.md) - その他の汎用ユーティリティ
 - [コーディングスタイルガイド](../../coding-style.md)
 - [エラーハンドリング](../../error-handling.md)
 - [プロジェクト概要](../../project.md)

@@ -223,8 +223,107 @@ convex/
 
 ---
 
+## Convex型エラー対処パターン（TS2589）
+
+Convexの型システムは複雑なため、TypeScriptの型インスタンス化深度制限（TS2589: Type instantiation is excessively deep）が発生することがあります。
+
+### エラーの原因
+
+```
+error TS2589: Type instantiation is excessively deep and possibly infinite.
+```
+
+このエラーは `api` や `internal` を参照する箇所で発生します。特に `ctx.runQuery()`, `ctx.runMutation()`, `ctx.runAction()`, `t.query()`, `t.mutation()` などで頻発します。
+
+### 対処法1: `@ts-expect-error`（推奨：本番コード）
+
+**型情報を保持**しつつエラーを回避できます。エラーが発生する式の**直前**に配置します。
+
+```typescript
+// ✅ 正しい位置（エラーが発生する式の直前）
+const subscriptions = await ctx.runQuery(
+  // @ts-expect-error Convex型インスタンス化の深度制限を回避
+  internal.push.queries.listByUserId,
+  { userId: member.userId },
+);
+
+// ❌ 効かない位置（ステートメント全体の前では複数行に適用されない）
+// @ts-expect-error
+const subscriptions = await ctx.runQuery(
+  internal.push.queries.listByUserId,  // エラーはここで発生
+  { userId: member.userId },
+);
+```
+
+### 対処法2: 動的インポート（推奨：テストコード）
+
+テストファイルのように**使用箇所が多い**場合は、`require()` による動的インポートが有効です。
+
+```typescript
+// ❌ 通常のimport（型深度エラーが発生する可能性）
+import { api, internal } from "../../_generated/api";
+
+// ✅ 動的インポート（型深度エラーを回避）
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const { api, internal } = require("../../_generated/api");
+```
+
+**注意**: 動的インポートを使うと型情報が失われるため、コールバックパラメータに明示的な型アノテーションが必要になる場合があります。
+
+```typescript
+// 型情報がないため、パラメータに型を指定
+expect(
+  result.map((s: { endpoint: string }) => s.endpoint),
+).toContain("https://example.com");
+
+// findのコールバックも同様
+const group = result.find(
+  (g: { settings: { morningTime: number } }) =>
+    g.settings.morningTime === 420,
+);
+```
+
+### 対処法の使い分け
+
+| ケース | 推奨対処法 | 理由 |
+|--------|-----------|------|
+| **本番コード**（actions, mutations, queries） | `@ts-expect-error` | 型情報を保持できる |
+| **フロントエンドコンポーネント** | `@ts-expect-error` | 型情報を保持できる |
+| **テストファイル** | `require()` 動的インポート | 使用箇所が多く、各行に追加するのは冗長 |
+
+### 配列インデックスアクセスの型エラー（TS2532）
+
+`noUncheckedIndexedAccess: true` が有効な場合、配列のインデックスアクセスで `Object is possibly undefined` エラーが発生します。
+
+```typescript
+// ❌ エラー: Object is possibly undefined
+expect(result[0].medicineName).toBe("朝の薬");
+
+// ✅ オプショナルチェインを使用
+expect(result[0]?.medicineName).toBe("朝の薬");
+```
+
+---
+
 ## 注意事項
 
 1. **`_generated` ディレクトリを除外**: テストモジュールのglobパターンで `_generated` を除外
 2. **テストの独立性**: 各テストは独立して実行可能に（beforeEachでリセット）
 3. **Result型の一貫性**: すべてのMutationはResult型を返す
+4. **型深度エラー対策**: テストファイルでは動的インポートを推奨
+5. **型チェックの統一**: Convex の型チェックは `pnpm run typecheck:convex` で実行（`tsc --noEmit -p convex/tsconfig.json`）
+
+---
+
+## 型チェックについて
+
+Convex バックエンドの型チェックは、ルート `tsconfig.json` とは分離されています。
+
+```bash
+# Convex の型チェック
+pnpm run typecheck:convex
+```
+
+テストファイルは `convex/tsconfig.json` の対象外のため、`require()` 動的インポートを使用しても型チェックエラーにはなりません。
+
+> 詳細: [決定記録: TypeScript型チェックの統一](../../.context/decisions/2026-01-19-typescript-typecheck-unification.md)

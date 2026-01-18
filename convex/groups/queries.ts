@@ -125,7 +125,14 @@ export const getGroupMembers = query({
       }),
     );
 
-    return membersWithInfo;
+    // ソート: 患者を先頭に、同じロールなら参加日時順
+    const sortedMembers = membersWithInfo.sort((a, b) => {
+      if (a.role === "patient" && b.role !== "patient") return -1;
+      if (a.role !== "patient" && b.role === "patient") return 1;
+      return a.joinedAt - b.joinedAt;
+    });
+
+    return sortedMembers;
   },
 });
 

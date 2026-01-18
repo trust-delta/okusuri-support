@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
+import { error, type Result, success } from "../types/result";
 
 /**
  * ファイルアップロード用のURLを生成
@@ -8,13 +10,14 @@ import { mutation } from "../_generated/server";
  */
 export const generateUploadUrl = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<Result<string>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
-    return await ctx.storage.generateUploadUrl();
+    const url = await ctx.storage.generateUploadUrl();
+    return success(url);
   },
 });
 
@@ -26,20 +29,20 @@ export const attachImageToPrescription = mutation({
     prescriptionId: v.id("prescriptions"),
     storageId: v.id("_storage"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<Id<"prescriptions">>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 論理削除されている場合はエラー
     if (prescription.deletedAt !== undefined) {
-      throw new ConvexError("削除された処方箋に画像を添付できません");
+      return error("削除された処方箋に画像を添付できません");
     }
 
     // グループメンバーか確認
@@ -50,7 +53,7 @@ export const attachImageToPrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 既存の画像があれば削除
@@ -64,7 +67,7 @@ export const attachImageToPrescription = mutation({
       updatedAt: Date.now(),
     });
 
-    return args.prescriptionId;
+    return success(args.prescriptionId);
   },
 });
 
@@ -75,20 +78,20 @@ export const removeImageFromPrescription = mutation({
   args: {
     prescriptionId: v.id("prescriptions"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Result<null>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("認証が必要です");
+      return error("認証が必要です");
     }
 
     const prescription = await ctx.db.get(args.prescriptionId);
     if (!prescription) {
-      throw new ConvexError("処方箋が見つかりません");
+      return error("処方箋が見つかりません");
     }
 
     // 論理削除されている場合はエラー
     if (prescription.deletedAt !== undefined) {
-      throw new ConvexError("削除された処方箋の画像を操作できません");
+      return error("削除された処方箋の画像を操作できません");
     }
 
     // グループメンバーか確認
@@ -99,12 +102,12 @@ export const removeImageFromPrescription = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("このグループのメンバーではありません");
+      return error("このグループのメンバーではありません");
     }
 
     // 画像がない場合は何もしない
     if (!prescription.imageId) {
-      return;
+      return success(null);
     }
 
     // ストレージから画像を削除
@@ -115,5 +118,7 @@ export const removeImageFromPrescription = mutation({
       imageId: undefined,
       updatedAt: Date.now(),
     });
+
+    return success(null);
   },
 });

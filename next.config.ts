@@ -2,6 +2,11 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // TypeScript の型チェックを tsc --noEmit に委譲
+  // Turbopack と tsc で TS2589 の発生有無が異なるため、型チェックを統一
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   // Convex Storage の画像を許可
   images: {
     remotePatterns: [

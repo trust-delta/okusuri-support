@@ -26,7 +26,24 @@ Git操作の標準化とワークフロー管理を支援するスキル。
 
 ---
 
-### 2. コミット作成
+### 2. Worktree作成（並行作業）
+機能ブランチとworktreeを同時に作成し、新しいWezTermタブでClaude Codeを起動します。
+
+**使用例**:
+- 「worktreeで新しい機能を始めたい」
+- 「並行して別の作業をしたい」
+- 「developを維持したまま機能開発を始めたい」
+
+**スクリプト**:
+```bash
+./.claude/skills/git-workflow/scripts/new-feature-worktree.sh feature/<name>
+```
+
+**詳細**: [capabilities/worktree.md](capabilities/worktree.md)
+
+---
+
+### 3. コミット作成
 コミットメッセージ規則に従ってコミットを作成します。
 
 **使用例**:
@@ -37,7 +54,7 @@ Git操作の標準化とワークフロー管理を支援するスキル。
 
 ---
 
-### 3. PR作成
+### 4. PR作成
 PRテンプレートに従ってPull Requestを作成します。
 
 **使用例**:
@@ -81,10 +98,6 @@ PRテンプレートに従ってPull Requestを作成します。
 <type>: <subject>
 
 [body]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### タイプ一覧
@@ -113,10 +126,6 @@ feat: 処方箋の複製機能を追加
 
 既存の処方箋をコピーして新しい処方箋を作成できるようにした。
 これにより、似た処方箋を効率的に登録できる。
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ---
@@ -140,8 +149,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Related
 - Issue: #<issue番号>（該当する場合）
 - 仕様書: `.context/specs/features/<name>.md`（該当する場合）
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ---
@@ -150,9 +157,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ### 新機能開発
 ```bash
-# 1. mainから最新を取得
-git checkout main
-git pull origin main
+# 1. developから最新を取得
+git checkout develop
+git pull origin develop
 
 # 2. 機能ブランチを作成
 git checkout -b feature/<feature-name>
@@ -163,14 +170,14 @@ git commit -m "feat: <説明>"
 
 # 4. プッシュ・PR作成
 git push -u origin feature/<feature-name>
-gh pr create --title "feat: <説明>" --body "..."
+gh pr create --base develop --title "feat: <説明>" --body "..."
 ```
 
 ### バグ修正
 ```bash
-# 1. mainから最新を取得
-git checkout main
-git pull origin main
+# 1. developから最新を取得
+git checkout develop
+git pull origin develop
 
 # 2. 修正ブランチを作成
 git checkout -b fix/<bug-description>
@@ -181,7 +188,7 @@ git commit -m "fix: <説明>"
 
 # 4. プッシュ・PR作成
 git push -u origin fix/<bug-description>
-gh pr create --title "fix: <説明>" --body "..."
+gh pr create --base develop --title "fix: <説明>" --body "..."
 ```
 
 ---
@@ -195,4 +202,4 @@ gh pr create --title "fix: <説明>" --body "..."
 
 ---
 
-**最終更新**: 2025年11月29日
+**最終更新**: 2026年01月18日

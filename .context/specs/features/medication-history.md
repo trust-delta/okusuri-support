@@ -429,5 +429,5 @@ if (membership.role !== "supporter" && args.patientId && args.patientId !== user
 - [服薬管理機能](./medication.md)
 - [グループ管理機能](./group.md)
 - [認証機能](./auth.md)
-- [プロジェクト概要](../project.md)
-- [アーキテクチャ](../architecture.md)
+- [プロジェクト概要](../../project.md)
+- [アーキテクチャ](../../architecture.md)

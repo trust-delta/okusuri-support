@@ -335,5 +335,5 @@ const memoSchema = z.object({
 
 - [服薬管理機能](./medication.md)
 - [履歴閲覧機能](./medication-history.md)
-- [プロジェクト概要](../project.md)
-- [アーキテクチャ](../architecture.md)
+- [プロジェクト概要](../../project.md)
+- [アーキテクチャ](../../architecture.md)

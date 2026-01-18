@@ -75,7 +75,7 @@
   _id: Id<"inventoryAlerts">,
   inventoryId: Id<"medicineInventory">,
   groupId: Id<"groups">,
-  alertType: "low_stock" | "unexpected_consumption" | "overdose_warning",
+  alertType: "low_stock" | "out_of_stock" | "unexpected_consumption" | "overdose_warning",
   severity: "info" | "warning" | "critical",
   message: string,
   relatedConsumptionId?: Id<"medicineConsumptionRecords">,
@@ -92,6 +92,7 @@
 | タイプ | 説明 | 重要度 |
 |--------|------|--------|
 | `low_stock` | 残量が閾値以下 | warning |
+| `out_of_stock` | 在庫切れ（残量0、処方箋継続中） | critical |
 | `unexpected_consumption` | 予定外消費の発生 | warning/critical |
 | `overdose_warning` | 過剰服用の可能性 | critical |
 

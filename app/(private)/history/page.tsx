@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { subDays } from "date-fns";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import type { Id } from "@/schema";
@@ -37,18 +37,6 @@ export default function HistoryPage() {
   const activeGroupId =
     urlGroupId || groupStatus?.activeGroupId || groupStatus?.groups[0]?.groupId;
 
-  // 当月の記録を取得（フィルター用）
-  const monthlyRecords = useQuery(
-    api.medications.getMonthlyRecords,
-    activeGroupId
-      ? {
-          groupId: activeGroupId,
-          year: today.getFullYear(),
-          month: today.getMonth() + 1,
-        }
-      : "skip",
-  );
-
   // フィルター適用済みの記録を取得
   const hasActiveFilter =
     filters.searchQuery !== "" ||
@@ -56,35 +44,33 @@ export default function HistoryPage() {
     filters.timing !== "all" ||
     filters.memoOnly;
 
-  const filteredRecords = monthlyRecords?.filter(
-    (record: (typeof monthlyRecords)[number]) => {
-      // 薬名検索
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        const medicineName = record.simpleMedicineName || "";
-        if (!medicineName.toLowerCase().includes(query)) {
-          return false;
-        }
-      }
-
-      // ステータスフィルター
-      if (filters.status !== "all" && record.status !== filters.status) {
-        return false;
-      }
-
-      // タイミングフィルター
-      if (filters.timing !== "all" && record.timing !== filters.timing) {
-        return false;
-      }
-
-      // メモ付きのみフィルター
-      if (filters.memoOnly && !record.notes) {
-        return false;
-      }
-
-      return true;
-    },
+  // バックエンドでフィルタリングを実行（フィルター条件を渡す）
+  const backendFilters = useMemo(
+    () => ({
+      searchQuery: filters.searchQuery || undefined,
+      status: filters.status,
+      timing: filters.timing,
+      memoOnly: filters.memoOnly || undefined,
+    }),
+    [filters.searchQuery, filters.status, filters.timing, filters.memoOnly],
   );
+
+  // 当月の記録を取得（バックエンドでフィルタリング済み）
+  const filteredRecordsResult = useQuery(
+    api.medications.getFilteredRecords,
+    activeGroupId
+      ? {
+          groupId: activeGroupId,
+          year: today.getFullYear(),
+          month: today.getMonth() + 1,
+          filters: backendFilters,
+        }
+      : "skip",
+  );
+
+  const filteredRecords = filteredRecordsResult?.isSuccess
+    ? filteredRecordsResult.data
+    : [];
 
   // ローディング中
   if (groupStatus === undefined) {

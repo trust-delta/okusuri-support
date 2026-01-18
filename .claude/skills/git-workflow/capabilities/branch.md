@@ -10,10 +10,10 @@ git branch --show-current
 git status
 ```
 
-### 2. mainブランチの最新化
+### 2. developブランチの最新化
 ```bash
-git checkout main
-git pull origin main
+git checkout develop
+git pull origin develop
 ```
 
 ### 3. ブランチタイプの決定
