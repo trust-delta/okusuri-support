@@ -29,6 +29,46 @@ Chrome DevTools MCPで実装を検証し、問題があれば修正するスキ�
 
 **設定場所**: `e2e/helpers/fixtures.ts`
 
+## サンプルデータ投入
+
+ブラウザ検証時にテストアカウントにサンプルデータを投入・リセットできる。
+
+### 前提条件
+- テストアカウントで一度ログインしていること（Convex Authにユーザー作成済み）
+- Convex開発環境が起動中 (`npx convex dev`)
+
+### CLI操作
+
+```bash
+# サンプルデータ投入
+bash .claude/skills/browser-verify/scripts/seed-test-data.sh seed
+
+# データリセット（初期状態に戻す）
+bash .claude/skills/browser-verify/scripts/seed-test-data.sh reset
+
+# 状態確認
+bash .claude/skills/browser-verify/scripts/seed-test-data.sh status
+
+# 別のテストユーザーに対して実行
+EMAIL=supporter@example.com bash .claude/skills/browser-verify/scripts/seed-test-data.sh seed
+```
+
+### 投入されるサンプルデータ
+
+| カテゴリ | 内容 |
+|---------|------|
+| 処方箋 | 内科定期処方、整形外科処方の2件 |
+| 薬剤 | アムロジピン、メトホルミン、ロキソプロフェン、レバミピドの4種 |
+| 服薬スケジュール | 各薬剤のタイミング設定 |
+| 服薬記録 | 過去7日分＋今日の記録（一部pending、一部taken） |
+| 在庫 | 各薬剤の残量と警告閾値 |
+
+### テストユーザー
+以下のメールアドレスがテストユーザーとして認識される:
+- `test@example.com`
+- `supporter@example.com`
+- `patient@example.com`
+
 ## 検証フロー
 
 ### 1. 環境準備
