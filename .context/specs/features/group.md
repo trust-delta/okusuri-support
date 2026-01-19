@@ -1,6 +1,6 @@
 # グループ管理機能仕様
 
-**最終更新**: 2025年11月16日
+**最終更新**: 2026年1月19日
 
 ## 概要
 
@@ -107,18 +107,49 @@
 2. groupsテーブルに新規作成
 3. groupMembersに作成者を追加（role: 入力された役割）
 4. users.activeGroupIdを新グループに設定
-5. グループIDを返却
+5. デフォルト処方箋を作成（→ medication.md参照）
+6. デフォルト通知時刻設定を作成（→ 本ドキュメント内「通知時刻設定」参照）
+7. グループIDを返却
 ```
 
-**API**: `groups.mutations.create`
+**API**: `groups.mutations.createGroup`
 ```typescript
 {
-  args: { 
-    name: string, 
-    description?: string, 
-    creatorRole: "patient" | "supporter" 
+  args: {
+    name: string,
+    description?: string,
+    creatorRole: "patient" | "supporter"
   },
-  returns: Id<"groups">
+  returns: Result<Id<"groups">>
+}
+```
+
+### 1.1 オンボーディング完了とグループ作成
+
+オンボーディング時にユーザー名設定とグループ作成を同時に行う。
+
+**フロー**:
+```
+1. ユーザー名・グループ名・説明・役割を入力
+2. users.displayNameを設定
+3. groupsテーブルに新規作成
+4. groupMembersに作成者を追加
+5. users.activeGroupIdを新グループに設定
+6. デフォルト処方箋を作成
+7. デフォルト通知時刻設定を作成
+8. グループIDを返却
+```
+
+**API**: `groups.mutations.completeOnboardingWithNewGroup`
+```typescript
+{
+  args: {
+    userName: string,
+    groupName: string,
+    groupDescription?: string,
+    role: "patient" | "supporter"
+  },
+  returns: Result<{ groupId: Id<"groups"> }>
 }
 ```
 
@@ -267,6 +298,86 @@
 2. 所属グループがない場合は null に設定
 3. フロントエンドでオンボーディング画面にリダイレクト
 ```
+
+---
+
+## 通知時刻設定
+
+### 概要
+
+グループ単位でプッシュ通知の送信時刻を管理する機能。各グループはそれぞれ独立した通知時刻設定を持つ。
+
+### データモデル
+
+#### groupNotificationSettings テーブル
+
+```typescript
+{
+  _id: Id<"groupNotificationSettings">,
+  groupId: Id<"groups">,
+  morningTime: number,    // 朝の通知時刻（0-1439、分単位）
+  noonTime: number,       // 昼の通知時刻
+  eveningTime: number,    // 夕の通知時刻
+  bedtimeTime: number,    // 就寝前の通知時刻
+  createdAt: number,
+  updatedAt: number,
+}
+```
+
+**インデックス**:
+- `by_groupId`: グループ別設定検索（一意）
+
+**時刻形式**: 0〜1439の整数値（0=0:00、480=8:00、720=12:00、1439=23:59）
+
+### デフォルト値
+
+グループ作成時に自動的に設定されるデフォルト値:
+
+| タイミング | デフォルト値 | 時刻 |
+|-----------|-------------|------|
+| morningTime | 480 | 8:00 |
+| noonTime | 720 | 12:00 |
+| eveningTime | 1080 | 18:00 |
+| bedtimeTime | 1260 | 21:00 |
+
+### API
+
+#### 通知時刻設定取得
+**API**: `groups.notification_settings.queries.get`
+```typescript
+{
+  args: {
+    groupId: Id<"groups">
+  },
+  returns: Result<{
+    morningTime: number,
+    noonTime: number,
+    eveningTime: number,
+    bedtimeTime: number,
+  }>
+}
+```
+
+**フォールバック**: 設定が存在しない場合はデフォルト値を返却
+
+#### 通知時刻設定更新
+**API**: `groups.notification_settings.mutations.update`
+```typescript
+{
+  args: {
+    groupId: Id<"groups">,
+    morningTime?: number,
+    noonTime?: number,
+    eveningTime?: number,
+    bedtimeTime?: number,
+  },
+  returns: Result<void>
+}
+```
+
+**バリデーション**: 各時刻は0〜1439の整数値
+
+**権限**: グループメンバーのみ
 
 ---
 
