@@ -45,7 +45,7 @@
     "@sentry/nextjs": "^10.33.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "convex": "^1.31.4",
+    "convex": "^1.31.5",
     "convex-helpers": "^0.1.111",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
