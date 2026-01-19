@@ -55,9 +55,14 @@ else
   log_debug "$node_output"
 fi
 
-# ccstatusline に渡す
+# ccstatusline に渡す（一部フォントで表示できない文字を置換）
+# U+16830 (𖠰) → U+F0405 (󰐅 nf-md-source_branch)
+filter_icons() {
+  sed 's/𖠰/󰐅/g'
+}
+
 if [[ "${HOOK_DEBUG:-0}" == "1" ]]; then
-  echo "$input" | npx ccstatusline@latest 2>> "$TMP_DIR/statusline-error.log"
+  echo "$input" | npx ccstatusline@latest 2>> "$TMP_DIR/statusline-error.log" | filter_icons
 else
-  echo "$input" | npx ccstatusline@latest 2>/dev/null
+  echo "$input" | npx ccstatusline@latest 2>/dev/null | filter_icons
 fi
