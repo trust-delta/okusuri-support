@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
+import { batchGetSchedulesByMedicineIds } from "../../helpers";
 import { error, type Result, success } from "../../types/result";
 import { getActiveMedicationsForDate } from "./helpers";
 
@@ -245,19 +246,17 @@ export const getPrescriptionMedicines = query({
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
-    // 各薬のスケジュールも取得
-    const medicinesWithSchedules = await Promise.all(
-      medicines.map(async (medicine) => {
-        const schedule = await ctx.db
-          .query("medicationSchedules")
-          .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-          .filter((q) => q.eq(q.field("deletedAt"), undefined))
-          .first();
+    // スケジュールをバッチ取得
+    const scheduleMap = await batchGetSchedulesByMedicineIds(
+      ctx,
+      medicines.map((m) => m._id),
+    );
 
-        return {
-          ...medicine,
-          schedule,
-        };
+    // 各薬にスケジュールを付加（同期処理）
+    const medicinesWithSchedules: MedicineWithSchedule[] = medicines.map(
+      (medicine) => ({
+        ...medicine,
+        schedule: scheduleMap.get(String(medicine._id)) ?? null,
       }),
     );
 

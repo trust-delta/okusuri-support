@@ -1,5 +1,9 @@
 import type { Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
+import {
+  batchGetMedicinesByGroupId,
+  batchGetSchedulesByGroupId,
+} from "../../helpers";
 
 /**
  * 指定した日付に有効な処方箋とその薬を取得
@@ -28,7 +32,12 @@ export async function getActiveMedicationsForDate(
     return isAfterStart && isBeforeEnd;
   });
 
-  // 各処方箋の薬を取得（アクティブなもののみ）
+  // 薬とスケジュールをバッチ取得
+  const { allMedicines, medicinesByPrescriptionId } =
+    await batchGetMedicinesByGroupId(ctx, groupId);
+  const scheduleMap = await batchGetSchedulesByGroupId(ctx, groupId);
+
+  // 各処方箋の薬を取得（バッチ取得済みデータから）
   const medications: Array<{
     prescriptionId: Id<"prescriptions">;
     prescriptionName: string;
@@ -40,20 +49,11 @@ export async function getActiveMedicationsForDate(
   }> = [];
 
   for (const prescription of activePrescriptions) {
-    const medicines = await ctx.db
-      .query("medicines")
-      .withIndex("by_prescriptionId", (q) =>
-        q.eq("prescriptionId", prescription._id),
-      )
-      .filter((q) => q.eq(q.field("deletedAt"), undefined))
-      .collect();
+    const medicines =
+      medicinesByPrescriptionId.get(String(prescription._id)) ?? [];
 
     for (const medicine of medicines) {
-      const schedule = await ctx.db
-        .query("medicationSchedules")
-        .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-        .filter((q) => q.eq(q.field("deletedAt"), undefined))
-        .first();
+      const schedule = scheduleMap.get(String(medicine._id));
 
       if (schedule?.timings) {
         medications.push({
