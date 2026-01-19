@@ -1,5 +1,5 @@
 #!/bin/bash
-# Chrome起動（リモートデバッグモード）- WSL + Windows Chrome対応
+# Chrome起動（リモートデバッグモード）- WSLg対応
 #
 # 環境変数:
 #   DEBUG_PORT  - デバッグポート (default: 9222)
