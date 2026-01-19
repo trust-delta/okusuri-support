@@ -13,7 +13,7 @@ importers:
         version: 0.37.4
       '@convex-dev/auth':
         specifier: ^0.0.90
-        version: 0.0.90(@auth/core@0.37.4)(convex@1.31.4(react@19.2.3))(react@19.2.3)
+        version: 0.0.90(@auth/core@0.37.4)(convex@1.31.5(react@19.2.3))(react@19.2.3)
       '@fontsource/noto-sans-jp':
         specifier: ^5.2.8
         version: 5.2.8
@@ -78,11 +78,11 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       convex:
-        specifier: ^1.31.4
-        version: 1.31.4(react@19.2.3)
+        specifier: ^1.31.5
+        version: 1.31.5(react@19.2.3)
       convex-helpers:
         specifier: ^0.1.111
-        version: 0.1.111(@standard-schema/spec@1.1.0)(convex@1.31.4(react@19.2.3))(hono@4.11.3)(react@19.2.3)(typescript@5.9.3)(zod@4.3.5)
+        version: 0.1.111(@standard-schema/spec@1.1.0)(convex@1.31.5(react@19.2.3))(hono@4.11.3)(react@19.2.3)(typescript@5.9.3)(zod@4.3.5)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -182,7 +182,7 @@ importers:
         version: 4.0.17(vitest@4.0.17)
       convex-test:
         specifier: ^0.0.41
-        version: 0.0.41(convex@1.31.4(react@19.2.3))
+        version: 0.0.41(convex@1.31.5(react@19.2.3))
       dependency-cruiser:
         specifier: ^17.3.6
         version: 17.3.6
@@ -2866,8 +2866,8 @@ packages:
     peerDependencies:
       convex: ^1.16.4
 
-  convex@1.31.4:
-    resolution: {integrity: sha512-iDm283Gb/CFRb30cvhH6Z9qlYof6dhtin415FarKUKB3K7gumO0rn8snY0CTvUrThV3UnCtttbuL/1oY7LscyA==}
+  convex@1.31.5:
+    resolution: {integrity: sha512-E1IuJKFwMCHDToNGukBPs6c7RFaarR3t8chLF9n98TM5/Tgmj8lM6l7sKM1aJ3VwqGaB4wbeUAPY8osbCOXBhQ==}
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
     hasBin: true
     peerDependencies:
@@ -4227,8 +4227,8 @@ packages:
   preact@10.24.3:
     resolution: {integrity: sha512-Z2dPnBnMUfyQfSQ+GBdsGa16hz35YmLmtTLhM169uW944hYL6xzTYkJjC07j+Wosz733pMWx0fgON3JNw1jJQA==}
 
-  prettier@3.7.4:
-    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
+  prettier@3.8.0:
+    resolution: {integrity: sha512-yEPsovQfpxYfgWNhCfECjG5AQaO+K3dp6XERmOepyPDVqcJm+bjyCVO3pmU+nAPe0N5dDvekfGezt/EIiRe1TA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -5388,12 +5388,12 @@ snapshots:
   '@biomejs/cli-win32-x64@2.3.11':
     optional: true
 
-  '@convex-dev/auth@0.0.90(@auth/core@0.37.4)(convex@1.31.4(react@19.2.3))(react@19.2.3)':
+  '@convex-dev/auth@0.0.90(@auth/core@0.37.4)(convex@1.31.5(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@auth/core': 0.37.4
       '@oslojs/crypto': 1.0.1
       '@oslojs/encoding': 1.1.0
-      convex: 1.31.4(react@19.2.3)
+      convex: 1.31.5(react@19.2.3)
       cookie: 1.0.2
       is-network-error: 1.3.0
       jose: 5.10.0
@@ -7732,9 +7732,9 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex-helpers@0.1.111(@standard-schema/spec@1.1.0)(convex@1.31.4(react@19.2.3))(hono@4.11.3)(react@19.2.3)(typescript@5.9.3)(zod@4.3.5):
+  convex-helpers@0.1.111(@standard-schema/spec@1.1.0)(convex@1.31.5(react@19.2.3))(hono@4.11.3)(react@19.2.3)(typescript@5.9.3)(zod@4.3.5):
     dependencies:
-      convex: 1.31.4(react@19.2.3)
+      convex: 1.31.5(react@19.2.3)
     optionalDependencies:
       '@standard-schema/spec': 1.1.0
       hono: 4.11.3
@@ -7742,14 +7742,14 @@ snapshots:
       typescript: 5.9.3
       zod: 4.3.5
 
-  convex-test@0.0.41(convex@1.31.4(react@19.2.3)):
+  convex-test@0.0.41(convex@1.31.5(react@19.2.3)):
     dependencies:
-      convex: 1.31.4(react@19.2.3)
+      convex: 1.31.5(react@19.2.3)
 
-  convex@1.31.4(react@19.2.3):
+  convex@1.31.5(react@19.2.3):
     dependencies:
       esbuild: 0.27.0
-      prettier: 3.7.4
+      prettier: 3.8.0
     optionalDependencies:
       react: 19.2.3
 
@@ -9014,7 +9014,7 @@ snapshots:
 
   preact@10.24.3: {}
 
-  prettier@3.7.4: {}
+  prettier@3.8.0: {}
 
   pretty-format@27.5.1:
     dependencies:
