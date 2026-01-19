@@ -81,7 +81,7 @@ export function generateMedicationRecords(
   for (let i = 7; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = date.toISOString().slice(0, 10);
 
     if (i === 0) {
       // 今日：pending
@@ -139,7 +139,7 @@ function getTimingOffset(timing: string): number {
 export function getDateString(dayOffset: number): string {
   const date = new Date();
   date.setDate(date.getDate() + dayOffset);
-  return date.toISOString().split("T")[0];
+  return date.toISOString().slice(0, 10);
 }
 
 /**
