@@ -1,6 +1,62 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(bash:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(npm:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm:*)",
+      "Bash(curl *localhost*)",
+      "mcp__chrome-devtools__*",
+      "mcp__context7__*",
+      "mcp__convex-mcp__*",
+      "mcp__github__*",
+      "mcp__shadcn__*",
+      "Skill(browser-verify)",
+      "Skill(decision-assistant)",
+      "Skill(git-workflow)",
+      "Skill(spec-assistant)",
+      "WebFetch(domain:biomejs.dev)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(chmod:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(rmdir:*)",
+      "Bash(touch:*)",
+      "Bash(tree:*)",
+      "Bash(awk:*)",
+      "Bash(head:*)",
+      "Bash(jq:*)",
+      "Bash(sed:*)",
+      "Bash(wc:*)",
+      "Bash(kill:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/context-display.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "./.claude/hooks/statusline.sh"
+  },
   "enabledPlugins": {
-    "ralph-loop@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true
-  }
+  },
+  "plansDirectory": "./.claude/plans",
+  "alwaysThinkingEnabled": true,
+  "enableAllProjectMcpServers": true
 }
