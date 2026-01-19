@@ -13,6 +13,9 @@ import {
 import type { Id } from "@/schema";
 import { ConsumptionRecordDialog } from "./ConsumptionRecordDialog";
 
+/** 在庫ステータス（バックエンドで計算済み） */
+type StockStatus = "out_of_stock" | "low_stock" | "normal";
+
 interface InventoryItem {
   _id: Id<"medicineInventory">;
   medicineId: Id<"medicines">;
@@ -22,6 +25,10 @@ interface InventoryItem {
   isTrackingEnabled: boolean;
   medicineName: string;
   isLowStock?: boolean;
+  /** プログレスバーの値（バックエンドで計算済み） */
+  progressValue?: number;
+  /** 在庫ステータス（バックエンドで計算済み） */
+  stockStatus?: StockStatus;
 }
 
 interface InventoryCardProps {
@@ -100,19 +107,26 @@ interface InventoryItemRowProps {
   inventory: InventoryItem;
 }
 
+/** ステータスに応じたプログレスバーの色を返す */
+const STOCK_STATUS_COLORS: Record<StockStatus, string> = {
+  out_of_stock: "bg-red-500",
+  low_stock: "bg-yellow-500",
+  normal: "bg-green-500",
+};
+
 function InventoryItemRow({ inventory }: InventoryItemRowProps) {
-  const { currentQuantity, unit, warningThreshold, medicineName, isLowStock } =
-    inventory;
+  const {
+    currentQuantity,
+    unit,
+    warningThreshold,
+    medicineName,
+    isLowStock,
+    progressValue = 0,
+    stockStatus = "normal",
+  } = inventory;
 
-  // 警告閾値がある場合のプログレス計算（閾値の3倍を100%とする）
-  const maxForProgress = warningThreshold ? warningThreshold * 3 : 100;
-  const progressValue = Math.min(100, (currentQuantity / maxForProgress) * 100);
-
-  const getProgressColor = () => {
-    if (currentQuantity === 0) return "bg-red-500";
-    if (isLowStock) return "bg-yellow-500";
-    return "bg-green-500";
-  };
+  // プログレスバーの色はバックエンドで計算済みのステータスを使用
+  const progressColor = STOCK_STATUS_COLORS[stockStatus];
 
   return (
     <div className="flex items-center gap-4 p-3 rounded-lg border bg-card">
@@ -126,7 +140,7 @@ function InventoryItemRow({ inventory }: InventoryItemRowProps) {
         <div className="flex items-center gap-2 mt-1">
           <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted">
             <div
-              className={`h-full transition-all duration-500 ${getProgressColor()}`}
+              className={`h-full transition-all duration-500 ${progressColor}`}
               style={{ width: `${progressValue}%` }}
             />
           </div>

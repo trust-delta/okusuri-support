@@ -13,15 +13,8 @@ interface GroupMembersListProps {
 export function GroupMembersList({
   members: membersData,
 }: GroupMembersListProps) {
-  const members = !membersData
-    ? []
-    : [...membersData].sort((a, b) => {
-        // 患者を先頭に
-        if (a.role === "patient" && b.role !== "patient") return -1;
-        if (a.role !== "patient" && b.role === "patient") return 1;
-        // 同じロールなら参加日時順
-        return a.joinedAt - b.joinedAt;
-      });
+  // ソートはバックエンド（getGroupMembers）で実行済み
+  const members = membersData ?? [];
 
   if (!membersData) {
     return (

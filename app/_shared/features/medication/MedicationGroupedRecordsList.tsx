@@ -347,7 +347,8 @@ export function MedicationGroupedRecordsList({
                           recordStatus={record?.status}
                           recordNotes={record?.notes}
                           medicineName={item.medicineName}
-                          snoozeCount={record?.snoozeCount}
+                          canSnooze={record?.canSnooze ?? false}
+                          isSnoozed={record?.isSnoozed ?? false}
                           snoozedUntil={record?.snoozedUntil}
                         />
                       )}

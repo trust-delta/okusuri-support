@@ -4,6 +4,17 @@ import type { Doc, Id } from "../../_generated/dataModel";
 import { type QueryCtx, query } from "../../_generated/server";
 import { batchGetSchedulesByGroupId } from "../../helpers";
 import { error, type Result, success } from "../../types/result";
+import { MAX_SNOOZE_COUNT } from "./snooze";
+
+/**
+ * スヌーズ状態を含む服薬記録の型
+ */
+type MedicationRecordWithSnoozeStatus = Doc<"medicationRecords"> & {
+  /** スヌーズ可能かどうか（上限回数未満） */
+  canSnooze: boolean;
+  /** 現在スヌーズ中かどうか（サーバー時刻ベース） */
+  isSnoozed: boolean;
+};
 
 type TimingStats = {
   taken: number;
@@ -40,6 +51,7 @@ type MonthlyStatsResult = {
 
 /**
  * 指定日の服薬記録を取得
+ * スヌーズ状態（canSnooze, isSnoozed）も含めて返す
  */
 export const getTodayRecords = query({
   args: {
@@ -47,7 +59,10 @@ export const getTodayRecords = query({
     scheduledDate: v.string(),
     patientId: v.optional(v.string()),
   },
-  handler: async (ctx, args): Promise<Result<Doc<"medicationRecords">[]>> => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<Result<MedicationRecordWithSnoozeStatus[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return error("認証が必要です");
@@ -93,7 +108,17 @@ export const getTodayRecords = query({
         .collect();
     }
 
-    return success(records);
+    // スヌーズ状態を計算して追加
+    const now = Date.now();
+    const recordsWithSnoozeStatus: MedicationRecordWithSnoozeStatus[] =
+      records.map((record) => ({
+        ...record,
+        canSnooze: (record.snoozeCount ?? 0) < MAX_SNOOZE_COUNT,
+        isSnoozed:
+          record.snoozedUntil !== undefined && record.snoozedUntil > now,
+      }));
+
+    return success(recordsWithSnoozeStatus);
   },
 });
 
