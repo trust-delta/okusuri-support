@@ -79,7 +79,7 @@
     "@types/react-dom": "19",
     "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^5.1.2",
-    "@vitest/coverage-v8": "4.0.16",
+    "@vitest/coverage-v8": "4.0.17",
     "@vitest/ui": "^4.0.17",
     "convex-test": "^0.0.41",
     "dependency-cruiser": "^17.3.6",
