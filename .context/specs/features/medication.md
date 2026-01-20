@@ -1,6 +1,6 @@
 # 服薬管理機能仕様
 
-**最終更新**: 2025年12月2日
+**最終更新**: 2026年01月21日
 
 ## 概要
 
@@ -1234,6 +1234,9 @@ function isDateInRange(
 ## 関連ドキュメント
 
 - [グループ管理](group.md)
+- [服薬画像](medication-images.md)
+- [薬の残量管理](medicine-inventory.md)
 - [アーキテクチャ](../../architecture.md)
 - [処方箋管理機能の導入決定記録](../../decisions/2025-10-26-prescription-management.md)
 - [服薬統計機能とデータ品質管理決定記録](../../decisions/2025-10-26-medication-statistics.md)
+- [薬の残量管理機能の決定記録](../../decisions/2026-01-12-medicine-inventory.md)

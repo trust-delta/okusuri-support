@@ -1,6 +1,6 @@
 # オンボーディング機能仕様
 
-**最終更新**: 2025年10月19日
+**最終更新**: 2026年01月21日
 
 ## 概要
 
@@ -68,7 +68,8 @@
 ```
 1. 初期グループ自動作成（グループ名: "{displayName}の服薬管理"）
 2. グループメンバーとして自動追加（role: "patient"）
-3. ダッシュボードへリダイレクト
+3. デフォルト処方箋「日常の薬」を自動作成
+4. ダッシュボードへリダイレクト
 ```
 
 **支援者の場合**:
@@ -76,6 +77,27 @@
 1. グループ未作成
 2. ダッシュボードへリダイレクト（招待受諾を促す）
 ```
+
+**API**: `groups.mutations.completeOnboardingWithNewGroup`
+```typescript
+{
+  args: {
+    displayName: string,
+    role: "patient" | "supporter",
+    groupName?: string,        // 省略時はデフォルト名
+    customImageStorageId?: Id<"_storage">,
+  },
+  returns: {
+    groupId: Id<"groups">,
+    memberId: Id<"groupMembers">,
+  }
+}
+```
+
+**デフォルト処方箋の自動作成**:
+- 患者としてグループ作成時に「日常の薬」処方箋が自動作成
+- 朝・昼・晩・就寝前の4つの薬が含まれる
+- 詳細は[服薬管理](medication.md)のデフォルト処方箋機能を参照
 
 ---
 
