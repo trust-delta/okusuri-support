@@ -33,7 +33,10 @@ node_output=$(node -e "
 const fs = require('fs');
 try {
   const input = JSON.parse(process.argv[1]);
-  const sessionId = input.session_id || 'default';
+  // セキュリティ: session_idをサニタイズ（パストラバーサル対策）
+  // 英数字、ハイフン、アンダースコアのみ許可
+  const rawSessionId = input.session_id || 'default';
+  const sessionId = rawSessionId.replace(/[^a-zA-Z0-9_-]/g, '');
   const tmpDir = process.argv[2];
   const output = {
     timestamp: new Date().toISOString(),

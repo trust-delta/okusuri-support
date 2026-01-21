@@ -8,7 +8,7 @@
 
 Convexの型システムは非常に複雑で、TypeScriptの型インスタンス化深度制限を超過するエラーが頻発します。
 
-```
+```text
 error TS2589: Type instantiation is excessively deep and possibly infinite.
 ```
 

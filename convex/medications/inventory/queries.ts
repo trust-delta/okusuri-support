@@ -315,15 +315,16 @@ export const getGroupConsumptionHistory = query({
       .withIndex("by_groupId_recordedAt", (q) => q.eq("groupId", args.groupId))
       .order("desc");
 
-    const records = await recordsQuery.take(args.limit ?? 50);
-
-    // フィルタリングと薬の名前を付加
+    // バグ修正: filter() → take() の順序に変更
+    // 先にtake()するとlimitより少ない件数が返される可能性がある
+    const allRecords = await recordsQuery.collect();
     const filteredRecords = args.consumptionType
-      ? records.filter((r) => r.consumptionType === args.consumptionType)
-      : records;
+      ? allRecords.filter((r) => r.consumptionType === args.consumptionType)
+      : allRecords;
+    const limitedRecords = filteredRecords.slice(0, args.limit ?? 50);
 
     const recordsWithNames = await Promise.all(
-      filteredRecords.map(async (record) => {
+      limitedRecords.map(async (record) => {
         const medicine = await ctx.db.get(record.medicineId);
         const inventory = await ctx.db.get(record.inventoryId);
         return {

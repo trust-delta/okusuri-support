@@ -143,7 +143,15 @@ export const listGroupInvitations = query({
       .collect();
 
     const result = invitations.map((inv) => {
-      const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${inv.code}`;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+      // セキュリティ: 本番環境では環境変数が必須
+      if (!appUrl) {
+        console.warn(
+          "[WARNING] NEXT_PUBLIC_APP_URL is not set. Using localhost fallback. " +
+            "This should not happen in production.",
+        );
+      }
+      const invitationLink = `${appUrl || "http://localhost:3000"}/invite/${inv.code}`;
 
       return {
         _id: inv._id,

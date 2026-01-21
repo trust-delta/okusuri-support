@@ -313,10 +313,10 @@ const TIMING_ORDER: Record<string, number> = {
 };
 
 type MedicationItem = {
-  medicineId: string;
-  scheduleId: string;
+  medicineId: Doc<"medicines">["_id"];
+  scheduleId: Doc<"medicationSchedules">["_id"];
   medicineName: string;
-  prescriptionId: string;
+  prescriptionId: Doc<"prescriptions">["_id"];
   prescriptionName: string;
   timing: "morning" | "noon" | "evening" | "bedtime" | "asNeeded";
   dosage?: { amount: number; unit: string };

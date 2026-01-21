@@ -10,7 +10,7 @@ Feature-Based Architecture（機能ベース）を採用したフルスタック
 
 ## システムアーキテクチャ
 
-```
+```text
 ┌─────────────┐     ┌──────────────┐
 │  Next.js 16 │────▶│ Convex Auth  │
 │  (Frontend) │     │(authenticate)│

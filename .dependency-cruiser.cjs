@@ -118,6 +118,8 @@ module.exports = {
           "middleware\\.ts$",
           // convex-test セットアップファイル
           "^convex/test\\.setup\\.ts$",
+          // プロキシファイル（外部から動的に参照される）
+          "^proxy\\.ts$",
         ],
       },
       to: {},
