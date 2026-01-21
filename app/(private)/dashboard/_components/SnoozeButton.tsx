@@ -57,29 +57,41 @@ export function SnoozeButton({
   const handleSnooze = async (minutes: 5 | 10 | 15 | 30) => {
     setIsLoading(true);
 
-    const result = await snoozeMutation({ recordId, minutes });
+    try {
+      const result = await snoozeMutation({ recordId, minutes });
 
-    if (result.isSuccess) {
-      toast.success(`${minutes}分後に再通知します`);
-    } else {
-      toast.error(result.errorMessage);
+      if (result.isSuccess) {
+        toast.success(`${minutes}分後に再通知します`);
+      } else {
+        toast.error(result.errorMessage);
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "スヌーズに失敗しました",
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   const handleCancelSnooze = async () => {
     setIsLoading(true);
 
-    const result = await cancelSnoozeMutation({ recordId });
+    try {
+      const result = await cancelSnoozeMutation({ recordId });
 
-    if (result.isSuccess) {
-      toast.success("スヌーズを解除しました");
-    } else {
-      toast.error(result.errorMessage);
+      if (result.isSuccess) {
+        toast.success("スヌーズを解除しました");
+      } else {
+        toast.error(result.errorMessage);
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "スヌーズ解除に失敗しました",
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   // スヌーズ中の場合

@@ -59,7 +59,10 @@ function logDebug(msg) {
 try {
   // 引数から渡されたhook入力を解析
   const hookInput = JSON.parse(process.argv[1]);
-  const sessionId = hookInput.session_id || 'default';
+  // セキュリティ: session_idをサニタイズ（パストラバーサル対策）
+  // 英数字、ハイフン、アンダースコアのみ許可
+  const rawSessionId = hookInput.session_id || 'default';
+  const sessionId = rawSessionId.replace(/[^a-zA-Z0-9_-]/g, '');
   logDebug('Parsed input for session: ' + sessionId);
 
   // セッションごとのファイルパス（引数から取得）
@@ -100,7 +103,8 @@ try {
 
   // バー表示
   const barLength = 20;
-  const filled = Math.round(percent / 100 * barLength);
+  // バグ修正: percentが100を超える場合にRangeErrorを防ぐためクランプ
+  const filled = Math.max(0, Math.min(barLength, Math.round(percent / 100 * barLength)));
   const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(barLength - filled);
   const contextBar = '[Context] ' + bar + ' ' + percent + '% (' + total.toLocaleString() + ' / ' + windowSize.toLocaleString() + ' tokens)';
 

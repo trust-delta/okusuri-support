@@ -112,8 +112,16 @@ export function GroupInvitationManager({
     );
   }
 
-  // Result型からデータを取得
-  const invitationsData = invitations.isSuccess ? invitations.data : [];
+  // Result型からデータを取得（エラー時はエラー表示）
+  if (!invitations.isSuccess) {
+    return (
+      <div className="text-center py-4 text-destructive">
+        {invitations.errorMessage}
+      </div>
+    );
+  }
+
+  const invitationsData = invitations.data;
 
   const activeInvitations = invitationsData.filter((inv) => !inv.isUsed);
 

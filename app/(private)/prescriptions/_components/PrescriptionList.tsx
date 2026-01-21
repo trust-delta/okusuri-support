@@ -60,7 +60,9 @@ export function PrescriptionList({ groupId, filter }: PrescriptionListProps) {
   >(new Set());
 
   // バックエンドでフィルタリング済みの処方箋を取得
-  const today = new Date().toISOString().split("T")[0] ?? "";
+  // バグ修正: UTCではなくローカル日付を取得
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const prescriptions = useQuery(
     api.medications.prescriptions.queries.getFilteredPrescriptions,
     { groupId, filter, today },

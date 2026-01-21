@@ -141,23 +141,23 @@ await ctx.db.patch(userId, {
 
 ### コンポーネント
 
-- `app/_shared/features/onboarding/RoleSelection.tsx`
-  - ロール選択UI
-  - 患者/支援者の説明
+- `app/(private)/onboarding/_components/ModeSelection.tsx`
+  - モード選択UI（新規グループ作成 or 招待コードで参加）
+  - 患者/支援者のロール選択
 
-- `app/_shared/features/onboarding/ProfileSetup.tsx`
-  - 表示名入力フォーム
-  - 画像アップロード（オプション）
+- `app/(private)/onboarding/_components/GroupCreationForm.tsx`
+  - 新規グループ作成フォーム
+  - グループ名・表示名の入力
 
-- `app/_shared/features/onboarding/OnboardingWizard.tsx`
-  - ステップ管理
-  - 進捗表示
+- `app/(private)/onboarding/_components/JoinWithCodeForm.tsx`
+  - 招待コードでグループに参加するフォーム
+  - 招待コード入力・ロール選択
 
 ### ページ
 
-- `app/(public)/onboarding/page.tsx`
+- `app/(private)/onboarding/page.tsx`
   - オンボーディングメインページ
-  - 未認証時はログインへリダイレクト
+  - 認証必須（privateルート）
 
 ---
 

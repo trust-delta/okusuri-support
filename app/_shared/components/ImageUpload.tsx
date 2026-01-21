@@ -65,7 +65,10 @@ export function ImageUpload({
 
         // Result型のハンドリング
         if (!uploadUrlResult.isSuccess) {
-          throw new Error(uploadUrlResult.errorMessage);
+          throw new Error(
+            uploadUrlResult.errorMessage ??
+              "アップロードURLの取得に失敗しました",
+          );
         }
 
         // ファイルをアップロード
