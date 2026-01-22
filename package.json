@@ -85,6 +85,7 @@
     "dependency-cruiser": "^17.3.6",
     "gray-matter": "^4.0.3",
     "happy-dom": "^20.3.3",
+    "hono": "4.11.4",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "shadcn": "^3.7.0",
@@ -95,5 +96,11 @@
   },
   "lint-staged": {
     "*": "biome check --write --no-errors-on-unmatched"
+  },
+  "pnpm": {
+    "overrides": {
+      "jws": ">=4.0.1",
+      "hono": "4.11.4"
+    }
   }
 }
