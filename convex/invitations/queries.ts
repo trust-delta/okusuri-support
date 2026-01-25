@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { query } from "../_generated/server";
 import { error, type Result, success } from "../types/result";
+import { getInvitationLink } from "./_utils/getInvitationLink";
 
 type ValidInvitationResult = {
   valid: true;
@@ -143,16 +144,6 @@ export const listGroupInvitations = query({
       .collect();
 
     const result = invitations.map((inv) => {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-      // セキュリティ: 本番環境では環境変数が必須
-      if (!appUrl) {
-        console.warn(
-          "[WARNING] NEXT_PUBLIC_APP_URL is not set. Using localhost fallback. " +
-            "This should not happen in production.",
-        );
-      }
-      const invitationLink = `${appUrl || "http://localhost:3000"}/invite/${inv.code}`;
-
       return {
         _id: inv._id,
         code: inv.code,
@@ -163,7 +154,7 @@ export const listGroupInvitations = query({
         isUsed: inv.isUsed,
         usedBy: inv.usedBy,
         usedAt: inv.usedAt,
-        invitationLink,
+        invitationLink: getInvitationLink(inv.code),
       };
     });
 

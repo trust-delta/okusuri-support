@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { internalMutation } from "../_generated/server";
 import { error, type Result, success } from "../types/result";
+import { getInvitationLink } from "./_utils/getInvitationLink";
 
 /**
  * 招待コードを生成（内部mutation）
@@ -80,22 +81,12 @@ export const createInvitationInternal = internalMutation({
       isUsed: false,
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    // セキュリティ: 本番環境では環境変数が必須
-    if (!appUrl) {
-      console.warn(
-        "[WARNING] NEXT_PUBLIC_APP_URL is not set. Using localhost fallback. " +
-          "This should not happen in production.",
-      );
-    }
-    const invitationLink = `${appUrl || "http://localhost:3000"}/invite/${args.code}`;
-
     return success({
       invitationId,
       code: args.code,
       expiresAt,
       allowedRoles,
-      invitationLink,
+      invitationLink: getInvitationLink(args.code),
     });
   },
 });
