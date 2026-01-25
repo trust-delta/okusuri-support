@@ -29,13 +29,13 @@ interface MedicationRecordActionsProps {
   recordNotes?: string;
   /** メモダイアログに表示する薬名 */
   medicineName?: string;
-  /** スヌーズ回数 */
-  snoozeCount?: number;
-  /** スヌーズ中かどうか */
+  /** スヌーズ可能かどうか（バックエンドで計算済み） */
+  canSnooze?: boolean;
+  /** スヌーズ中かどうか（バックエンドで計算済み） */
+  isSnoozed?: boolean;
+  /** スヌーズ終了時刻（残り時間表示用） */
   snoozedUntil?: number;
 }
-
-const MAX_SNOOZE_COUNT = 3;
 const SNOOZE_OPTIONS = [
   { minutes: 5, label: "5分後" },
   { minutes: 10, label: "10分後" },
@@ -54,18 +54,19 @@ export function MedicationRecordActions({
   recordStatus,
   recordNotes,
   medicineName,
-  snoozeCount = 0,
+  canSnooze = false,
+  isSnoozed = false,
   snoozedUntil,
 }: MedicationRecordActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
+  // @ts-ignore Convex型インスタンス化の深度制限を回避（環境により発生有無が異なる）
   const recordMutation = useMutation(api.medications.recordSimpleMedication);
   const deleteMutation = useMutation(api.medications.deleteMedicationRecord);
   const snoozeMutation = useMutation(
     api.medications.records.snooze.snoozeRecord,
   );
 
-  const canSnooze = snoozeCount < MAX_SNOOZE_COUNT;
-  const isSnoozed = snoozedUntil !== undefined && snoozedUntil > Date.now();
+  // canSnooze, isSnoozed はバックエンドで計算済み（propsから受け取る）
 
   const handleRecord = async (status: "taken" | "skipped") => {
     setIsLoading(true);

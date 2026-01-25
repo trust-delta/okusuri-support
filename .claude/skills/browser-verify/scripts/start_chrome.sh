@@ -1,5 +1,5 @@
 #!/bin/bash
-# Chrome起動（リモートデバッグモード）- WSL + Windows Chrome対応
+# Chrome起動（リモートデバッグモード）- WSLg対応
 #
 # 環境変数:
 #   DEBUG_PORT  - デバッグポート (default: 9222)
@@ -12,28 +12,18 @@
 
 DEBUG_PORT="${DEBUG_PORT:-9222}"
 HEADLESS="${HEADLESS:-false}"
-MAX_WAIT=15
-
-# WSL環境かどうか判定
-is_wsl() {
-    grep -qiE "(microsoft|wsl)" /proc/version 2>/dev/null
-}
-
-# WSL2からWindowsホストのIPを取得
-get_windows_host_ip() {
-    # /etc/resolv.confからWindowsホストのIPを取得
-    grep -m1 nameserver /etc/resolv.conf | awk '{print $2}'
-}
-
-# 接続先のホストを決定
-# ミラーネットワークモードが有効な場合はlocalhostで接続可能
+MAX_WAIT=20
 CHROME_HOST="127.0.0.1"
 
+# WSLg環境でのDISPLAY設定
+if [ -z "$DISPLAY" ]; then
+    export DISPLAY=:0
+fi
+
 # 既に起動中か確認
-if curl -s "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" > /dev/null 2>&1; then
-    VERSION=$(curl -s "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" | grep -o '"Browser":"[^"]*"' | head -1)
+if curl -s --max-time 2 "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" > /dev/null 2>&1; then
+    VERSION=$(curl -s --max-time 2 "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" | grep -o '"Browser":"[^"]*"' | head -1)
     echo "CHROME_READY: Already running on port ${DEBUG_PORT} - ${VERSION}"
-    echo "CHROME_HOST: ${CHROME_HOST}"
     exit 0
 fi
 
@@ -46,35 +36,51 @@ else
     echo "Mode: Visible (with window)"
 fi
 
-# 起動
 echo "Starting Chrome on port ${DEBUG_PORT}..."
-echo "Chrome host: ${CHROME_HOST}"
 
-# Linux Chrome を使用（WSL環境でもWSLgでウィンドウ表示可能）
-CHROME_BIN="${CHROME_BIN:-google-chrome}"
-USER_DATA_DIR="${USER_DATA_DIR:-/tmp/chrome-mcp-profile-$(date +%s)}"
+# Chrome実行パスの検出
+CHROME_BIN="${CHROME_BIN:-}"
+if [ -z "$CHROME_BIN" ]; then
+    for cmd in google-chrome google-chrome-stable chromium-browser chromium; do
+        if command -v "$cmd" > /dev/null 2>&1; then
+            CHROME_BIN="$cmd"
+            break
+        fi
+    done
+fi
 
-"$CHROME_BIN" \
+if [ -z "$CHROME_BIN" ]; then
+    echo "CHROME_FAILED: Chrome not found"
+    exit 1
+fi
+
+# ユーザーデータディレクトリ（固定パスで再利用可能に）
+USER_DATA_DIR="${USER_DATA_DIR:-/tmp/chrome-mcp-profile}"
+mkdir -p "$USER_DATA_DIR"
+
+# Chrome起動
+nohup "$CHROME_BIN" \
     --remote-debugging-port="$DEBUG_PORT" \
     --user-data-dir="$USER_DATA_DIR" \
     --no-first-run \
     --no-default-browser-check \
+    --disable-background-timer-throttling \
+    --disable-backgrounding-occluded-windows \
     $HEADLESS_OPTS \
     > /dev/null 2>&1 &
 
 CHROME_PID=$!
+echo "Chrome PID: $CHROME_PID"
 
-# 接続可能になるまでループで待機
+# 接続可能になるまで待機
 for i in $(seq 1 $MAX_WAIT); do
-    if curl -s "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" > /dev/null 2>&1; then
-        VERSION=$(curl -s "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" | grep -o '"Browser":"[^"]*"' | head -1)
+    if curl -s --max-time 2 "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" > /dev/null 2>&1; then
+        VERSION=$(curl -s --max-time 2 "http://${CHROME_HOST}:${DEBUG_PORT}/json/version" | grep -o '"Browser":"[^"]*"' | head -1)
         echo "CHROME_READY: Started on port ${DEBUG_PORT} (PID: ${CHROME_PID}) - ${VERSION}"
-        echo "CHROME_HOST: ${CHROME_HOST}"
         exit 0
     fi
     sleep 1
 done
 
 echo "CHROME_FAILED: Timeout after ${MAX_WAIT}s"
-echo "Tried connecting to: http://${CHROME_HOST}:${DEBUG_PORT}/json/version"
 exit 1

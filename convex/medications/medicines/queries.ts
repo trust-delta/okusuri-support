@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc } from "../../_generated/dataModel";
 import { query } from "../../_generated/server";
+import { batchGetSchedulesByMedicineIds } from "../../helpers";
 import { error, type Result, success } from "../../types/result";
 
 type MedicineWithDetails = Doc<"medicines"> & {
@@ -40,33 +41,43 @@ export const getGroupMedicines = query({
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
-    // 処方箋名とスケジュールの用量単位を付加
-    const medicinesWithDetails = await Promise.all(
-      medicines.map(async (medicine) => {
-        let prescriptionName: string | undefined;
-        let dosageUnit: string | undefined;
+    // 処方箋をバッチ取得
+    const prescriptionIds = [
+      ...new Set(
+        medicines
+          .map((m) => m.prescriptionId)
+          .filter((id): id is NonNullable<typeof id> => id !== undefined),
+      ),
+    ];
+    const prescriptionMap = new Map<string, Doc<"prescriptions">>();
+    for (const id of prescriptionIds) {
+      const prescription = await ctx.db.get(id);
+      if (prescription) {
+        prescriptionMap.set(String(id), prescription);
+      }
+    }
 
-        if (medicine.prescriptionId) {
-          const prescription = await ctx.db.get(medicine.prescriptionId);
-          prescriptionName = prescription?.name;
-        }
+    // スケジュールをバッチ取得
+    const scheduleMap = await batchGetSchedulesByMedicineIds(
+      ctx,
+      medicines.map((m) => m._id),
+    );
 
-        // スケジュールから用量単位を取得
-        const schedule = await ctx.db
-          .query("medicationSchedules")
-          .withIndex("by_medicineId", (q) => q.eq("medicineId", medicine._id))
-          .first();
-
-        if (schedule?.dosage?.unit) {
-          dosageUnit = schedule.dosage.unit;
-        }
+    // 処方箋名とスケジュールの用量単位を付加（同期処理）
+    const medicinesWithDetails: MedicineWithDetails[] = medicines.map(
+      (medicine) => {
+        const prescriptionName = medicine.prescriptionId
+          ? prescriptionMap.get(String(medicine.prescriptionId))?.name
+          : undefined;
+        const schedule = scheduleMap.get(String(medicine._id));
+        const dosageUnit = schedule?.dosage?.unit;
 
         return {
           ...medicine,
           prescriptionName,
           dosageUnit,
         };
-      }),
+      },
     );
 
     return success(medicinesWithDetails);
@@ -103,6 +114,7 @@ export const getMedicineRecordCount = query({
     }
 
     // この薬の服薬記録を取得（削除されていないもの）
+    // Note: medicineIdはオプショナルフィールドのためインデックスなし
     const records = await ctx.db
       .query("medicationRecords")
       .filter((q) =>

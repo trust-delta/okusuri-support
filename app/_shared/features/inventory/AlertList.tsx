@@ -74,8 +74,26 @@ export function AlertList({ groupId }: AlertListProps) {
     );
   }
 
-  // Result型からデータを取得
-  const alertsData = alerts.isSuccess ? alerts.data : [];
+  // Result型からデータを取得（エラー時はエラー表示）
+  if (!alerts.isSuccess) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            在庫アラート
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4 text-destructive">
+            {alerts.errorMessage}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const alertsData = alerts.data;
 
   if (alertsData.length === 0) {
     return (

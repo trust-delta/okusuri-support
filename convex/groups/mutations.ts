@@ -4,6 +4,11 @@ import { z } from "zod/v4";
 import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
 import { zid, zMutation } from "../functions";
+import {
+  requireActiveGroup,
+  requireAuth,
+  requireAuthAndMembership,
+} from "../helpers";
 import { createDefaultPrescription } from "../medications/prescriptions/helpers";
 import { error, type Result, success } from "../types/result";
 import { createDefaultNotificationSettings } from "./notification_settings/helpers";
@@ -18,10 +23,9 @@ export const createGroup = mutation({
     creatorRole: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args): Promise<Result<Id<"groups">>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // グループを作成
     const groupId = await ctx.db.insert("groups", {
@@ -73,33 +77,13 @@ export const updateGroup = zMutation({
       .optional(),
   },
   handler: async (ctx, args): Promise<Result<void>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    // グループ存在・削除チェック
+    const groupResult = await requireActiveGroup(ctx, args.groupId);
+    if (!groupResult.isSuccess) return groupResult;
 
-    // グループを取得
-    const group = await ctx.db.get(args.groupId);
-    if (!group) {
-      return error("グループが見つかりません");
-    }
-
-    // 削除済みかチェック
-    if (group.deletedAt !== undefined) {
-      return error("このグループは削除されています");
-    }
-
-    // グループメンバーか確認
-    const membership = await ctx.db
-      .query("groupMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("groupId"), args.groupId))
-      .filter((q) => q.eq(q.field("leftAt"), undefined))
-      .first();
-
-    if (!membership) {
-      return error("このグループのメンバーではありません");
-    }
+    // 認証+メンバーシップ確認
+    const authResult = await requireAuthAndMembership(ctx, args.groupId);
+    if (!authResult.isSuccess) return authResult;
 
     // グループ情報を更新（変更があるフィールドのみ）
     const updates: Partial<{
@@ -142,10 +126,9 @@ export const completeOnboardingWithNewGroup = mutation({
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args): Promise<Result<{ groupId: Id<"groups"> }>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // ユーザー表示名をusersテーブルに保存
     await ctx.db.patch(userId, {
@@ -190,10 +173,9 @@ export const joinGroup = mutation({
     role: v.union(v.literal("patient"), v.literal("supporter")),
   },
   handler: async (ctx, args): Promise<Result<Id<"groupMembers">>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // 既にアクティブメンバーかチェック（leftAt が undefined）
     const existing = await ctx.db
@@ -238,10 +220,9 @@ export const joinGroupWithInvitation = mutation({
     }>
   > => {
     // 1. 認証確認
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // 2. ユーザー情報を取得
     const user = await ctx.db.get(userId);
@@ -369,10 +350,9 @@ export const leaveGroup = mutation({
     groupId: v.id("groups"),
   },
   handler: async (ctx, args): Promise<Result<void>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // ユーザー情報を取得
     const user = await ctx.db.get(userId);
@@ -442,10 +422,10 @@ export const deleteGroup = mutation({
     groupId: v.id("groups"),
   },
   handler: async (ctx, args): Promise<Result<void>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    // 認証確認
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // ユーザー情報を取得
     const user = await ctx.db.get(userId);

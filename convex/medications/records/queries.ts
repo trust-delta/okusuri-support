@@ -2,7 +2,19 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { type QueryCtx, query } from "../../_generated/server";
+import { batchGetSchedulesByGroupId } from "../../helpers";
 import { error, type Result, success } from "../../types/result";
+import { MAX_SNOOZE_COUNT } from "./snooze";
+
+/**
+ * スヌーズ状態を含む服薬記録の型
+ */
+type MedicationRecordWithSnoozeStatus = Doc<"medicationRecords"> & {
+  /** スヌーズ可能かどうか（上限回数未満） */
+  canSnooze: boolean;
+  /** 現在スヌーズ中かどうか（サーバー時刻ベース） */
+  isSnoozed: boolean;
+};
 
 type TimingStats = {
   taken: number;
@@ -39,6 +51,7 @@ type MonthlyStatsResult = {
 
 /**
  * 指定日の服薬記録を取得
+ * スヌーズ状態（canSnooze, isSnoozed）も含めて返す
  */
 export const getTodayRecords = query({
   args: {
@@ -46,7 +59,10 @@ export const getTodayRecords = query({
     scheduledDate: v.string(),
     patientId: v.optional(v.string()),
   },
-  handler: async (ctx, args): Promise<Result<Doc<"medicationRecords">[]>> => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<Result<MedicationRecordWithSnoozeStatus[]>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return error("認証が必要です");
@@ -92,7 +108,17 @@ export const getTodayRecords = query({
         .collect();
     }
 
-    return success(records);
+    // スヌーズ状態を計算して追加
+    const now = Date.now();
+    const recordsWithSnoozeStatus: MedicationRecordWithSnoozeStatus[] =
+      records.map((record) => ({
+        ...record,
+        canSnooze: (record.snoozeCount ?? 0) < MAX_SNOOZE_COUNT,
+        isSnoozed:
+          record.snoozedUntil !== undefined && record.snoozedUntil > now,
+      }));
+
+    return success(recordsWithSnoozeStatus);
   },
 });
 
@@ -493,25 +519,68 @@ export const getMonthlyStats = query({
       }
     }
 
-    // 月の全ての日に対して、その日の処方箋から期待値を計算
+    // 月の期待値計算に必要なデータを一括取得（N+1解消）
     const daysInMonth = endDay;
     let expectedTotalCount = 0;
 
+    // Step 1: グループの全処方箋を一度に取得
+    const allPrescriptions = await ctx.db
+      .query("prescriptions")
+      .withIndex("by_groupId_isActive", (q) =>
+        q.eq("groupId", args.groupId).eq("isActive", true),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+
+    // Step 2: グループの全薬を一度に取得
+    const allMedicines = await ctx.db
+      .query("medicines")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+
+    // 処方箋IDごとに薬をグループ化
+    const medicinesByPrescriptionId = new Map<string, Doc<"medicines">[]>();
+    for (const medicine of allMedicines) {
+      if (medicine.prescriptionId) {
+        const key = String(medicine.prescriptionId);
+        const existing = medicinesByPrescriptionId.get(key) ?? [];
+        existing.push(medicine);
+        medicinesByPrescriptionId.set(key, existing);
+      }
+    }
+
+    // Step 3: 全スケジュールを一度に取得
+    const scheduleMap = await batchGetSchedulesByGroupId(ctx, args.groupId);
+
+    // Step 4: 日付ごとの期待値をメモリ内で計算（DBアクセスなし）
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${args.year}-${String(args.month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-      // この日に有効な処方箋を取得
-      const activePrescriptions = await getActivePrescriptionsForDate(
-        ctx,
-        args.groupId,
-        dateStr,
-      );
+      // この日に有効な処方箋をフィルター（メモリ内）
+      const activePrescriptions = allPrescriptions.filter((prescription) => {
+        const isAfterStart = dateStr >= prescription.startDate;
+        const isBeforeEnd =
+          !prescription.endDate || dateStr <= prescription.endDate;
+        return isAfterStart && isBeforeEnd;
+      });
 
-      // 処方箋から期待値を計算
-      const expectedDailyCount = await calculateExpectedCountForPrescriptions(
-        ctx,
-        activePrescriptions,
-      );
+      // 処方箋から期待値を計算（メモリ内）
+      let expectedDailyCount = 0;
+      for (const prescription of activePrescriptions) {
+        const medicines =
+          medicinesByPrescriptionId.get(String(prescription._id)) ?? [];
+        for (const medicine of medicines) {
+          const schedule = scheduleMap.get(String(medicine._id));
+          if (schedule?.timings) {
+            // 頓服を除いた定期服用のタイミング数をカウント
+            const regularTimings = schedule.timings.filter(
+              (t) => t !== "asNeeded",
+            );
+            expectedDailyCount += regularTimings.length;
+          }
+        }
+      }
 
       expectedTotalCount += expectedDailyCount;
 

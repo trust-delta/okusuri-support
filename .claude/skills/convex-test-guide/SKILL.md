@@ -229,7 +229,7 @@ Convexの型システムは複雑なため、TypeScriptの型インスタンス�
 
 ### エラーの原因
 
-```
+```text
 error TS2589: Type instantiation is excessively deep and possibly infinite.
 ```
 

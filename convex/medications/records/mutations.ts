@@ -1,7 +1,7 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
+import { requireAuth, requireAuthAndMembership } from "../../helpers";
 import { error, type Result, success } from "../../types/result";
 
 /**
@@ -26,21 +26,10 @@ export const recordSimpleMedication = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<Result<Id<"medicationRecords">>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
-
-    // グループメンバーか確認
-    const membership = await ctx.db
-      .query("groupMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("groupId"), args.groupId))
-      .first();
-
-    if (!membership) {
-      return error("このグループのメンバーではありません");
-    }
+    // 認証+メンバーシップ確認
+    const authResult = await requireAuthAndMembership(ctx, args.groupId);
+    if (!authResult.isSuccess) return authResult;
+    const { userId } = authResult.data;
 
     // 服薬者のIDを取得(患者本人または患者がいない場合は記録者)
     const patientMember = await ctx.db
@@ -199,10 +188,10 @@ export const updateMedicationRecord = mutation({
     simpleMedicineName: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<Result<Record<string, never>>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    // 認証確認
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // 記録を取得
     const record = await ctx.db.get(args.recordId);
@@ -210,16 +199,12 @@ export const updateMedicationRecord = mutation({
       return error("記録が見つかりません");
     }
 
-    // グループメンバーか確認
-    const membership = await ctx.db
-      .query("groupMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("groupId"), record.groupId))
-      .first();
-
-    if (!membership) {
-      return error("このグループのメンバーではありません");
-    }
+    // メンバーシップ確認
+    const membershipResult = await requireAuthAndMembership(
+      ctx,
+      record.groupId,
+    );
+    if (!membershipResult.isSuccess) return membershipResult;
 
     const now = Date.now();
 
@@ -280,10 +265,10 @@ export const deleteMedicationRecord = mutation({
     recordId: v.id("medicationRecords"),
   },
   handler: async (ctx, args): Promise<Result<Record<string, never>>> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return error("認証が必要です");
-    }
+    // 認証確認
+    const authResult = await requireAuth(ctx);
+    if (!authResult.isSuccess) return authResult;
+    const userId = authResult.data;
 
     // 記録を取得
     const record = await ctx.db.get(args.recordId);
@@ -291,16 +276,12 @@ export const deleteMedicationRecord = mutation({
       return error("記録が見つかりません");
     }
 
-    // グループメンバーか確認
-    const membership = await ctx.db
-      .query("groupMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("groupId"), record.groupId))
-      .first();
-
-    if (!membership) {
-      return error("このグループのメンバーではありません");
-    }
+    // メンバーシップ確認
+    const membershipResult = await requireAuthAndMembership(
+      ctx,
+      record.groupId,
+    );
+    if (!membershipResult.isSuccess) return membershipResult;
 
     const now = Date.now();
 

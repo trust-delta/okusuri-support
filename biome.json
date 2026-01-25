@@ -173,7 +173,9 @@
     {
       "includes": [
         "app/(private)/history/_components/MonthlyStatsCard.tsx",
-        "app/_shared/features/medication/MedicationGroupedRecordsList.tsx"
+        "app/_shared/features/medication/MedicationGroupedRecordsList.tsx",
+        "app/_shared/features/medication/MedicationRecordActions.tsx",
+        "convex/push/actions.ts"
       ],
       "linter": {
         "rules": {

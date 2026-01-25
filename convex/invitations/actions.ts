@@ -1,12 +1,23 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
+import type { FunctionReference } from "convex/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { action } from "../_generated/server";
 import { error, type Result } from "../types/result";
 
 // Convex型インスタンス化の深度制限を回避 - 動的インポート
+// 型は使用箇所で必要最小限の型を指定
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-const { internal } = require("../_generated/api");
+const { internal } = require("../_generated/api") as {
+  internal: {
+    invitation_code_generator: {
+      generateInvitationCodeAction: FunctionReference<"action", "internal">;
+    };
+    invitations: {
+      createInvitationInternal: FunctionReference<"mutation", "internal">;
+    };
+  };
+};
 
 /**
  * 招待コードを生成

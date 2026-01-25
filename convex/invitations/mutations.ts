@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { internalMutation } from "../_generated/server";
 import { error, type Result, success } from "../types/result";
+import { getInvitationLink } from "./_utils/getInvitationLink";
 
 /**
  * 招待コードを生成（内部mutation）
@@ -80,14 +81,12 @@ export const createInvitationInternal = internalMutation({
       isUsed: false,
     });
 
-    const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${args.code}`;
-
     return success({
       invitationId,
       code: args.code,
       expiresAt,
       allowedRoles,
-      invitationLink,
+      invitationLink: getInvitationLink(args.code),
     });
   },
 });

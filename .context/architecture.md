@@ -1,6 +1,6 @@
 # アーキテクチャ
 
-**最終更新**: 2026年01月17日
+**最終更新**: 2026年01月21日
 
 ## 概要
 
@@ -10,7 +10,7 @@ Feature-Based Architecture（機能ベース）を採用したフルスタック
 
 ## システムアーキテクチャ
 
-```
+```text
 ┌─────────────┐     ┌──────────────┐
 │  Next.js 16 │────▶│ Convex Auth  │
 │  (Frontend) │     │(authenticate)│
@@ -40,7 +40,9 @@ app/_shared/features/
 │   ├── index.ts                # Public API
 │   └── __tests__/              # テストファイル
 ├── group/              # グループ管理
+├── inventory/          # 薬の残量管理
 ├── medication/         # 服薬管理
+├── pdf-report/         # PDFレポート出力
 └── push-notifications/ # プッシュ通知
 ```
 

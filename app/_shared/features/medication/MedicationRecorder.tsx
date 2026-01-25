@@ -86,6 +86,9 @@ export function MedicationRecorder({ groupId }: MedicationRecorderProps) {
                   simpleMedicineName={timing.label}
                   recordId={recordStatus?._id}
                   recordStatus={recordStatus?.status}
+                  canSnooze={recordStatus?.canSnooze ?? false}
+                  isSnoozed={recordStatus?.isSnoozed ?? false}
+                  snoozedUntil={recordStatus?.snoozedUntil}
                 />
               </div>
             </div>

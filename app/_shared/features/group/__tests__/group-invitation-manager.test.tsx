@@ -67,7 +67,8 @@ describe("GroupInvitationManager", () => {
   });
 
   it("招待コードがない場合、空のメッセージを表示", () => {
-    vi.mocked(useQuery).mockReturnValue([]);
+    // Result型でラップしてモック
+    vi.mocked(useQuery).mockReturnValue({ isSuccess: true, data: [] });
 
     render(<GroupInvitationManager groupId={mockGroupId} />);
 

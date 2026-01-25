@@ -8,8 +8,20 @@ type InventoryWithMedicineName = Doc<"medicineInventory"> & {
   medicineName: string;
 };
 
+/**
+ * 在庫ステータスの種類
+ * - out_of_stock: 在庫切れ（0）
+ * - low_stock: 残量不足（閾値以下）
+ * - normal: 通常
+ */
+type StockStatus = "out_of_stock" | "low_stock" | "normal";
+
 type InventoryWithLowStock = InventoryWithMedicineName & {
   isLowStock: boolean;
+  /** プログレスバーの値（0-100） */
+  progressValue: number;
+  /** 在庫ステータス */
+  stockStatus: StockStatus;
 };
 
 type LowStockInventory = InventoryWithMedicineName & {
@@ -124,16 +136,35 @@ export const getInventoriesByGroup = query({
       ? inventories.filter((inv) => inv.isTrackingEnabled)
       : inventories;
 
-    // 薬の名前を付加
+    // 薬の名前と在庫ステータスを付加
     const inventoriesWithNames = await Promise.all(
       filteredInventories.map(async (inventory) => {
         const medicine = await ctx.db.get(inventory.medicineId);
+        const { currentQuantity, warningThreshold } = inventory;
+
+        // 在庫ステータスを判定
+        const isLowStock =
+          warningThreshold !== undefined && currentQuantity <= warningThreshold;
+        const stockStatus: StockStatus =
+          currentQuantity === 0
+            ? "out_of_stock"
+            : isLowStock
+              ? "low_stock"
+              : "normal";
+
+        // プログレス値を計算（警告閾値の3倍を100%とする）
+        const maxForProgress = warningThreshold ? warningThreshold * 3 : 100;
+        const progressValue = Math.min(
+          100,
+          (currentQuantity / maxForProgress) * 100,
+        );
+
         return {
           ...inventory,
           medicineName: medicine?.name ?? "不明な薬",
-          isLowStock:
-            inventory.warningThreshold !== undefined &&
-            inventory.currentQuantity <= inventory.warningThreshold,
+          isLowStock,
+          progressValue,
+          stockStatus,
         };
       }),
     );
@@ -284,15 +315,16 @@ export const getGroupConsumptionHistory = query({
       .withIndex("by_groupId_recordedAt", (q) => q.eq("groupId", args.groupId))
       .order("desc");
 
-    const records = await recordsQuery.take(args.limit ?? 50);
-
-    // フィルタリングと薬の名前を付加
+    // バグ修正: filter() → take() の順序に変更
+    // 先にtake()するとlimitより少ない件数が返される可能性がある
+    const allRecords = await recordsQuery.collect();
     const filteredRecords = args.consumptionType
-      ? records.filter((r) => r.consumptionType === args.consumptionType)
-      : records;
+      ? allRecords.filter((r) => r.consumptionType === args.consumptionType)
+      : allRecords;
+    const limitedRecords = filteredRecords.slice(0, args.limit ?? 50);
 
     const recordsWithNames = await Promise.all(
-      filteredRecords.map(async (record) => {
+      limitedRecords.map(async (record) => {
         const medicine = await ctx.db.get(record.medicineId);
         const inventory = await ctx.db.get(record.inventoryId);
         return {
