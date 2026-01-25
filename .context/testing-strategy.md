@@ -1,6 +1,6 @@
 # テスト戦略
 
-**最終更新**: 2026年01月18日
+**最終更新**: 2026年01月25日
 
 ## テストピラミッド
 
@@ -265,7 +265,26 @@ vi.mock("next/navigation", () => ({
 }));
 ```
 
-### Result型のモック
+### Result型のテストパターン
+
+詳細は [specs/lib/result-type.md](specs/lib/result-type.md) を参照。
+
+#### ヘルパー関数を使ったモック生成
+
+```typescript
+import { success, error } from "@/convex/types/result";
+
+// 成功モックを作成
+const mockSuccess = success({ userId: "user123", membership: mockMembership });
+
+// エラーモックを作成
+const mockError = error("テスト用エラー");
+
+// 型アサーション付きモック
+const mockResult: Result<Id<"medicines">> = success("medicineId123" as Id<"medicines">);
+```
+
+#### フロントエンドでのモック
 
 ```typescript
 // 成功
@@ -276,6 +295,46 @@ mockMutation.mockResolvedValue({ isSuccess: false, errorMessage: "エラー" });
 
 // 例外
 mockMutation.mockRejectedValue(new Error("ネットワークエラー"));
+```
+
+#### バックエンドでのテスト
+
+```typescript
+import { success, error } from "../types/result";
+import { convexTest } from "convex-test";
+import { expect, test } from "vitest";
+
+test("認証エラー時にResult型でエラーを返す", async () => {
+  const t = convexTest(schema);
+  await t.run(async (ctx) => {
+    // 未認証状態でmutationを実行
+    const result = await ctx.run(api.groups.mutations.update, {
+      groupId: "test123",
+      name: "新しい名前",
+    });
+
+    expect(result.isSuccess).toBe(false);
+    if (!result.isSuccess) {
+      expect(result.errorMessage).toBe("認証が必要です");
+    }
+  });
+});
+
+test("成功時にデータを返す", async () => {
+  const t = convexTest(schema);
+  await t.run(async (ctx) => {
+    // 認証済み状態でmutationを実行
+    const result = await ctx.run(api.medicines.mutations.create, {
+      groupId: "group123",
+      name: "テスト薬",
+    });
+
+    expect(result.isSuccess).toBe(true);
+    if (result.isSuccess) {
+      expect(result.data).toBeDefined();
+    }
+  });
+});
 ```
 
 ### maxLength属性のあるフィールド
@@ -296,3 +355,5 @@ await user.type(input, "あ".repeat(51)); // maxLength={50}の場合
 - [プロジェクト概要](project.md)
 - [アーキテクチャ](architecture.md)
 - [エラーハンドリング](error-handling.md)
+- [Result型仕様](specs/lib/result-type.md)
+- [バックエンドヘルパー仕様](specs/lib/helpers.md)

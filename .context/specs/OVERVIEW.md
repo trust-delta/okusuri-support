@@ -1,6 +1,6 @@
 # 仕様書概要
 
-**最終更新**: 2026年01月21日
+**最終更新**: 2026年01月25日
 
 ## 主要機能一覧
 
@@ -63,6 +63,8 @@
 |------|------|--------|
 | テキスト処理 | 文字列操作ユーティリティ | [lib/text-utils.md](lib/text-utils.md) |
 | 数値処理 | 数値フォーマットユーティリティ | [lib/number-utils.md](lib/number-utils.md) |
+| バックエンドヘルパー | Convex共通ヘルパー関数 | [lib/helpers.md](lib/helpers.md) |
+| Result型 | エラーハンドリングパターン | [lib/result-type.md](lib/result-type.md) |
 
 ---
 
