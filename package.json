@@ -84,7 +84,7 @@
     "convex-test": "^0.0.41",
     "dependency-cruiser": "^17.3.6",
     "gray-matter": "^4.0.3",
-    "happy-dom": "^20.3.3",
+    "happy-dom": "^20.3.9",
     "hono": "4.11.4",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",

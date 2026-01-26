@@ -194,8 +194,8 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
       happy-dom:
-        specifier: ^20.3.3
-        version: 20.3.3
+        specifier: ^20.3.9
+        version: 20.3.9
       hono:
         specifier: 4.11.4
         version: 4.11.4
@@ -219,7 +219,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.17
-        version: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1)
+        version: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.9)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1)
 
 packages:
 
@@ -2441,6 +2441,9 @@ packages:
   '@types/mysql@2.15.27':
     resolution: {integrity: sha512-YfWiV16IY0OeBfBCk8+hXKmdTKrKlwKN1MNKAPBu5JYxLwBEZl7QzeEpGnlZb3VMGJrrGmB84gXiH+ofs/TezA==}
 
+  '@types/node@25.0.10':
+    resolution: {integrity: sha512-zWW5KPngR/yvakJgGOmZ5vTBemDoSqF3AcV/LrO5u5wTWyEAVVh+IT39G4gtyAkh3CtTZs8aX/yRM82OfzHJRg==}
+
   '@types/node@25.0.9':
     resolution: {integrity: sha512-/rpCXHlCWeqClNBwUhDcusJxXYDjZTyE8v5oTO7WbL8eij2nKhUeU89/6xgjU7N4/Vh3He0BtyhJdQbDyhiXAw==}
 
@@ -3436,8 +3439,8 @@ packages:
     resolution: {integrity: sha512-5v6yZd4JK3eMI3FqqCouswVqwugaA9r4dNZB1wwcmrD02QkV5H0y7XBQW8QwQqEaZY1pM9aqORSORhJRdNK44Q==}
     engines: {node: '>=6.0'}
 
-  happy-dom@20.3.3:
-    resolution: {integrity: sha512-hM9gltmtQLfmWPqoPreUtRdP3nZCSzQEw7l/JC+up5CxquDykhYFKzIzoFFeVev3AGFEULNvsbE8fpZPgxUYEQ==}
+  happy-dom@20.3.9:
+    resolution: {integrity: sha512-OIoj0PcK2JaxQuANHxWkxFRSNXAuSgO1vCzCT66KItE0W/ieZLG+/iW8OetlxB+F9EaPB7DoFYKAubFG1f4Mvw==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -7322,7 +7325,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.0.9
+      '@types/node': 25.0.10
 
   '@types/d3-array@3.2.2': {}
 
@@ -7366,7 +7369,11 @@ snapshots:
 
   '@types/mysql@2.15.27':
     dependencies:
-      '@types/node': 25.0.9
+      '@types/node': 25.0.10
+
+  '@types/node@25.0.10':
+    dependencies:
+      undici-types: 7.16.0
 
   '@types/node@25.0.9':
     dependencies:
@@ -7378,7 +7385,7 @@ snapshots:
 
   '@types/pg@8.15.6':
     dependencies:
-      '@types/node': 25.0.9
+      '@types/node': 25.0.10
       pg-protocol: 1.11.0
       pg-types: 2.2.0
 
@@ -7394,7 +7401,7 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 25.0.9
+      '@types/node': 25.0.10
 
   '@types/use-sync-external-store@0.0.6': {}
 
@@ -7408,7 +7415,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 25.0.9
+      '@types/node': 25.0.10
 
   '@vitejs/plugin-react@5.1.2(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(yaml@2.8.1))':
     dependencies:
@@ -7434,7 +7441,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1)
+      vitest: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.9)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1)
 
   '@vitest/expect@4.0.17':
     dependencies:
@@ -7480,7 +7487,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1)
+      vitest: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.9)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1)
 
   '@vitest/utils@4.0.17':
     dependencies:
@@ -8402,9 +8409,9 @@ snapshots:
       section-matter: 1.0.0
       strip-bom-string: 1.0.0
 
-  happy-dom@20.3.3:
+  happy-dom@20.3.9:
     dependencies:
-      '@types/node': 25.0.9
+      '@types/node': 25.0.10
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
       entities: 4.5.0
@@ -8611,7 +8618,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.0.9
+      '@types/node': 25.0.10
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -9877,7 +9884,7 @@ snapshots:
       terser: 5.46.0
       yaml: 2.8.1
 
-  vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1):
+  vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.9)(@vitest/ui@4.0.17)(happy-dom@20.3.9)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(terser@5.46.0)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.17
       '@vitest/mocker': 4.0.17(msw@2.12.7(@types/node@25.0.9)(typescript@5.9.3))(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(yaml@2.8.1))
@@ -9903,7 +9910,7 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/node': 25.0.9
       '@vitest/ui': 4.0.17(vitest@4.0.17)
-      happy-dom: 20.3.3
+      happy-dom: 20.3.9
     transitivePeerDependencies:
       - jiti
       - less
