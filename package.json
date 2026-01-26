@@ -82,7 +82,7 @@
     "@vitest/coverage-v8": "4.0.17",
     "@vitest/ui": "^4.0.17",
     "convex-test": "^0.0.41",
-    "dependency-cruiser": "^17.3.6",
+    "dependency-cruiser": "^17.3.7",
     "gray-matter": "^4.0.3",
     "happy-dom": "^20.3.3",
     "hono": "4.11.4",
