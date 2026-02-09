@@ -78,7 +78,7 @@
     "@types/react": "^19.2.8",
     "@types/react-dom": "19",
     "@types/web-push": "^3.6.4",
-    "@vitejs/plugin-react": "^5.1.2",
+    "@vitejs/plugin-react": "^5.1.3",
     "@vitest/coverage-v8": "4.0.17",
     "@vitest/ui": "^4.0.17",
     "convex-test": "^0.0.41",
@@ -92,7 +92,7 @@
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.8",
     "typescript": "^5",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "*": "biome check --write --no-errors-on-unmatched"
