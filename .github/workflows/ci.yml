@@ -82,7 +82,7 @@ jobs:
 
       - name: カバレッジレポートをアップロード
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
@@ -129,7 +129,7 @@ jobs:
 
       - name: Playwright レポートをアップロード
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
